@@ -1,0 +1,11 @@
+{
+  "name": "jobd",
+  "version": "1.0.0",
+  "description": "",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dependency-graph": "^0.9.0",
+    "fast-toml": "^0.5.4"
+  }
+}
