@@ -1,7 +1,7 @@
 var fs = require("graceful-fs")
 var loggers = {}
 
-const PAGE_LEN = 10 //
+const PAGE_LEN = 200
 const LOG_DIR  = './logs'
 
 /* two page buffer */
@@ -104,12 +104,14 @@ exports.read = function (jobname, onData, onEnd) {
   loggerRead(jobname, onData, onEnd)
 }
 
-//for (var i = 0; i < 100; i++) {
-//  exports.write('test', `line${i}`)
-//}
-//exports.read('test',
-//  data => {
-//    process.stdout.write(data)
-//  },
-//  () => { console.log('end') }
-//)
+if (require.main === module) {
+  for (var i = 0; i < 100; i++) {
+    exports.write('test', `line${i}`)
+  }
+  exports.read('test',
+    data => {
+      process.stdout.write(data)
+    },
+    () => { console.log('end') }
+  )
+}

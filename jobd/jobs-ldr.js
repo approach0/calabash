@@ -71,3 +71,10 @@ exports.load = async function (jobs_dir) {
 
   return {depGraph, envs}
 }
+
+if (require.main === module) {
+  (async function () {
+    const jobs = await exports.load('./test-jobs')
+    console.log(jobs)
+  })()
+}

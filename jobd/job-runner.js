@@ -255,10 +255,12 @@ exports.runlist = function (jobs, runList, _dryrun, onComplete) {
   )
 }
 
-;(async function () {
-  const jobs = await jobs_ldr.load('./test-jobs')
-  const runList = await exports.getRunList(jobs, 'hello-world:say-helloworld')
-  console.log(runList)
-  //exports.runlist(jobs, runList, 1)
-  exports.runlist(jobs, runList)
-})()
+if (require.main === module) {
+  ;(async function () {
+    const jobs = await jobs_ldr.load('./test-jobs')
+    const runList = await exports.getRunList(jobs, 'hello-world:say-helloworld')
+    console.log(runList)
+    //exports.runlist(jobs, runList, 1)
+    exports.runlist(jobs, runList)
+  })()
+}
