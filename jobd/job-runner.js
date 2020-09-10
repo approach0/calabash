@@ -1,5 +1,6 @@
 const jobs_ldr = require('./jobs-ldr.js')
 const logger = require('./logger.js')
+const tasks = require('./tasks.js')
 const extend = require('util')._extend
 const process_ = require('process')
 const pty = require('node-pty-prebuilt-multiarch')
@@ -48,9 +49,6 @@ exports.getRunList = async function (jobs, target) {
 
 exports.spawn = function (cmd, opt, onLog, onSpawn, onExit)
 {
-  const pid = 0
-  const invoke_time = Date.now()
-
   /* choose between pty.spawn and childProcess.spawn */
   let spawnFun = pty.spawn
   let stdout = function (o) {return o}
@@ -155,6 +153,8 @@ exports.runjob = async function (jobs, jobname, onSpawn, onExit, onAbort) {
   if (targetProps['if']) {
     const ifcmd = targetProps['if']
     await exports.spawn(ifcmd, opts, onLog, onSpawn, function (_, exitcode) {
+      onExit(ifcmd, exitcode) /* call default routine */
+
       if (exitcode != 0) {
         onAbort()
         return
@@ -164,6 +164,8 @@ exports.runjob = async function (jobs, jobname, onSpawn, onExit, onAbort) {
   } else if (targetProps['if_not']) {
     const incmd = targetProps['if_not']
     await exports.spawn(incmd, opts, onLog, onSpawn, function (_, exitcode) {
+      onExit(incmd, exitcode) /* call default routine */
+
       if (exitcode == 0) {
         onAbort()
         return
