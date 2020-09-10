@@ -104,12 +104,12 @@ exports.read = function (jobname, onData, onEnd) {
   loggerRead(jobname, onData, onEnd)
 }
 
-for (var i = 0; i < 100; i++) {
-  exports.write('test', `line${i}`)
-}
-exports.read('test',
-  data => {
-    process.stdout.write(data)
-  },
-  () => { console.log('end') }
-)
+//for (var i = 0; i < 100; i++) {
+//  exports.write('test', `line${i}`)
+//}
+//exports.read('test',
+//  data => {
+//    process.stdout.write(data)
+//  },
+//  () => { console.log('end') }
+//)

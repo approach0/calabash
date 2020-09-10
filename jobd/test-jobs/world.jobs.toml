@@ -1,2 +1,3 @@
 [say-world]
 exe = echo 'world'
+dep = [hello:say-hello]
