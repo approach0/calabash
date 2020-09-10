@@ -1,5 +1,5 @@
 <template>
-<h3>Hello</h3>
+<v-app>hello world</v-app>
 </template>
 
 <script>

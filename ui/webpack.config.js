@@ -35,9 +35,30 @@ module.exports = (env, options) => {
         },
         { test: /\.vue$/, use: 'vue-loader' },
         { test: /\.css$/, use: [
-          'style-loader', 'css-loader'
+          'style-loader', 'css-loader',
           /* need both here to both inject the CSS and
            * convert CSS to JavaScript module. */
+        ]},
+        { test: /\.s(c|a)ss$/, use: [
+          'vue-style-loader', 'css-loader',
+          {
+            loader: 'sass-loader',
+            // Requires sass-loader@^7.0.0
+            options: {
+              implementation: require('sass'),
+              fiber: require('fibers'),
+              indentedSyntax: true // optional
+            },
+            // Requires sass-loader@^8.0.0
+            options: {
+              implementation: require('sass'),
+              sassOptions: {
+                fiber: require('fibers'),
+                indentedSyntax: true // optional
+              },
+            },
+          }
+
         ]},
         { test: /\.styl$/, use: [
           'style-loader', 'css-loader', 'stylus-loader'
