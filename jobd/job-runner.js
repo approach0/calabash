@@ -187,6 +187,7 @@ exports.runlist = async function (jobs, runList, _dryrun, onComplete) {
   }
 
   const task_id = await tasks.add_task(runList)
+  console.log(`[TASK ID] ${task_id}`)
 
   /* main loop */
   exports.syncLoop(runList,
@@ -259,6 +260,8 @@ exports.runlist = async function (jobs, runList, _dryrun, onComplete) {
       onComplete && onComplete(completed)
     }
   )
+
+  return task_id
 }
 
 if (require.main === module) {
@@ -266,7 +269,6 @@ if (require.main === module) {
     const jobs = await jobs_ldr.load('./test-jobs')
     const runList = await exports.getRunList(jobs, 'hello-world:say-helloworld')
     console.log(runList)
-    //exports.runlist(jobs, runList, 1)
 
     exports.runlist(jobs, runList, 0, async function (completed) {
       console.log('')
