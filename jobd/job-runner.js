@@ -177,14 +177,16 @@ exports.runjob = async function (jobs, jobname, onSpawn, onExit, onAbort) {
   exports.spawn(cmd, opts, onLog, onSpawn, onExit)
 }
 
-exports.runlist = function (jobs, runList, _dryrun, onComplete) {
+exports.runlist = async function (jobs, runList, _dryrun, onComplete) {
   const dryrun = _dryrun || false
 
-  /* start printing */
+  /* start task */
   {
     let list_job_names = runList.join(', ')
     masterLog(`[ job list ] ${list_job_names}.`)
   }
+
+  const task_id = await tasks.add_task(runList)
 
   /* main loop */
   exports.syncLoop(runList,
@@ -209,12 +211,15 @@ exports.runlist = function (jobs, runList, _dryrun, onComplete) {
 
       /* prepare process callbacks */
       const onSpawn = function (cmd, pid) {
-          slaveLog(jobname, `[ spawn ] ${jobname}, pid=${pid}.`)
+        slaveLog(jobname, `[ spawn ] ${jobname}, pid=${pid}.`)
+        tasks.spawn_notify(task_id, idx, pid) /* update task meta info */
       }
 
       let failcnt = 0
       const onExit = function (cmd, exitcode) {
         slaveLog(jobname, `[ exitcode = ${exitcode} ] ${cmd}\n`)
+        tasks.exit_notify(task_id, idx, exitcode) /* update task meta info */
+
         if (exitcode == 0) {
           failcnt = 0
           setTimeout(loop.next, 500)
@@ -251,7 +256,6 @@ exports.runlist = function (jobs, runList, _dryrun, onComplete) {
     function (_, idx, loop, completed) {
       let list_job_names = runList.join(', ')
       masterLog(`[ finished(${completed}) ] ${list_job_names}.`)
-
       onComplete && onComplete(completed)
     }
   )
@@ -263,6 +267,11 @@ if (require.main === module) {
     const runList = await exports.getRunList(jobs, 'hello-world:say-helloworld')
     console.log(runList)
     //exports.runlist(jobs, runList, 1)
-    exports.runlist(jobs, runList)
+
+    exports.runlist(jobs, runList, 0, async function (completed) {
+      console.log('')
+      console.log(JSON.stringify(await tasks.get_list()))
+    })
+
   })()
 }
