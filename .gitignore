@@ -2,3 +2,5 @@ node_modules/
 *.swp
 package-lock.json
 logs/
+bundle.js
+dist/
