@@ -5,14 +5,15 @@ const process_ = require('process')
 const pty = require('node-pty-prebuilt-multiarch')
 const childProcess = require('child_process')
 
-function masterLog(data) {
-  logger.write('_master_', data)
-  console.log(data)
+function masterLog(line) {
+  logger.write('_master_', line)
+  console.log(line)
 }
 
-function slaveLog(jobname, data) {
-  logger.write(jobname, data)
-  masterLog(data)
+function slaveLog(jobname, line) {
+  logger.write(jobname, line)
+  logger.write('_master_', line)
+  console.log(jobname + ' |', line)
 }
 
 exports.syncLoop = function (arr, doing, done) {
@@ -117,7 +118,7 @@ exports.runjob = async function (jobs, jobname, onSpawn, onExit, onAbort) {
   const targetProps = jobs.depGraph.getNodeData(jobname)
   const cmd = targetProps['exe'] || ''
   const cwd = targetProps['cwd'] || '.'
-  const user = targetProps['user'] || 'unknown'
+  const user = targetProps['user'] || 'current'
   const spawn = targetProps['spawn'] || 'direct'
 
   if (cmd === '') {
@@ -176,6 +177,12 @@ exports.runjob = async function (jobs, jobname, onSpawn, onExit, onAbort) {
 
 exports.runlist = function (jobs, runList, _dryrun, onComplete) {
   const dryrun = _dryrun || false
+
+  /* start printing */
+  {
+    let list_job_names = runList.join(', ')
+    masterLog(`[ job list ] ${list_job_names}.`)
+  }
 
   /* main loop */
   exports.syncLoop(runList,
