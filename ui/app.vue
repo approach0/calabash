@@ -70,10 +70,10 @@
 
             <v-card-subtitle v-if="status.mounted === null">Please wait ...</v-card-subtitle>
             <v-card-actions v-else>
-              <v-btn color="red" text :disabled="!status.mounted" @click="changeStatus('mounted', false)">
+              <v-btn color="red" text :disabled="!status.mounted" @click="changeStatus('mounted', 'world:say-world')">
                 {{status.mounted ? 'Unmount' : 'Unmounted'}}
               </v-btn>
-              <v-btn color="green" text :disabled="status.mounted" @click="changeStatus('mounted', true)">
+              <v-btn color="green" text :disabled="status.mounted" @click="changeStatus('mounted', 'world:say-world')">
                 {{status.mounted ? 'Mounted' : 'Mount'}}
               </v-btn>
             </v-card-actions>
@@ -90,10 +90,10 @@
 
             <v-card-subtitle v-if="status.indexer === null">Please wait ...</v-card-subtitle>
             <v-card-actions v-else>
-              <v-btn color="red" text :disabled="!status.indexer" @click="changeStatus('indexer', false)">
+              <v-btn color="red" text :disabled="!status.indexer" @click="changeStatus('indexer', 'world:say-world')">
                 {{status.indexer ? 'Stop' : 'Stopped'}}
               </v-btn>
-              <v-btn color="green" text :disabled="status.indexer" @click="changeStatus('indexer', true)">
+              <v-btn color="green" text :disabled="status.indexer" @click="changeStatus('indexer', 'world:say-world')">
                 {{status.indexer ? 'Running' : 'Run'}}
               </v-btn>
             </v-card-actions>
@@ -109,10 +109,10 @@
 
             <v-card-subtitle v-if="status.searchd === null">Please wait ...</v-card-subtitle>
             <v-card-actions v-else>
-              <v-btn color="red" text :disabled="!status.searchd" @click="changeStatus('searchd', false)">
+              <v-btn color="red" text :disabled="!status.searchd" @click="changeStatus('searchd', 'world:say-world')">
                 {{status.searchd ? 'Stop' : 'Stopped'}}
               </v-btn>
-              <v-btn color="green" text :disabled="status.searchd" @click="changeStatus('searchd', true)">
+              <v-btn color="green" text :disabled="status.searchd" @click="changeStatus('searchd', 'world:say-world')">
                 {{status.searchd ? 'Running' : 'Run'}}
               </v-btn>
             </v-card-actions>
@@ -186,7 +186,7 @@ export default {
       console_starjob: ['_master_'],
       console_content: '',
       status: {
-        "mounted": true,
+        "mounted": false,
         "indexer": false,
         "searchd": false
       },
@@ -274,15 +274,14 @@ export default {
       .then(function (res) {
         const data = res.data
 
-        if (manual)
-          return
+        if (manual) {
+          if ('error' in data) {
+            vm.input_err_msg = "Job is not defined."
+            return
+          }
 
-        if ('error' in data) {
-          vm.input_err_msg = "Job is not defined."
-          return
+          vm.fetch_log(jobname)
         }
-
-        vm.fetch_log(jobname)
       })
       .catch(function (err) {
         console.error(err)
@@ -340,18 +339,36 @@ export default {
         const data = res.data
         const tasks = data['all_tasks']
         vm.tasks = tasks.reverse()
+
+        vm.updateStatus(vm.tasks[0])
       })
       .catch(function (err) {
         console.error(err)
       })
     },
 
-    changeStatus(key, value) {
+    changeStatus(key, goal) {
       let vm = this
       vm.status[key] = null
-      setTimeout(function () {
-        vm.status[key] = value
-      }, 1000)
+
+      vm.run(goal)
+    },
+
+    updateStatus(task) {
+      let vm = this
+      task.runList.forEach(item => {
+        switch (item.jobname) {
+        case 'world:say-world':
+          vm.status.mounted = (item.exitcode == 0) ? true : false
+          break
+        case 'world:say-world':
+          vm.status.indexer = (item.exitcode == 0) ? true : false
+          break
+        case 'hello:say-world':
+          vm.status.searchd = (item.exitcode == 0) ? true : false
+          break
+        }
+      })
     }
   }
 }
