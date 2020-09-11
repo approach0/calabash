@@ -58,6 +58,56 @@
 
   <v-main app>
     <v-container>
+      <v-parallax dark src="https://cdn.vuetifyjs.com/images/parallax/material2.jpg">
+      <v-row align="center" justify="center">
+
+        <v-col class="text-center" cols="4">
+          <v-card>
+            <v-img class="white--text align-end" height="200px"
+            src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1599819299760&di=296036646d94004fa3bc1b6ecc0f4d34&imgtype=0&src=http%3A%2F%2Fpro2012.manmanbuy.com%2FProPic%2F20123%2F2012030008563420296.jpg">
+            </v-img>
+            <v-card-title>Disk Volume</v-card-title>
+
+            <v-card-actions>
+              <v-btn color="red" text> Unmount </v-btn>
+              <v-btn color="green" text disabled> Mount </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-col>
+
+        <v-col class="text-center" cols="4">
+          <v-card>
+            <v-img class="white--text align-end" height="200px"
+            src="https://merriam-webster.com/assets/mw/images/article/art-global-footer-recirc/alt-5b51feb34c621-5439-8e988795982d8b2f6e682380a3b0adb6@1x.jpg">
+            </v-img>
+            <v-card-title>Indexer Daemon</v-card-title>
+
+            <v-card-actions>
+              <v-btn color="red" text disabled> Stop </v-btn>
+              <v-btn color="green" text> Running </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-col>
+
+        <v-col class="text-center" cols="4">
+          <v-card>
+            <v-img class="white--text align-end" height="200px"
+            src="https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3162083642,3618625854&fm=26&gp=0.jpg">
+            </v-img>
+            <v-card-title>Search Daemon</v-card-title>
+
+            <v-card-actions>
+              <v-btn color="red" text> Stop </v-btn>
+              <v-btn color="blue" text disabled> Run </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-col>
+
+      </v-row>
+  </v-parallax>
+
+      <v-divider inset style="margin: 15px"></v-divider>
+
       <v-card class="mx-auto" tile>
         <v-list shaped flat>
           <v-subheader>Tasks</v-subheader>
