@@ -1,7 +1,7 @@
 const express = require('express')
 const proxy = require('express-http-proxy')
 
-const port = 8080
+const port = 8089
 const http_dir = '../ui/dist'
 
 process.on('SIGINT', function() {
