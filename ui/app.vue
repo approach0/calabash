@@ -21,8 +21,8 @@
   <v-navigation-drawer width="600" v-model="drawer" color="purple darken-4 white--text" dark app>
     <v-container>
 
-        <v-text-field v-model="input" label="Run job" append-icon="sports" @click:append="clickRun" filled clearable
-                      v-on:keyup.enter="clickRun" :error-messages="input_err_msg" v-on:keyup="input_err_msg = null">
+        <v-text-field v-model="input" label="Run job" v-on:keyup.enter="clickRun" :error-messages="input_err_msg" v-on:keyup="input_err_msg = null"
+        append-icon="clear" append-outer-icon="sports" @click:append="input = ''" @click:append-outer="clickRun">
         </v-text-field>
 
         <v-row>
