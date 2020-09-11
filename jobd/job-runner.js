@@ -179,6 +179,7 @@ exports.runjob = async function (jobs, jobname, onSpawn, onExit, onAbort) {
 
 exports.runlist = async function (jobs, runList, _dryrun, onComplete) {
   const dryrun = _dryrun || false
+  let failcnt = 0
 
   /* start task */
   {
@@ -216,7 +217,6 @@ exports.runlist = async function (jobs, runList, _dryrun, onComplete) {
         tasks.spawn_notify(task_id, idx, pid) /* update task meta info */
       }
 
-      let failcnt = 0
       const onExit = function (cmd, exitcode) {
         slaveLog(jobname, `[ exitcode = ${exitcode} ] ${cmd}\n`)
         tasks.exit_notify(task_id, idx, exitcode) /* update task meta info */
@@ -232,7 +232,7 @@ exports.runlist = async function (jobs, runList, _dryrun, onComplete) {
           if (failcnt >= 3) {
             loop.brk()
           } else {
-            loop.again()
+            setTimeout(loop.again, 500)
           }
         }
       }

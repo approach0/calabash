@@ -21,16 +21,9 @@
   <v-navigation-drawer width="600" v-model="drawer" color="purple darken-4 white--text" dark app>
     <v-container>
 
-        <v-text-field v-model="job_input" label="Run job" append-icon="sports" @click:append="clickRun" filled clearable
+        <v-text-field v-model="input" label="Run job" append-icon="sports" @click:append="clickRun" filled clearable
                       v-on:keyup.enter="clickRun" :error-messages="input_err_msg" v-on:keyup="input_err_msg = null">
         </v-text-field>
-
-        <v-row justify="space-around" class="flex-wrap">
-          <v-switch v-model="console_refresh" label="Console refresh"></v-switch>
-          <v-switch v-model="console_stickbt" label="Stick to bottom"></v-switch>
-          <v-switch v-model="dry_run" label="Dry run"></v-switch>
-          <v-switch v-model="single_job" label="Single job"></v-switch>
-        </v-row>
 
         <v-row>
           <v-chip class="ma-2" :color="(jb == console_outsel) ? 'purple' : 'blue-grey'"
@@ -39,8 +32,26 @@
           </v-chip>
         </v-row>
 
+        <v-row justify="center" v-if="Object.keys(job_description).length > 0">
+          <v-card v-if="job_description" class="d-inline-block" light>
+            <v-card-text>
+            <p class="text-h5"> {{job_description['name']}} </p>
+            <p v-for="(val, key) in job_description" v-if="key != 'name'" class="text-subtitle-2 text--primary">
+              {{key}}: {{val}}
+            </p>
+            </v-card-text>
+          </v-card>
+        </v-row>
+
         <v-card id="console" class="grey darken-4 console"
          v-bind:loading="console_loading">{{console_content}}</v-card>
+
+        <v-row justify="space-around" class="flex-wrap">
+          <v-switch v-model="console_refresh" label="Console refresh"></v-switch>
+          <v-switch v-model="console_stickbt" label="Stick to bottom"></v-switch>
+          <v-switch v-model="dry_run" label="Dry run"></v-switch>
+          <v-switch v-model="single_job" label="Single job"></v-switch>
+        </v-row>
 
     </v-container>
   </v-navigation-drawer>
@@ -48,7 +59,7 @@
   <v-main app>
     <v-container>
       <v-card class="mx-auto" tile>
-        <v-list shaped>
+        <v-list shaped flat>
           <v-subheader>Tasks</v-subheader>
 
           <v-list-item-group color="primary">
@@ -63,12 +74,10 @@
                 <v-list-item-title> Task#{{task.taskid}} </v-list-item-title>
                 <v-list-item-subtitle>
 
-                  <v-chip class="ma-2" v-for="(job, index) in task.runList" :color="chip_color(job)" :key="index" label>
+                  <v-chip class="ma-2" v-for="(job, index) in task.runList" :key="index"
+                          @click="clickJob(job)" :color="chip_color(job)" label>
                    <v-avatar left> <v-icon>{{ chip_icon(job) }}</v-icon> </v-avatar>
                    {{job.jobname}}
-                   <div style="font-size: 10px; padding-left: 10px">
-                    (PID={{job.pid}} Exit={{job.exitcode}} Alive={{job.alive}})
-                   </div>
                   </v-chip>
                 </v-list-item-subtitle>
               </v-list-item-content>
@@ -92,16 +101,18 @@
 
 <script>
 import axios from 'axios'
+const merge = require('utils-merge')
 const port = 8964
 
 export default {
   data () {
     return {
       drawer: false,
-      job_input: '',
+      input: '',
       input_err_msg: null,
       single_job: false,
       dry_run: false,
+      job_description: {},
       console_outsel: null,
       console_refresh: true,
       console_stickbt: true,
@@ -117,6 +128,10 @@ export default {
   },
 
   watch: {
+    input: function (newVal, oldVal) {
+      const val = newVal.trim()
+      this.getJobDescription(val)
+    }
   },
 
   mounted: function () {
@@ -168,7 +183,6 @@ export default {
         const data = res.data
         vm.console_content = data['logdata']
         vm.console_loading = false
-        vm.console_outsel = jobname
 
         var index = vm.console_starjob.indexOf(jobname)
         if (index === -1) {
@@ -182,7 +196,7 @@ export default {
 
     clickRun() {
       let vm = this
-      let input = vm.job_input.trim()
+      let input = vm.input.trim()
 
       axios.post(`http://0.0.0.0:${port}/runjob`, {
         goal: input,
@@ -205,8 +219,40 @@ export default {
 
     clickStar(jobname) {
       if (jobname !== '_master_')
-        this.job_input = jobname
+        this.input = jobname
       this.console_outsel = jobname
+    },
+
+    getJobDescription(jobname) {
+      let vm = this
+      let job = {
+        'name': jobname
+      }
+      axios.get(`http://0.0.0.0:${port}/get/job/${jobname}`)
+      .then(function (res) {
+        const data = res.data
+        if ('error' in data) {
+          vm.job_description = {}
+          return
+        }
+        job = merge(data.props, job)
+        vm.job_description = merge(job, vm.job_description)
+      })
+      .catch(function (err) {
+        console.error(err)
+      })
+    },
+
+    clickJob(job) {
+      this.drawer = true
+      this.input = job.jobname
+
+      this.getJobDescription(job.jobname)
+      this.$set(this.job_description, 'pid', job.pid)
+      this.$set(this.job_description, 'alive', job.alive)
+      this.$set(this.job_description, 'exitcode', job.exitcode)
+      this.$set(this.job_description, 'spawn_time', job.spawn_time)
+      this.$set(this.job_description, 'exit_time', job.exit_time)
     },
 
     update_tasks_list() {
