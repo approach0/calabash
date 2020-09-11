@@ -47,7 +47,37 @@
 
   <v-main app>
     <v-container>
-    content
+      <v-card class="mx-auto" tile>
+        <v-list shaped>
+          <v-subheader>Tasks</v-subheader>
+
+          <v-list-item-group color="primary">
+
+            <v-list-item v-for="task in tasks" :key="task.taskid">
+
+              <v-list-item-avatar>
+                <v-icon>ballot</v-icon>
+              </v-list-item-avatar>
+
+              <v-list-item-content>
+                <v-list-item-title> Task#{{task.taskid}} </v-list-item-title>
+                <v-list-item-subtitle>
+
+                  <v-chip class="ma-2" v-for="(job, index) in task.runList" :color="chip_color(job)" :key="index" label>
+                   <v-avatar left> <v-icon>{{ chip_icon(job) }}</v-icon> </v-avatar>
+                   {{job.jobname}}
+                   <div style="font-size: 10px; padding-left: 10px">
+                    (PID={{job.pid}} Exit={{job.exitcode}} Alive={{job.alive}})
+                   </div>
+                  </v-chip>
+                </v-list-item-subtitle>
+              </v-list-item-content>
+
+            </v-list-item>
+
+          </v-list-item-group>
+        </v-list>
+      </v-card>
     </v-container>
   </v-main>
 
@@ -78,6 +108,7 @@ export default {
       console_loading: false,
       console_starjob: ['_master_'],
       console_content: '',
+      tasks: [],
       debug: false,
     }
   },
@@ -95,12 +126,32 @@ export default {
       if (vm.console_refresh) {
         vm.fetch_log(recent_job)
       }
+
+      vm.update_tasks_list()
     }, 1000)
   },
 
   methods: {
-    random_idx(L) {
-      return Math.floor(Math.random() * L)
+    chip_color(job) {
+      if (job.alive)
+        return 'blue'
+      else if (job.exitcode == 0)
+        return 'green'
+      else if (job.pid < 0)
+        return 'grey'
+      else
+        return 'red'
+    },
+
+    chip_icon(job) {
+      if (job.alive)
+        return 'cached'
+      else if (job.exitcode == 0)
+        return 'done'
+      else if (job.pid < 0)
+        return 'timer'
+      else
+        return 'error'
     },
 
     fetch_log(jobname) {
@@ -156,6 +207,19 @@ export default {
       if (jobname !== '_master_')
         this.job_input = jobname
       this.console_outsel = jobname
+    },
+
+    update_tasks_list() {
+      let vm = this
+      axios.get(`http://0.0.0.0:${port}/get/tasks`)
+      .then(function (res) {
+        const data = res.data
+        const tasks = data['all_tasks']
+        vm.tasks = tasks.reverse()
+      })
+      .catch(function (err) {
+        console.error(err)
+      })
     }
   }
 }
@@ -163,6 +227,7 @@ export default {
 
 <style>
 .console {
+  margin-top: 20px;
   white-space: pre-wrap;
   overflow: auto;
   font-size: 14px;
