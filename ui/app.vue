@@ -120,7 +120,7 @@
 
       <v-card class="mx-auto" tile>
         <v-list shaped flat>
-          <v-subheader>Tasks</v-subheader>
+          <v-subheader>{{tasks.length == 0 ? 'No tasks' : 'Tasks'}}</v-subheader>
 
           <v-list-item-group color="primary">
 
@@ -161,6 +161,8 @@
 
 <script>
 import axios from 'axios'
+import moment from 'moment'
+
 const merge = require('utils-merge')
 const port = 8964
 
@@ -322,11 +324,16 @@ export default {
       this.input = job.jobname
 
       this.getJobDescription(job.jobname)
-      this.$set(this.job_description, 'pid', job.pid)
-      this.$set(this.job_description, 'alive', job.alive)
+      this.$set(this.job_description, 'pid', '' + job.pid + ' (' + (job.alive ? 'alive' : 'dead') + ')')
+      //this.$set(this.job_description, 'alive', job.alive)
       this.$set(this.job_description, 'exitcode', job.exitcode)
-      this.$set(this.job_description, 'spawn_time', job.spawn_time)
-      this.$set(this.job_description, 'exit_time', job.exit_time)
+
+      //this.$set(this.job_description, 'spawn_time', job.spawn_time)
+      //this.$set(this.job_description, 'exit_time', job.exit_time)
+      const start_moment = moment(job.spawn_time)
+      const time_cost = moment(job.exit_time).from(start_moment, true)
+      this.$set(this.job_description, 'start time', start_moment.fromNow())
+      this.$set(this.job_description, 'time cost', time_cost)
     },
 
     update_tasks_list() {

@@ -1,2 +1,2 @@
 [say-hello]
-exe = echo "$HELLO"
+exe = sleep 5 && echo "$HELLO"
