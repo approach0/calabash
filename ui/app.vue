@@ -68,10 +68,16 @@
             </v-img>
             <v-card-title>Disk Volume</v-card-title>
 
-            <v-card-actions>
-              <v-btn color="red" text> Unmount </v-btn>
-              <v-btn color="green" text disabled> Mount </v-btn>
+            <v-card-subtitle v-if="status.mounted === null">Please wait ...</v-card-subtitle>
+            <v-card-actions v-else>
+              <v-btn color="red" text :disabled="!status.mounted" @click="changeStatus('mounted', false)">
+                {{status.mounted ? 'Unmount' : 'Unmounted'}}
+              </v-btn>
+              <v-btn color="green" text :disabled="status.mounted" @click="changeStatus('mounted', true)">
+                {{status.mounted ? 'Mounted' : 'Mount'}}
+              </v-btn>
             </v-card-actions>
+
           </v-card>
         </v-col>
 
@@ -80,11 +86,16 @@
             <v-img class="white--text align-end" height="200px"
             src="https://merriam-webster.com/assets/mw/images/article/art-global-footer-recirc/alt-5b51feb34c621-5439-8e988795982d8b2f6e682380a3b0adb6@1x.jpg">
             </v-img>
-            <v-card-title>Indexer Daemon</v-card-title>
+            <v-card-title>Indexer</v-card-title>
 
-            <v-card-actions>
-              <v-btn color="red" text disabled> Stop </v-btn>
-              <v-btn color="green" text> Running </v-btn>
+            <v-card-subtitle v-if="status.indexer === null">Please wait ...</v-card-subtitle>
+            <v-card-actions v-else>
+              <v-btn color="red" text :disabled="!status.indexer" @click="changeStatus('indexer', false)">
+                {{status.indexer ? 'Stop' : 'Stopped'}}
+              </v-btn>
+              <v-btn color="green" text :disabled="status.indexer" @click="changeStatus('indexer', true)">
+                {{status.indexer ? 'Running' : 'Run'}}
+              </v-btn>
             </v-card-actions>
           </v-card>
         </v-col>
@@ -96,9 +107,14 @@
             </v-img>
             <v-card-title>Search Daemon</v-card-title>
 
-            <v-card-actions>
-              <v-btn color="red" text> Stop </v-btn>
-              <v-btn color="blue" text disabled> Run </v-btn>
+            <v-card-subtitle v-if="status.searchd === null">Please wait ...</v-card-subtitle>
+            <v-card-actions v-else>
+              <v-btn color="red" text :disabled="!status.searchd" @click="changeStatus('searchd', false)">
+                {{status.searchd ? 'Stop' : 'Stopped'}}
+              </v-btn>
+              <v-btn color="green" text :disabled="status.searchd" @click="changeStatus('searchd', true)">
+                {{status.searchd ? 'Running' : 'Run'}}
+              </v-btn>
             </v-card-actions>
           </v-card>
         </v-col>
@@ -169,8 +185,12 @@ export default {
       console_loading: false,
       console_starjob: ['_master_'],
       console_content: '',
-      tasks: [],
-      debug: false,
+      status: {
+        "mounted": true,
+        "indexer": false,
+        "searchd": false
+      },
+      tasks: []
     }
   },
 
@@ -244,27 +264,34 @@ export default {
       })
     },
 
-    clickRun() {
+    run(jobname, manual) {
       let vm = this
-      let input = vm.input.trim()
-
       axios.post(`http://0.0.0.0:${port}/runjob`, {
-        goal: input,
-        dry_run: vm.dry_run,
-        single_job: vm.single_job,
+        goal: jobname,
+        dry_run: manual && vm.dry_run,
+        single_job: manual && vm.single_job,
       })
       .then(function (res) {
         const data = res.data
+
+        if (manual)
+          return
+
         if ('error' in data) {
           vm.input_err_msg = "Job is not defined."
           return
         }
 
-        vm.fetch_log(input)
+        vm.fetch_log(jobname)
       })
       .catch(function (err) {
         console.error(err)
       })
+    },
+
+    clickRun() {
+      let input = this.input.trim()
+      this.run(input, true)
     },
 
     clickStar(jobname) {
@@ -289,6 +316,7 @@ export default {
         vm.job_description = merge(job, vm.job_description)
       })
       .catch(function (err) {
+        vm.job_description = {}
         console.error(err)
       })
     },
@@ -316,6 +344,14 @@ export default {
       .catch(function (err) {
         console.error(err)
       })
+    },
+
+    changeStatus(key, value) {
+      let vm = this
+      vm.status[key] = null
+      setTimeout(function () {
+        vm.status[key] = value
+      }, 1000)
     }
   }
 }
