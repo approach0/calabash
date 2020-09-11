@@ -8,7 +8,12 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 
 const port = 8964
-const jobs_dir = './test-jobs'
+var jobs_dir = './test-jobs'
+
+const args = process.argv.slice(2)
+if (args.length === 1)
+  jobs_dir = args[0]
+console.log(`jobd: loading jobs from ${jobs_dir} ...`)
 
 process.on('SIGINT', function() {
   console.log('')
