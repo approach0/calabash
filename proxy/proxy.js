@@ -16,7 +16,7 @@ var app = express()
 app.use(express.static(http_dir))
 
 /* jobd proxy */
-app.use('/jobd', proxy('0.0.0.0:8964'))
+app.use('/', proxy('0.0.0.0:8964'))
 
 /* indexer proxy */
 app.use('/indexer', proxy('0.0.0.0:8934', {

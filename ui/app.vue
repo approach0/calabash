@@ -247,7 +247,7 @@ export default {
         element.scrollTop = element.scrollHeight
       }
 
-      axios.get(`http://0.0.0.0:${port}/get/log/${jobname}`)
+      axios.get(`/get/log/${jobname}`)
       .then(function (res) {
         const data = res.data
         vm.console_content = data['logdata']
@@ -265,7 +265,7 @@ export default {
 
     run(jobname, manual) {
       let vm = this
-      axios.post(`http://0.0.0.0:${port}/runjob`, {
+      axios.post(`/runjob`, {
         goal: jobname,
         dry_run: manual && vm.dry_run,
         single_job: manual && vm.single_job,
@@ -303,7 +303,7 @@ export default {
       let job = {
         'name': jobname
       }
-      axios.get(`http://0.0.0.0:${port}/get/job/${jobname}`)
+      axios.get(`/get/job/${jobname}`)
       .then(function (res) {
         const data = res.data
         if ('error' in data) {
@@ -338,7 +338,7 @@ export default {
 
     update_tasks_list() {
       let vm = this
-      axios.get(`http://0.0.0.0:${port}/get/tasks`)
+      axios.get(`/get/tasks`)
       .then(function (res) {
         const data = res.data
         const tasks = data['all_tasks']
