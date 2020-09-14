@@ -1,0 +1,23 @@
+[mkdir]
+exe = mkdir -p $MOUNT_ROOT
+if_not = ls $MOUNT_ROOT
+
+[vdisk-unmount]
+exe = cd $MOUNT_ROOT && umount mnt-$VDISK_NAME
+if = mount | grep -q $VDISK_NAME
+dep = [mount:mkdir]
+
+[vdisk-create]
+exe = cd $MOUNT_ROOT && vdisk-creat.sh reiserfs 2K
+if_not = test -e $MOUNT_ROOT/$VDISK_NAME
+dep = [mount:mkdir, mount:mkdir]
+
+[vdisk-mount]
+exe = cd $MOUNT_ROOT && vdisk-mount.sh reiserfs $VDISK_NAME
+if_not = mount | grep -q $VDISK_NAME
+dep = [mount:vdisk-create]
+
+[vdisk-remove]
+exe = rm -f $MOUNT_ROOT/$VDISK_NAME
+if = ls $MOUNT_ROOT/$VDISK_NAME
+dep = [mount:vdisk-unmount]

@@ -107,12 +107,13 @@ exports.spawn = function (cmd, opt, onLog, onSpawn, onExit)
       process.stdin.pause()
 
       /* callback */
-      onExit(cmd, exitcode)
+      onExit && onExit(cmd, exitcode, true)
+      resolve(exitcode)
     })
   })
 }
 
-exports.runjob = async function (jobs, jobname, onSpawn, onExit, onAbort) {
+exports.runjob = async function (jobs, jobname, onSpawn, onExit, next) {
   const targetProps = jobs.depGraph.getNodeData(jobname)
   const cmd = targetProps['exe'] || ''
   const cwd = targetProps['cwd'] || '.'
@@ -120,13 +121,14 @@ exports.runjob = async function (jobs, jobname, onSpawn, onExit, onAbort) {
   const spawn = targetProps['spawn'] || 'direct'
 
   if (cmd === '') {
-    onExit(cmd, 0)
+    onExit(cmd, 0, false)
     return
   }
 
   /* prepare spawn environment */
   const onLog = function (lines) {
-    lines.split('\n').forEach(function (line) {
+    const line_arr = lines.split('\n')
+    line_arr.forEach(function (line) {
       slaveLog(jobname, line)
     })
   }
@@ -152,25 +154,25 @@ exports.runjob = async function (jobs, jobname, onSpawn, onExit, onAbort) {
   /* main command */
   if (targetProps['if']) {
     const ifcmd = targetProps['if']
-    await exports.spawn(ifcmd, opts, onLog, onSpawn, function (_, exitcode) {
-      onExit(ifcmd, exitcode) /* call default routine */
-
-      if (exitcode != 0) {
-        onAbort()
-        return
-      }
+    const exitcode = await exports.spawn(ifcmd, opts, onLog, onSpawn, (_cmd, _exitcode, _) => {
+      onExit(_cmd, _exitcode, false)
     })
+
+    if (exitcode != 0) {
+      next()
+      return
+    }
 
   } else if (targetProps['if_not']) {
     const incmd = targetProps['if_not']
-    await exports.spawn(incmd, opts, onLog, onSpawn, function (_, exitcode) {
-      onExit(incmd, exitcode) /* call default routine */
-
-      if (exitcode == 0) {
-        onAbort()
-        return
-      }
+    const exitcode = await exports.spawn(incmd, opts, onLog, onSpawn, (_cmd, _exitcode, _) => {
+      onExit(_cmd, _exitcode, false)
     })
+
+    if (exitcode == 0) {
+      next()
+      return
+    }
   }
 
   /* main command */
@@ -213,26 +215,28 @@ exports.runlist = async function (jobs, runList, _dryrun, onComplete) {
 
       /* prepare process callbacks */
       const onSpawn = function (cmd, pid) {
-        slaveLog(jobname, `[ spawn ] ${jobname}, pid=${pid}.`)
+        slaveLog(jobname, `[ spawn ] ${cmd}, pid=${pid}.`)
         tasks.spawn_notify(task_id, idx, pid) /* update task meta info */
       }
 
-      const onExit = function (cmd, exitcode) {
-        slaveLog(jobname, `[ exitcode = ${exitcode} ] ${cmd}\n`)
+      const onExit = function (cmd, exitcode, retry) {
+        slaveLog(jobname, `[ exitcode = ${exitcode} ] ${cmd}`)
         tasks.exit_notify(task_id, idx, exitcode) /* update task meta info */
 
-        if (exitcode == 0) {
-          failcnt = 0
-          setTimeout(loop.next, 500)
+        if (retry) {
+          if (exitcode == 0) {
+            failcnt = 0
+            setTimeout(loop.next, 500)
 
-        } else {
-          failcnt ++
-          slaveLog(jobname, `[ Fails ] ${failcnt} times.`)
-
-          if (failcnt >= 3) {
-            loop.brk()
           } else {
-            setTimeout(loop.again, 500)
+            failcnt ++
+            slaveLog(jobname, `[ Fails ] ${failcnt} times.`)
+
+            if (failcnt >= 3) {
+              loop.brk()
+            } else {
+              setTimeout(loop.again, 500)
+            }
           }
         }
       }
@@ -243,13 +247,13 @@ exports.runlist = async function (jobs, runList, _dryrun, onComplete) {
 
         slaveLog(jobname, `[ dry run ] ${jobname}`)
         onSpawn(cmd, -1)
-        onExit(cmd, 0)
+        onExit(cmd, 0, false)
         return
       }
 
       exports.runjob(jobs, jobname, onSpawn, onExit, function () {
-        slaveLog(jobname, `[ test failed ] ${jobname} aborted`)
-        loop.brk()
+        slaveLog(jobname, `[ test failed ] ${jobname}`)
+        loop.next()
       })
     },
 
@@ -271,7 +275,6 @@ if (require.main === module) {
     console.log(runList)
 
     exports.runlist(jobs, runList, 0, async function (completed) {
-      console.log('')
       console.log(JSON.stringify(await tasks.get_list()))
     })
 
