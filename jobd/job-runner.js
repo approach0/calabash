@@ -86,7 +86,7 @@ exports.spawn = function (cmd, opt, onLog, onSpawn, onExit)
     })
 
     /* invoke onSpawn */
-    onSpawn(cmd, runner.pid)
+    onSpawn(cmd, opt.user, runner.pid)
 
     /* pipe stdin into this process */
     process.stdin.pipe(stdin(runner))
@@ -214,8 +214,8 @@ exports.runlist = async function (jobs, runList, _dryrun, onComplete) {
       }
 
       /* prepare process callbacks */
-      const onSpawn = function (cmd, pid) {
-        slaveLog(jobname, `[ spawn ] ${cmd}, pid=${pid}.`)
+      const onSpawn = function (cmd, usr, pid) {
+        slaveLog(jobname, `[ spawn by ${usr} ] ${cmd}, pid=${pid}.`)
         tasks.spawn_notify(task_id, idx, pid) /* update task meta info */
       }
 
@@ -246,7 +246,7 @@ exports.runlist = async function (jobs, runList, _dryrun, onComplete) {
         const cmd = targetProps['exe'] || ''
 
         slaveLog(jobname, `[ dry run ] ${jobname}`)
-        onSpawn(cmd, -1)
+        onSpawn(cmd, 'dry', -1)
         onExit(cmd, 0, false)
         return
       }
@@ -260,7 +260,7 @@ exports.runlist = async function (jobs, runList, _dryrun, onComplete) {
     /* done loop */
     function (_, idx, loop, completed) {
       let list_job_names = runList.join(', ')
-      masterLog(`[ finished(${completed}) ] ${list_job_names}.`)
+      masterLog(`[ finished (${completed}) ] ${list_job_names}.`)
       onComplete && onComplete(completed)
     }
   )

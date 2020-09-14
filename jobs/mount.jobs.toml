@@ -14,6 +14,7 @@ dep = [mount:mkdir, mount:mkdir]
 
 [vdisk-mount]
 exe = cd $MOUNT_ROOT && vdisk-mount.sh reiserfs $VDISK_NAME
+user = root
 if_not = mount | grep -q $VDISK_NAME
 dep = [mount:vdisk-create]
 
