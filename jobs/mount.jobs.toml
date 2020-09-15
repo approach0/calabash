@@ -14,11 +14,11 @@ if_not = mount | grep -q $VDISK_NAME
 dep = [mount:vdisk-create]
 
 [vdisk-unmount]
-exe = cd $MOUNT_ROOT && umount mnt-$VDISK_NAME
+exe = umount $INDICES
 if = mount | grep -q $VDISK_NAME
 dep = [mount:mkdir]
 
 [vdisk-remove]
-exe = rm -f $MOUNT_ROOT/$VDISK_NAME && rmdir $MOUNT_ROOT/mnt-*
+exe = rm -f $MOUNT_ROOT/$VDISK_NAME
 if = ls $MOUNT_ROOT/$VDISK_NAME
 dep = [mount:vdisk-unmount]
