@@ -76,14 +76,20 @@ exports.spawn = function (cmd, opt, onLog, onSpawn, onExit)
 
   return new Promise((resolve, reject) => {
     /* spawn runner process */
-    const runner = spawnFun('/bin/sh', ['-c', cmd], {
-      uid, gid,
-      'cwd': opt.cwd,
-      'env': opt.env,
-      'cols': 80,
-      'rows': 30,
-      'name': 'xterm-color'
-    })
+    let runner
+    try {
+      runner = spawnFun('/bin/sh', ['-c', cmd], {
+        uid, gid,
+        'cwd': opt.cwd,
+        'env': opt.env,
+        'cols': 80,
+        'rows': 30,
+        'name': 'xterm-color'
+      })
+    } catch (err) {
+      reject(err)
+      return
+    }
 
     /* invoke onSpawn */
     onSpawn(cmd, opt.user, runner.pid)
@@ -151,32 +157,39 @@ exports.runjob = async function (jobs, jobname, onSpawn, onExit, next) {
     'spawn': spawn
   }
 
-  /* main command */
-  if (targetProps['if']) {
-    const ifcmd = targetProps['if']
-    const exitcode = await exports.spawn(ifcmd, opts, onLog, onSpawn, (_cmd, _, _) => {
-      onExit(_cmd, 0 /* keep successful for test command */, false)
-    })
+  try {
 
-    if (exitcode != 0) {
-      next()
-      return
+    /* main command */
+    if (targetProps['if']) {
+      const ifcmd = targetProps['if']
+      const exitcode = await exports.spawn(ifcmd, opts, onLog, onSpawn, (_cmd, _, __) => {
+        onExit(_cmd, 0 /* keep successful for test command */, false)
+      })
+
+      if (exitcode != 0) {
+        next()
+        return
+      }
+
+    } else if (targetProps['if_not']) {
+      const incmd = targetProps['if_not']
+      const exitcode = await exports.spawn(incmd, opts, onLog, onSpawn, (_cmd, _, __) => {
+        onExit(_cmd, 0 /* keep successful for test command */, false)
+      })
+
+      if (exitcode == 0) {
+        next()
+        return
+      }
     }
 
-  } else if (targetProps['if_not']) {
-    const incmd = targetProps['if_not']
-    const exitcode = await exports.spawn(incmd, opts, onLog, onSpawn, (_cmd, _, _) => {
-      onExit(_cmd, 0 /* keep successful for test command */, false)
-    })
+    /* main command */
+    await exports.spawn(cmd, opts, onLog, onSpawn, onExit)
 
-    if (exitcode == 0) {
-      next()
-      return
-    }
+  } catch (err) {
+    console.error('[Error]', err.toString())
   }
 
-  /* main command */
-  exports.spawn(cmd, opts, onLog, onSpawn, onExit)
 }
 
 exports.runlist = async function (jobs, runList, _dryrun, onComplete) {
