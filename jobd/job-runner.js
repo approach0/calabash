@@ -154,8 +154,8 @@ exports.runjob = async function (jobs, jobname, onSpawn, onExit, next) {
   /* main command */
   if (targetProps['if']) {
     const ifcmd = targetProps['if']
-    const exitcode = await exports.spawn(ifcmd, opts, onLog, onSpawn, (_cmd, _exitcode, _) => {
-      onExit(_cmd, _exitcode, false)
+    const exitcode = await exports.spawn(ifcmd, opts, onLog, onSpawn, (_cmd, _, _) => {
+      onExit(_cmd, 0 /* keep successful for test command */, false)
     })
 
     if (exitcode != 0) {
@@ -165,8 +165,8 @@ exports.runjob = async function (jobs, jobname, onSpawn, onExit, next) {
 
   } else if (targetProps['if_not']) {
     const incmd = targetProps['if_not']
-    const exitcode = await exports.spawn(incmd, opts, onLog, onSpawn, (_cmd, _exitcode, _) => {
-      onExit(_cmd, _exitcode, false)
+    const exitcode = await exports.spawn(incmd, opts, onLog, onSpawn, (_cmd, _, _) => {
+      onExit(_cmd, 0 /* keep successful for test command */, false)
     })
 
     if (exitcode == 0) {
