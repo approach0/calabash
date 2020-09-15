@@ -5,3 +5,4 @@ if = pidof searchd.out
 [spawn]
 exe = searchd.out -i $MOUNT_ROOT -d /code/cppjieba/dict -c0 -C0
 if_not = pidof searchd.out
+dep = [searchd:killed]

@@ -5,3 +5,4 @@ if = pidof indexer.out
 [spawn]
 exe = indexer.out -o $MOUNT_ROOT -d /code/cppjieba/dict
 if_not = pidof indexer.out
+dep = [indexer:killed]
