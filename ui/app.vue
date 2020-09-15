@@ -11,7 +11,7 @@
 
     <v-spacer></v-spacer>
 
-    <v-btn href="https://approach0.xyz" target="_blank" color="purple darken-1" dark>
+    <v-btn href="http://ait-question-repo-ait.dev.dm-ai.cn/#/question-bank" target="_blank" color="purple darken-1" dark>
       <v-icon>storefront</v-icon> &nbsp; Main Site
     </v-btn>
 
@@ -28,7 +28,7 @@
         <v-row>
           <v-chip class="ma-2" :color="(jb == console_outsel) ? 'purple' : 'blue-grey'"
                   v-for="jb in console_starjob" :key="jb" @click="clickStar(jb)">
-            <v-icon>star</v-icon> &nbsp; {{jb}}
+            <v-icon>laptop_mac</v-icon> &nbsp; {{jb}}
           </v-chip>
         </v-row>
 
@@ -233,7 +233,7 @@ export default {
 
     chip_icon(job) {
       if (job.alive)
-        return 'cached'
+        return 'toys'
       else if (job.exitcode == 0)
         return 'done'
       else if (job.pid < 0)
@@ -327,6 +327,7 @@ export default {
       this.drawer = true
       this.input = job.jobname
 
+      this.job_description = {}
       this.getJobDescription(job.jobname)
       this.$set(this.job_description, 'pid', '' + job.pid + ' (' + (job.alive ? 'alive' : 'dead') + ')')
       //this.$set(this.job_description, 'alive', job.alive)

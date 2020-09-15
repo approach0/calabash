@@ -15,9 +15,6 @@ var app = express()
 /* UI http server */
 app.use(express.static(http_dir))
 
-/* jobd proxy */
-app.use('/', proxy('0.0.0.0:8964'))
-
 /* indexer proxy */
 app.use('/indexer', proxy('0.0.0.0:8934', {
   proxyReqPathResolver: function (req) {
@@ -33,6 +30,9 @@ app.use('/searchd', proxy('0.0.0.0:8921', {
     return '/search'
   }
 }))
+
+/* jobd proxy (order matters: must be at bottom) */
+app.use('/', proxy('0.0.0.0:8964'))
 
 app.listen(port)
 console.log(`Listen on ${port}`)
