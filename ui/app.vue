@@ -90,10 +90,10 @@
 
             <v-card-subtitle v-if="status.indexer === null">Please wait ...</v-card-subtitle>
             <v-card-actions v-else>
-              <v-btn color="red" text :disabled="!status.indexer" @click="changeStatus('indexer', 'world:say-world')">
+              <v-btn color="red" text :disabled="!status.indexer" @click="changeStatus('indexer', 'indexer:killed')">
                 {{status.indexer ? 'Stop' : 'Stopped'}}
               </v-btn>
-              <v-btn color="green" text :disabled="status.indexer" @click="changeStatus('indexer', 'world:say-world')">
+              <v-btn color="green" text :disabled="status.indexer" @click="changeStatus('indexer', 'indexer:spawn')">
                 {{status.indexer ? 'Running' : 'Run'}}
               </v-btn>
             </v-card-actions>
@@ -107,10 +107,10 @@
 
             <v-card-subtitle v-if="status.searchd === null">Please wait ...</v-card-subtitle>
             <v-card-actions v-else>
-              <v-btn color="red" text :disabled="!status.searchd" @click="changeStatus('searchd', 'world:say-world')">
+              <v-btn color="red" text :disabled="!status.searchd" @click="changeStatus('searchd', 'searchd:killed')">
                 {{status.searchd ? 'Stop' : 'Stopped'}}
               </v-btn>
-              <v-btn color="green" text :disabled="status.searchd" @click="changeStatus('searchd', 'world:say-world')">
+              <v-btn color="green" text :disabled="status.searchd" @click="changeStatus('searchd', 'searchd:spawn')">
                 {{status.searchd ? 'Running' : 'Run'}}
               </v-btn>
             </v-card-actions>
@@ -374,12 +374,19 @@ export default {
           vm.status.mounted = !(item.exitcode == 0)
           break
 
-//        case 'world:say-world':
-//          vm.status.indexer = (item.exitcode == 0) ? true : false
-//          break
-//        case 'hello:say-world':
-//          vm.status.searchd = (item.exitcode == 0) ? true : false
-//          break
+        case 'indexer:spawn':
+          vm.status.indexer = (item.exitcode == 0)
+          break
+        case 'indexer:killed':
+          vm.status.indexer = !(item.exitcode == 0)
+          break
+
+        case 'searchd:spawn':
+          vm.status.searchd = (item.exitcode == 0)
+          break
+        case 'searchd:killed':
+          vm.status.searchd = !(item.exitcode == 0)
+          break
         }
       })
     }
