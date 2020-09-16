@@ -192,8 +192,9 @@ exports.runjob = async function (jobs, jobname, onSpawn, onExit, next) {
 
 }
 
-exports.runlist = async function (jobs, runList, _dryrun, onComplete) {
+exports.runlist = async function (jobs, runList, _dryrun, _status, onComplete) {
   const dryrun = _dryrun || false
+  const status = _status || false
   let failcnt = 0
 
   /* start task */
@@ -202,7 +203,7 @@ exports.runlist = async function (jobs, runList, _dryrun, onComplete) {
     masterLog(`[ job list ] ${list_job_names}.`)
   }
 
-  const task_id = await tasks.add_task(runList)
+  const task_id = await tasks.add_task(runList, status)
   console.log(`[TASK ID] ${task_id}`)
 
   /* main loop */
@@ -217,7 +218,7 @@ exports.runlist = async function (jobs, runList, _dryrun, onComplete) {
       let ref = props['ref']
       if (ref) {
         let subList = exports.getRunList(jobs, ref)
-        exports.runlist(jobs, subList, dryrun, (completed) => {
+        exports.runlist(jobs, subList, dryrun, status, (completed) => {
           if (completed)
             loop.next()
           else
@@ -236,7 +237,7 @@ exports.runlist = async function (jobs, runList, _dryrun, onComplete) {
         slaveLog(jobname, `[ exitcode = ${exitcode} ] ${cmd}`)
         tasks.exit_notify(task_id, idx, exitcode) /* update task meta info */
 
-        if (retry) {
+        if (retry && !status) {
           if (exitcode == 0) {
             failcnt = 0
             setTimeout(loop.next, 500)
@@ -251,6 +252,8 @@ exports.runlist = async function (jobs, runList, _dryrun, onComplete) {
               setTimeout(loop.again, 500)
             }
           }
+        } else {
+          setTimeout(loop.next, 500)
         }
       }
 
@@ -287,7 +290,7 @@ if (require.main === module) {
     const runList = await exports.getRunList(jobs, 'hello-world:say-helloworld')
     console.log(runList)
 
-    exports.runlist(jobs, runList, 0, async function (completed) {
+    exports.runlist(jobs, runList, 0, 0, async function (completed) {
       console.log(JSON.stringify(await tasks.get_list()))
     })
 

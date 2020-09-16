@@ -105,6 +105,7 @@ app
     const goal_job = reqJSON['goal'] || ''
     const dry_run = reqJSON['dry_run'] || false
     const single_job = reqJSON['single_job'] || false
+    const status_task = reqJSON['status_task'] || false
 
     var runList = []
     if (single_job)
@@ -112,7 +113,7 @@ app
     else
       runList = await job_runner.getRunList(jobs, goal_job)
 
-    const taskID = await job_runner.runlist(jobs, runList, dry_run)
+    const taskID = await job_runner.runlist(jobs, runList, dry_run, status_task)
     res.json({taskID})
 
   } catch (err) {

@@ -1,0 +1,11 @@
+[mounted]
+exe = mount | grep -q $VDISK_NAME
+
+[indexer]
+exe = pidof indexer.out
+
+[searchd]
+exe = pidof searchd.out
+
+[all]
+dep = [check-alive:mounted, check-alive:indexer, check-alive:searchd]

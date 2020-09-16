@@ -16,9 +16,12 @@ function flagDead(meta) {
   clearInterval(meta['checkalive'])
 }
 
-exports.add_task = function(runList) {
-  g_task_id += 1
-  g_tasks[g_task_id] = runList.map((item) => {
+exports.add_task = function(runList, _status_task) {
+  let use_id = 0
+  if (!_status_task)
+    use_id = ++g_task_id
+
+  g_tasks[use_id] = runList.map((item) => {
     return {
       jobname: item,
       pid: -1,
@@ -30,7 +33,7 @@ exports.add_task = function(runList) {
     }
   })
 
-  return g_task_id
+  return use_id
 }
 
 exports.spawn_notify = function(task_id, idx, pid) {

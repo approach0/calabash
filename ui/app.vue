@@ -21,37 +21,37 @@
   <v-navigation-drawer width="600" v-model="drawer" color="purple darken-4 white--text" dark app>
     <v-container>
 
-        <v-text-field v-model="input" label="Run job" v-on:keyup.enter="clickRun" :error-messages="input_err_msg" v-on:keyup="input_err_msg = null"
-        append-icon="clear" append-outer-icon="sports" @click:append="input = ''" @click:append-outer="clickRun">
-        </v-text-field>
+      <v-text-field v-model="input" label="Run job" v-on:keyup.enter="clickRun" :error-messages="input_err_msg" v-on:keyup="input_err_msg = null"
+      append-icon="clear" append-outer-icon="sports" @click:append="input = ''" @click:append-outer="clickRun">
+      </v-text-field>
 
-        <v-row>
-          <v-chip class="ma-2" :color="(jb == console_outsel) ? 'purple' : 'blue-grey'"
-                  v-for="jb in console_starjob" :key="jb" @click="clickStar(jb)">
-            <v-icon>laptop_mac</v-icon> &nbsp; {{jb}}
-          </v-chip>
-        </v-row>
+      <v-row>
+        <v-chip class="ma-2" :color="(jb == console_outsel) ? 'purple' : 'blue-grey'"
+                v-for="jb in console_starjob" :key="jb" @click="clickStar(jb)">
+          <v-icon>laptop_mac</v-icon> &nbsp; {{jb}}
+        </v-chip>
+      </v-row>
 
-        <v-row justify="center" v-if="Object.keys(job_description).length > 0">
-          <v-card v-if="job_description" class="d-inline-block" light>
-            <v-card-text>
-            <p class="text-h5"> {{job_description['name']}} </p>
-            <p v-for="(val, key) in job_description" v-if="key != 'name'" class="text-subtitle-2 text--primary">
-              {{key}}: {{val}}
-            </p>
-            </v-card-text>
-          </v-card>
-        </v-row>
+      <v-row justify="center" v-if="Object.keys(job_description).length > 0">
+        <v-card v-if="job_description" class="d-inline-block" light>
+          <v-card-text>
+          <p class="text-h5"> {{job_description['name']}} </p>
+          <p v-for="(val, key) in job_description" v-if="key != 'name'" class="text-subtitle-2 text--primary">
+            {{key}}: {{val}}
+          </p>
+          </v-card-text>
+        </v-card>
+      </v-row>
 
-        <v-card id="console" class="grey darken-4 console"
-         v-bind:loading="console_loading">{{console_content}}</v-card>
+      <v-card id="console" class="grey darken-4 console"
+       v-bind:loading="console_loading">{{console_content}}</v-card>
 
-        <v-row justify="space-around" class="flex-wrap">
-          <v-switch v-model="console_refresh" label="Console refresh"></v-switch>
-          <v-switch v-model="console_stickbt" label="Stick to bottom"></v-switch>
-          <v-switch v-model="dry_run" label="Dry run"></v-switch>
-          <v-switch v-model="single_job" label="Single job"></v-switch>
-        </v-row>
+      <v-row justify="space-around" class="flex-wrap">
+        <v-switch v-model="console_refresh" label="Console refresh"></v-switch>
+        <v-switch v-model="console_stickbt" label="Stick to bottom"></v-switch>
+        <v-switch v-model="dry_run" label="Dry run"></v-switch>
+        <v-switch v-model="single_job" label="Single job"></v-switch>
+      </v-row>
 
     </v-container>
   </v-navigation-drawer>
@@ -64,7 +64,14 @@
         <v-col class="text-center" cols="4">
           <v-card>
             <v-img class="white--text align-end" height="200px" :src="img_mounted"></v-img>
-            <v-card-title>Disk Volume</v-card-title>
+            <v-card-title>
+              Disk Volume
+
+              <v-spacer></v-spacer>
+              <v-btn color="red" @click="changeStatus('mounted', 'mount:vdisk-remove')">
+                Delete
+              </v-btn>
+            </v-card-title>
 
             <v-card-subtitle v-if="status.mounted === null">Please wait ...</v-card-subtitle>
             <v-card-actions v-else>
@@ -73,10 +80,6 @@
               </v-btn>
               <v-btn color="green" text :disabled="status.mounted" @click="changeStatus('mounted', 'mount:vdisk-mount')">
                 {{status.mounted ? 'Mounted' : 'Mount'}}
-              </v-btn>
-              <v-spacer></v-spacer>
-              <v-btn color="red" @click="changeStatus('mounted', 'mount:vdisk-remove')">
-                Delete
               </v-btn>
             </v-card-actions>
 
@@ -189,10 +192,11 @@ export default {
       console_starjob: ['_master_'],
       console_content: '',
       status: {
-        "mounted": false,
-        "indexer": false,
-        "searchd": false
+        "mounted": null,
+        "indexer": null,
+        "searchd": null
       },
+      updateStatus_enable: true,
       tasks: []
     }
   },
@@ -216,7 +220,13 @@ export default {
       }
 
       vm.update_tasks_list()
+
+      if (vm.updateStatus_enable) {
+        vm.updateStatus()
+      }
     }, 1000)
+
+    vm.run('check-alive:all', false, true)
   },
 
   methods: {
@@ -267,12 +277,13 @@ export default {
       })
     },
 
-    run(jobname, manual) {
+    run(jobname, manual, status) {
       let vm = this
       axios.post(`/runjob`, {
         goal: jobname,
         dry_run: manual && vm.dry_run,
         single_job: manual && vm.single_job,
+        status_task: status
       })
       .then(function (res) {
         const data = res.data
@@ -293,7 +304,7 @@ export default {
 
     clickRun() {
       let input = this.input.trim()
-      this.run(input, true)
+      this.run(input, true, false)
     },
 
     clickStar(jobname) {
@@ -346,10 +357,8 @@ export default {
       axios.get(`/get/tasks`)
       .then(function (res) {
         const data = res.data
-        const tasks = data['all_tasks']
-        vm.tasks = tasks.reverse()
-
-        vm.updateStatus(vm.tasks[0])
+        const all_tasks = data['all_tasks']
+        vm.tasks = all_tasks.reverse()
       })
       .catch(function (err) {
         console.error(err)
@@ -359,34 +368,39 @@ export default {
     changeStatus(key, goal) {
       let vm = this
       vm.status[key] = null
+      vm.updateStatus_enable = false
 
-      vm.run(goal)
+      vm.run(goal, false, false)
+
+      setTimeout(() => {
+        vm.run('check-alive:all', false, true)
+      }, 3 * 1000 /* for command to run */)
+
+      setTimeout(() => {
+        vm.updateStatus_enable = true
+      }, 6 * 1000 /* for test-alive to run */)
     },
 
-    updateStatus(task) {
-      let vm = this
-      task.runList.forEach(item => {
-        switch (item.jobname) {
-        case 'mount:vdisk-mount':
-          vm.status.mounted = (item.exitcode == 0)
+    updateStatus() {
+      const vm = this
+      const status_tasks = vm.tasks.filter(t => t.taskid == 0)
+      if (status_tasks.length == 0)
+        return
+
+      status_tasks[0].runList.forEach(job => {
+        const exitcode = job.exitcode
+        switch (job.jobname) {
+
+        case 'check-alive:mounted':
+          if (exitcode >= 0) vm.status.mounted = (exitcode == 0)
           break
 
-        case 'mount:vdisk-unmount':
-          vm.status.mounted = !(item.exitcode == 0)
+        case 'check-alive:indexer':
+          if (exitcode >= 0) vm.status.indexer = (exitcode == 0)
           break
 
-        case 'indexer:spawn':
-          vm.status.indexer = (item.exitcode == 0)
-          break
-        case 'indexer:killed':
-          vm.status.indexer = !(item.exitcode == 0)
-          break
-
-        case 'searchd:spawn':
-          vm.status.searchd = (item.exitcode == 0)
-          break
-        case 'searchd:killed':
-          vm.status.searchd = !(item.exitcode == 0)
+        case 'check-alive:searchd':
+          if (exitcode >= 0) vm.status.searchd = (exitcode == 0)
           break
         }
       })
