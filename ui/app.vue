@@ -212,7 +212,7 @@ export default {
   },
 
   mounted: function () {
-    let vm = this
+    const vm = this
     setInterval(function () {
       const recent_job = vm.console_outsel || vm.console_starjob[0]
       if (vm.console_refresh) {
@@ -227,6 +227,9 @@ export default {
     }, 1000)
 
     vm.run('check-alive:all', false, true)
+    setInterval(() => {
+      vm.run('check-alive:all', false, true)
+    }, 15 * 1000 /* for command to run */)
   },
 
   methods: {
@@ -253,7 +256,7 @@ export default {
     },
 
     fetch_log(jobname) {
-      let vm = this
+      const vm = this
       vm.console_loading = true
 
       if (this.console_stickbt) {
@@ -278,27 +281,33 @@ export default {
     },
 
     run(jobname, manual, status) {
-      let vm = this
-      axios.post(`/runjob`, {
-        goal: jobname,
-        dry_run: manual && vm.dry_run,
-        single_job: manual && vm.single_job,
-        status_task: status
-      })
-      .then(function (res) {
-        const data = res.data
+      const vm = this
+      return new Promise((resolve, reject) => {
+        axios.post(`/runjob`, {
+          goal: jobname,
+          dry_run: manual && vm.dry_run,
+          single_job: manual && vm.single_job,
+          status_task: status
+        })
+        .then(function (res) {
+          const data = res.data
 
-        if (manual) {
-          if ('error' in data) {
-            vm.input_err_msg = "Job is not defined."
-            return
+          if (manual) {
+            if ('error' in data) {
+              vm.input_err_msg = "Job is not defined."
+              reject(vm.input_err_msg)
+              return
+            }
+
+            vm.fetch_log(jobname)
           }
 
-          vm.fetch_log(jobname)
-        }
-      })
-      .catch(function (err) {
-        console.error(err)
+          resolve(data['taskID'])
+        })
+        .catch(function (err) {
+          console.error(err)
+          reject(err)
+        })
       })
     },
 
@@ -314,7 +323,7 @@ export default {
     },
 
     getJobDescription(jobname) {
-      let vm = this
+      const vm = this
       let job = {
         'name': jobname
       }
@@ -353,7 +362,7 @@ export default {
     },
 
     update_tasks_list() {
-      let vm = this
+      const vm = this
       axios.get(`/get/tasks`)
       .then(function (res) {
         const data = res.data
@@ -365,29 +374,60 @@ export default {
       })
     },
 
-    changeStatus(key, goal) {
-      let vm = this
-      vm.status[key] = null
-      vm.updateStatus_enable = false
+    async runAndWait() {
+      const vm = this
+      const arg = arguments
+      const taskID = await vm.run(arg[0], arg[1], arg[2])
 
-      vm.run(goal, false, false)
+      return new Promise((resolve, reject) => {
+        const timer = setInterval(() => {
+          if (vm.isTaskFinished(taskID)) {
+            resolve(taskID)
+          }
+        }, 1000)
+      })
+    },
 
-      setTimeout(() => {
-        vm.run('check-alive:all', false, true)
-      }, 3 * 1000 /* for command to run */)
+    async changeStatus(key, goal) {
+      this.status[key] = null
+      this.updateStatus_enable = false
 
-      setTimeout(() => {
-        vm.updateStatus_enable = true
-      }, 6 * 1000 /* for test-alive to run */)
+      await this.runAndWait(goal, false, false)
+      console.log(`${goal} finished.`)
+
+      await this.runAndWait('check-alive:all', false, true)
+      console.log(`check-alive finished.`)
+
+      this.updateStatus_enable = true
+    },
+
+    queryTaskID_runList(taskID) {
+      const queryTasks = this.tasks.filter(t => t.taskid == taskID)
+      if (queryTasks.length == 0)
+        return []
+
+      return queryTasks[0].runList
+    },
+
+    isTaskFinished(taskID) {
+      const runList = this.queryTaskID_runList(taskID)
+      if (runList.length == 0)
+        return 0
+
+      const last_job = runList[runList.length - 1]
+      const err_jobs = runList.filter(j => j.exitcode > 0)
+
+      if (err_jobs.length > 0 || last_job.exitcode >= 0) {
+        return 1
+      }
+
+      return 0
     },
 
     updateStatus() {
       const vm = this
-      const status_tasks = vm.tasks.filter(t => t.taskid == 0)
-      if (status_tasks.length == 0)
-        return
-
-      status_tasks[0].runList.forEach(job => {
+      const runList = this.queryTaskID_runList(0)
+      runList.forEach(job => {
         const exitcode = job.exitcode
         switch (job.jobname) {
 
