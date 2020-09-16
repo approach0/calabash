@@ -22,3 +22,7 @@ dep = [mount:mkdir]
 exe = rm -f $MOUNT_ROOT/$VDISK_NAME
 if = ls $MOUNT_ROOT/$VDISK_NAME
 dep = [mount:vdisk-unmount]
+
+[vdisk-rmdir]
+exe = rm -rf $MOUNT_ROOT
+dep = [mount:mkdir]
