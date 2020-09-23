@@ -1,0 +1,11 @@
+{
+  "name": "cli",
+  "version": "1.0.0",
+  "description": "",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.20.0",
+    "commander": "^6.1.0"
+  }
+}
