@@ -75,6 +75,24 @@ app
   }
 })
 
+.get('/get/jobs', async function (req, res) {
+  try {
+    const all_nodes = jobs.depGraph.overallOrder()
+	  const ret_objs = all_nodes.map(n => {
+      return {
+        name: n,
+        props: jobs.depGraph.getNodeData(n)
+      }
+    })
+    res.json({'res': 'successful', 'jobs': ret_objs})
+
+  } catch (err) {
+    res.json({
+      'error': err.toString()
+    })
+  }
+})
+
 .get('/get/tasks', async function (req, res) {
   try {
     const all_tasks = await tasks.get_list()
@@ -133,10 +151,10 @@ if (false) {
       single_job: false,
     })
     .then(function (res) {
-      console.log(res.data);
+      console.log(res.data)
     })
     .catch(function (err) {
-      console.log(err);
-    });
+      console.log(err)
+    })
   }, 3000)
 }

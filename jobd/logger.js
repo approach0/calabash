@@ -2,7 +2,7 @@ var fs = require("graceful-fs")
 var loggers = {}
 
 const PAGE_LEN = 200
-const LOG_DIR  = './logs'
+const LOG_DIR  = '/var/tmp/jobd'
 
 /* two page buffer */
 function loggerEach(name, callbk, select) {
