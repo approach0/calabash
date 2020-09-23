@@ -1,8 +1,0 @@
-[killed]
-exe = killall -USR1 searchd.out
-if = pidof searchd.out
-
-[spawn]
-exe = searchd.out -i $INDICES -d /code/cppjieba/dict -c0 -C0
-if_not = pidof searchd.out
-dep = [searchd:killed]
