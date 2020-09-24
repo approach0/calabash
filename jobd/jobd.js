@@ -9,6 +9,7 @@ const cors = require('cors')
 
 const port = 8964
 var jobs_dir = './test-jobs'
+var cfg_path = './config.template.toml'
 
 const args = process.argv.slice(2)
 if (args.length === 1)
@@ -28,11 +29,8 @@ app.use(cors())
 app.listen(port)
 console.log(`Listen on ${port}`)
 
-var jobs = {}
-jobs_ldr.load(jobs_dir).then(_jobs => {
-  jobs = _jobs
-  console.log('jobs loaded.')
-})
+const jobs = jobs_ldr.load_jobs(jobs_dir)
+const cfgs = jobs_ldr.load_cfg(jobs_dir)
 
 app
 .get('/', async function (req, res) {

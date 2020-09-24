@@ -1,10 +1,11 @@
-const jobs_ldr = require('./jobs-ldr.js')
+const cfg_ldr = require('./cfg-ldr.js')
 const logger = require('./logger.js')
 const tasks = require('./tasks.js')
 const extend = require('util')._extend
 const process_ = require('process')
 const pty = require('node-pty-prebuilt-multiarch')
 const childProcess = require('child_process')
+const os = require('os')
 
 function masterLog(line) {
   logger.write('_master_', line)
@@ -42,12 +43,12 @@ exports.syncLoop = function (arr, doing, done) {
 }
 
 exports.getRunList = async function (jobs, target) {
-  const deps = jobs.depGraph.dependenciesOf(target)
+  const deps = jobs.dependenciesOf(target)
   deps.push(target)
   return deps
 }
 
-exports.spawn = function (cmd, opt, onLog, onSpawn, onExit)
+exports.runcmd = function (cmd, opt, onLog, onSpawn, onExit)
 {
   /* choose between pty.spawn and childProcess.spawn */
   let spawnFun = pty.spawn
@@ -77,8 +78,13 @@ exports.spawn = function (cmd, opt, onLog, onSpawn, onExit)
   return new Promise((resolve, reject) => {
     /* spawn runner process */
     let runner
+    const tmpdir = os.tmpdir()
     try {
-      runner = spawnFun('/bin/sh', ['-c', cmd], {
+      const hooked_cmd =
+      `__hook__() { ec=$?; env > ${tmpdir}/env-pid$$.log; exit $ec; }\n` +
+      'trap __hook__ EXIT \n' + cmd
+
+      runner = spawnFun('/bin/sh', ['-c', hooked_cmd], {
         uid, gid,
         'cwd': opt.cwd,
         'env': opt.env,
@@ -107,21 +113,37 @@ exports.spawn = function (cmd, opt, onLog, onSpawn, onExit)
     stdin(runner).on('error', function () {})
 
     /* on exit ... */
-    runner.on('exit', function (exitcode) {
+    runner.on('exit', async function (exitcode) {
       process.stdin.unpipe(stdin(runner))
       process.stdin.resume()
       process.stdin.pause()
 
       /* callback */
       onExit && onExit(cmd, exitcode, true)
-      resolve(exitcode)
+
+      /* get updated environment variables */
+      const env_file_path = tmpdir + `/env-pid${runner.pid}.log`
+      const envs = await cfg_ldr.load_env(env_file_path)
+
+      /* return both exitcode and environment variables */
+      resolve([exitcode, envs])
     })
   })
 }
 
-exports.runjob = async function (jobs, jobname, onSpawn, onExit, next) {
-  const targetProps = jobs.depGraph.getNodeData(jobname)
-  const cmd = targetProps['exe'] || ''
+function parse_exec(input)
+{
+  if (input === undefined)
+    return ''
+  else if (Array.isArray(input))
+    return input.join('; ')
+  else
+    return input.replace(/\n/g, '; ')
+}
+
+exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, next) {
+  const targetProps = run_cfg.jobs.getNodeData(jobname)
+  const cmd = parse_exec(targetProps['exec'])
   const cwd = targetProps['cwd'] || '.'
   const user = targetProps['user'] || 'current'
   const spawn = targetProps['spawn'] || 'direct'
@@ -146,7 +168,7 @@ exports.runjob = async function (jobs, jobname, onSpawn, onExit, next) {
     'HOME': (user == 'root') ? '/root' : '/home/' + user,
     'SHELL': '/bin/sh'
   }
-  const jobEnv = jobs['envs'] || {}
+  const jobEnv = run_cfg.envs || {}
   const allEnv = extend(defaultEnv, jobEnv)
 
   const opts = {
@@ -162,7 +184,7 @@ exports.runjob = async function (jobs, jobname, onSpawn, onExit, next) {
     /* main command */
     if (targetProps['if']) {
       const ifcmd = targetProps['if']
-      const exitcode = await exports.spawn(ifcmd, opts, onLog, onSpawn, (_cmd, _, __) => {
+      const [exitcode, _] = await exports.runcmd(ifcmd, opts, onLog, onSpawn, (_cmd, _, __) => {
         onExit(_cmd, 0 /* keep successful for test command */, false)
       })
 
@@ -173,7 +195,7 @@ exports.runjob = async function (jobs, jobname, onSpawn, onExit, next) {
 
     } else if (targetProps['if_not']) {
       const incmd = targetProps['if_not']
-      const exitcode = await exports.spawn(incmd, opts, onLog, onSpawn, (_cmd, _, __) => {
+      const [exitcode, _] = await exports.runcmd(incmd, opts, onLog, onSpawn, (_cmd, _, __) => {
         onExit(_cmd, 0 /* keep successful for test command */, false)
       })
 
@@ -184,7 +206,10 @@ exports.runjob = async function (jobs, jobname, onSpawn, onExit, next) {
     }
 
     /* main command */
-    await exports.spawn(cmd, opts, onLog, onSpawn, onExit)
+    const [_, envs] = await exports.runcmd(cmd, opts, onLog, onSpawn, onExit)
+
+    /* update environment variables */
+    run_cfg.envs = envs
 
   } catch (err) {
     console.error('[Error]', err.toString())
@@ -192,7 +217,7 @@ exports.runjob = async function (jobs, jobname, onSpawn, onExit, next) {
 
 }
 
-exports.runlist = async function (jobs, runList, _dryrun, _status, onComplete) {
+exports.runlist = async function (run_cfg, runList, _dryrun, _status, onComplete) {
   const dryrun = _dryrun || false
   const status = _status || false
   let failcnt = 0
@@ -200,11 +225,11 @@ exports.runlist = async function (jobs, runList, _dryrun, _status, onComplete) {
   /* start task */
   {
     let list_job_names = runList.join(', ')
-    masterLog(`[ job list ] ${list_job_names}.`)
+    masterLog(`[ job-runner ] start task: ${list_job_names}.`)
   }
 
   const task_id = await tasks.add_task(runList, status)
-  console.log(`[TASK ID] ${task_id}`)
+  console.log(`[ job-runner ] task ID: ${task_id}`)
 
   /* main loop */
   exports.syncLoop(runList,
@@ -212,13 +237,13 @@ exports.runlist = async function (jobs, runList, _dryrun, _status, onComplete) {
     /* doing loop */
     function (_, idx, loop) {
       let jobname = runList[idx]
-      let props = jobs.depGraph.getNodeData(jobname)
+      let props = run_cfg.jobs.getNodeData(jobname)
 
       /* recursive calling runlist for ref jobs */
       let ref = props['ref']
       if (ref) {
-        let subList = exports.getRunList(jobs, ref)
-        exports.runlist(jobs, subList, dryrun, status, (completed) => {
+        let subList = exports.getRunList(run_cfg.jobs, ref)
+        exports.runlist(run_cfg, subList, dryrun, status, (completed) => {
           if (completed)
             loop.next()
           else
@@ -229,12 +254,13 @@ exports.runlist = async function (jobs, runList, _dryrun, _status, onComplete) {
 
       /* prepare process callbacks */
       const onSpawn = function (cmd, usr, pid) {
-        slaveLog(jobname, `[ spawn by ${usr} ] ${cmd}, pid=${pid}.`)
+        slaveLog(jobname, `[ spawn by ${usr}, pid=${pid} ] ${jobname}`)
+        slaveLog(jobname, `[ ${jobname} ] ${cmd}`)
         tasks.spawn_notify(task_id, idx, pid) /* update task meta info */
       }
 
       const onExit = function (cmd, exitcode, retry) {
-        slaveLog(jobname, `[ exitcode = ${exitcode} ] ${cmd}`)
+        slaveLog(jobname, `[ exitcode = ${exitcode} ] ${jobname}`)
         tasks.exit_notify(task_id, idx, exitcode) /* update task meta info */
 
         if (retry && !status) {
@@ -258,8 +284,8 @@ exports.runlist = async function (jobs, runList, _dryrun, _status, onComplete) {
       }
 
       if (dryrun) {
-        const targetProps = jobs.depGraph.getNodeData(jobname)
-        const cmd = targetProps['exe'] || ''
+        const targetProps = run_cfg.jobs.getNodeData(jobname)
+        const cmd = parse_exec(targetProps['exec'])
 
         slaveLog(jobname, `[ dry run ] ${jobname}`)
         onSpawn(cmd, 'dry', -1)
@@ -267,7 +293,7 @@ exports.runlist = async function (jobs, runList, _dryrun, _status, onComplete) {
         return
       }
 
-      exports.runjob(jobs, jobname, onSpawn, onExit, function () {
+      exports.runjob(run_cfg, jobname, onSpawn, onExit, function () {
         slaveLog(jobname, `[ test failed ] ${jobname}`)
         loop.next()
       })
@@ -286,11 +312,14 @@ exports.runlist = async function (jobs, runList, _dryrun, _status, onComplete) {
 
 if (require.main === module) {
   ;(async function () {
-    const jobs = await jobs_ldr.load('./test-jobs')
-    const runList = await exports.getRunList(jobs, 'hello-world:say-helloworld')
+    const jobs = await cfg_ldr.load_jobs('./test-jobs')
+    const cfgs = await cfg_ldr.load_cfg('./config.template.toml')
+    const run_cfg = {jobs, envs: cfgs.env}
+
+    const runList = await exports.getRunList(jobs, 'goodbye:talk-later')
     console.log(runList)
 
-    exports.runlist(jobs, runList, 0, 0, async function (completed) {
+    exports.runlist(run_cfg, runList, 0, 0, async function (completed) {
       console.log(JSON.stringify(await tasks.get_list()))
     })
 

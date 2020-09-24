@@ -1,3 +1,0 @@
-[say-world]
-exe = sh -c "echo world; exit $(shuf -i 0-3 -n 1)"
-dep = [hello:say-hello]

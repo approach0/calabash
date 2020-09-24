@@ -1,2 +1,21 @@
 [say-hello]
-exe = sleep 5 && echo "$HELLO"
+exec = [
+	echo hello!,
+	sleep 5
+]
+
+[say-myname]
+# with random exit-code just for testing failure handlers
+exec = '''
+echo My name is ${MY_NAME}
+exit $(shuf -i 0-3 -n 1)
+'''
+
+[introduce-me]
+spawn = pty # spawn a real pty process that can accept user input
+exec = [
+	'read -p "Your name?" YOUR_NAME',
+	export YOUR_NAME, # So that we can use this variable in later jobs
+	'echo "Hi $YOUR_NAME"'
+]
+dep = [hello:say-hello, hello:say-myname]

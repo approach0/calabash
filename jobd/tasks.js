@@ -82,11 +82,11 @@ exports.get_list = function() {
 }
 
 if (require.main === module) {
-  const jobs_ldr = require('./jobs-ldr.js')
+  const cfg_ldr = require('./cfg-ldr.js')
   const job_runner = require('./job-runner.js')
 
   ;(async function () {
-    const jobs = await jobs_ldr.load('./test-jobs')
+    const jobs = await cfg_ldr.load_jobs('./test-jobs')
     const runList = await job_runner.getRunList(jobs, 'hello-world:say-helloworld')
     const task_id = await exports.add_task(runList)
 
