@@ -72,8 +72,8 @@ exports.exit_notify = function(task_id, idx, envs, exitcode) {
   return 1
 }
 
-exports.get_list = function(taskID) {
-  const returnStaticTaskDesc = function (task_id) {
+exports.get = function(task_id) {
+  try {
     return {
       "taskid": task_id,
       "runList": g_tasks[task_id].map(item => {
@@ -82,14 +82,34 @@ exports.get_list = function(taskID) {
         return clone
       })
     }
+  } catch (e) {
+    return {
+      "taskid": task_id,
+      "runList": []
+    }
   }
+}
 
-  if (taskID !== undefined) {
-    return [returnStaticTaskDesc(taskID)]
-  } else {
-    return Object.keys(g_tasks).map(task_id => {
-      return returnStaticTaskDesc(task_id)
+exports.get_list = function(filter) {
+  const all_tasks = Object.keys(g_tasks).map(task_id => {
+    return exports.get(task_id)
+  })
+
+  if (filter == 'all') {
+    return all_tasks
+
+  } else if (filter == 'active') {
+    return all_tasks.filter(task => {
+      return task.runList.some(job => job.alive === true)
     })
+
+  } else if (filter == 'unactive') {
+    return all_tasks.filter(task => {
+      return task.runList.every(job => job.alive === false)
+    })
+
+  } else {
+    return []
   }
 }
 
@@ -104,12 +124,12 @@ if (require.main === module) {
     const runList = await job_runner.getRunList(jobs, 'goodbye:talk-later')
     const task_id = await exports.add_task(runList)
 
-    console.log(JSON.stringify(await exports.get_list()))
+    console.log(JSON.stringify(await exports.get(task_id)))
     console.log()
 
     exports.spawn_notify(task_id, 1, {foo: 'foo'}, 123)
 
-    console.log(JSON.stringify(await exports.get_list()))
+    console.log(JSON.stringify(await exports.get_list('active')))
     console.log()
 
     setTimeout(async function () {
@@ -117,7 +137,10 @@ if (require.main === module) {
     }, 500)
 
     setTimeout(async function () {
-      console.log(JSON.stringify(await exports.get_list()))
+      console.log(JSON.stringify(await exports.get_list('all')))
+      console.log()
+
+      console.log(JSON.stringify(await exports.get_list('unactive')))
       console.log()
     }, 1000)
 

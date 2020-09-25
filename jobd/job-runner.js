@@ -346,7 +346,7 @@ if (require.main === module) {
     }
 
     const ret = exports.run(run_cfg, async function (completed) {
-      console.log(JSON.stringify(tasks.get_list(ret.task_id)))
+      console.log(JSON.stringify(tasks.get(ret.task_id)))
     })
     console.log(ret)
 
