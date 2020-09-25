@@ -8,15 +8,12 @@ const childProcess = require('child_process')
 const os = require('os')
 const querystring = require('querystring')
 
-function masterLog(line) {
-  logger.write('_master_', line)
-  console.log(line)
-}
+function logAndPrint(line, logIDs) {
+  logIDs.forEach(logID => {
+    logger.write(logID, line)
+  })
 
-function slaveLog(jobname, line) {
-  logger.write(jobname, line)
-  logger.write('_master_', line)
-  console.log(jobname + ' |', line)
+  console.log(logIDs.join(',') + ' |', line)
 }
 
 exports.syncLoop = function (arr, doing, done) {
@@ -142,7 +139,7 @@ function parse_exec(input)
     return input.replace(/\n/g, '; ')
 }
 
-exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onTestFail) {
+exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog, onTestFail) {
   const targetProps = run_cfg.jobs.getNodeData(jobname)
   const cmd = parse_exec(targetProps['exec'])
   const cwd = targetProps['cwd'] || '.'
@@ -155,13 +152,6 @@ exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onTestFail) 
   }
 
   /* prepare spawn environment */
-  const onLog = function (lines) {
-    const line_arr = lines.split('\n')
-    line_arr.forEach(function (line) {
-      slaveLog(jobname, line)
-    })
-  }
-
   const defaultEnv = {
     'PATH': process.env['PATH'],
     'USER': user,
@@ -219,13 +209,18 @@ exports.runlist = function (run_cfg, runList, onComplete) {
   let failcnt = 0
 
   /* start task */
-  {
-    let list_job_names = runList.join(', ')
-    masterLog(`[ job-runner ] start task: ${list_job_names}.`)
-  }
-
+  const list_job_names = runList.join(', ')
   const task_id = tasks.add_task(runList, run_cfg.status)
-  masterLog(`[ job-runner ] task ID: ${task_id}, envs: ` + JSON.stringify(run_cfg.envs))
+
+  logAndPrint(
+    `[ job-runner ] start task: ${list_job_names}.`,
+    ['MASTER', `task-${task_id}`]
+  )
+
+  logAndPrint(
+    `[ job-runner ] task ID: ${task_id}, envs: ` + JSON.stringify(run_cfg.envs),
+    ['MASTER', `task-${task_id}`]
+  )
 
   /* main loop */
   exports.syncLoop(runList,
@@ -249,16 +244,23 @@ exports.runlist = function (run_cfg, runList, onComplete) {
       }
 
       /* prepare process callbacks */
+      const onLog = function (lines) {
+        const line_arr = lines.split('\n')
+        line_arr.forEach(function (line) {
+          logAndPrint(line, ['MASTER', `job-${jobname}`, `task-${task_id}`])
+        })
+      }
+
       const onSpawn = function (cmd, usr, pid) {
-        slaveLog(jobname, `[ spawn by ${usr}, pid=${pid} ] ${jobname}`)
-        slaveLog(jobname, `[ ${jobname} ] ${cmd}`)
+        onLog(`[ spawn by ${usr}, pid=${pid} ] ${jobname}`)
+        onLog(`[ ${jobname} ] ${cmd}`)
 
         /* update task meta info */
         tasks.spawn_notify(task_id, idx, run_cfg.envs, pid)
       }
 
       const onExit = function (cmd, exitcode, retry, envs) {
-        slaveLog(jobname, `[ exitcode = ${exitcode} ] ${jobname}`)
+        onLog(`[ exitcode = ${exitcode} ] ${jobname}`)
 
         /* carray updated environment variables */
         run_cfg.envs = envs
@@ -273,7 +275,7 @@ exports.runlist = function (run_cfg, runList, onComplete) {
 
           } else {
             failcnt ++
-            slaveLog(jobname, `[ Fails ] ${failcnt} times.`)
+            onLog(`[ Fails ] ${failcnt} times.`)
 
             if (failcnt >= 3) {
               loop.brk()
@@ -290,22 +292,24 @@ exports.runlist = function (run_cfg, runList, onComplete) {
         const targetProps = run_cfg.jobs.getNodeData(jobname)
         const cmd = parse_exec(targetProps['exec'])
 
-        slaveLog(jobname, `[ dry run ] ${jobname}`)
+        onLog(`[ dry run ] ${jobname}`)
         onSpawn(cmd, 'dry', -1)
         onExit(cmd, 0, false, {})
         return
       }
 
-      exports.runjob(run_cfg, jobname, onSpawn, onExit, function () {
-        slaveLog(jobname, `[ test failed ] ${jobname}`)
+      exports.runjob(run_cfg, jobname, onSpawn, onExit, onLog, function () {
+        onLog(`[ test failed ] ${jobname}`)
         loop.next()
       })
     },
 
     /* done loop */
     function (_, idx, loop, completed) {
-      let list_job_names = runList.join(', ')
-      masterLog(`[ job-runner ] finished task#${task_id} (${completed}): ${list_job_names}.`)
+      logAndPrint(
+        `[ job-runner ] finished task#${task_id} (${completed}): ${list_job_names}.`,
+        ['MASTER', `task-${task_id}`]
+      )
       onComplete && onComplete(completed)
     }
   )

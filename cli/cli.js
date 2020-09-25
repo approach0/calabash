@@ -5,7 +5,7 @@ program
   .usage(`<URL> [options]\n` +
   `Example: node ${__filename} --job hello:world http://localhost:8964`)
   .option('-j, --job <job ID>', 'run Job')
-  .option('--log-job <job ID>', 'get job log(s), pass _master_ to log all jobs')
+  .option('--log <log ID>', 'print job by ID (MASTER, job-<jobID>, or task-<taskID>)')
   .option('--dryrun', 'dryrun mode')
   .option('--single', 'run w/o any dependent job')
   .option('-J, --list-jobs', 'list all jobs')
@@ -14,8 +14,8 @@ program
 
 program.parse(process.argv)
 
-if (program.logJob) {
-  const url = `${program.args[0]}/get/log/${program.logJob}`
+if (program.log) {
+  const url = `${program.args[0]}/get/log/${program.log}`
   const options = {}
 
   console.log(url, options)
