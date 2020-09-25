@@ -108,9 +108,10 @@ app
   }
 })
 
-.get('/get/tasks', async function (req, res) {
+.get('/get/tasks/:filter', async function (req, res) {
   try {
-    const all_tasks = await tasks.get_list()
+    const filter = req.params.filter
+    const all_tasks = await tasks.get_list(filter)
     res.json({all_tasks})
 
   } catch (err) {

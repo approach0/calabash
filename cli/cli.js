@@ -10,7 +10,7 @@ program
   .option('--single', 'run w/o any dependent job')
   .option('-J, --list-jobs', 'list all jobs')
   .option('--list-config', 'list configuration variables')
-  .option('--list-tasks', 'list all tasks')
+  .option('--list-tasks <all | active | unactive>', 'list tasks')
 
 program.parse(process.argv)
 
@@ -63,7 +63,8 @@ if (program.listConfig) {
 }
 
 if (program.listTasks) {
-  const url = `${program.args[0]}/get/tasks`
+  const filter = program.listTasks
+  const url = `${program.args[0]}/get/tasks/${filter}`
   const options = {}
 
   console.log(url, options)
