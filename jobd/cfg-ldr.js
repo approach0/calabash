@@ -5,14 +5,20 @@ const _path = require('path')
 
 const spawn = require('child_process').spawn
 
-exports.load_env = function (env_file) {
+exports.load_env = function (source_args, env) {
   // system reserved env variables
   const reserved = ['PWD', 'SHLVL', '_', 'PATH', 'SHELL', 'HOME', 'USER', 'USERNAME', '']
   var output = ''
 
   return new Promise((resolve, reject) => {
-    var proc = spawn(__dirname + '/source.sh', [env_file], {
-      'env': {}
+    const source =
+      'set -a \n' +
+      'source ' + source_args.join(' ') + '\n' +
+      'set +a \n' +
+      'printenv'
+
+    const proc = spawn('/bin/sh', ['-c', source], {
+      'env': env || {}
     })
 
     proc.stdout.on('data', data => { output += data.toString() })
@@ -20,6 +26,7 @@ exports.load_env = function (env_file) {
     proc.on('error', () => { reject() })
 
     proc.on('close', () => {
+      //console.log(output)
       const env_dict = output.split('\n').reduce((obj, line) => {
         const fields = line.split('=')
         const key = fields[0]
@@ -49,10 +56,10 @@ exports.load_jobs = async function (jobs_dir) {
 
   for (var i = 0; i < files.length; i++) {
     let filename = files[i]
-    const ext = filename.split('.').slice(-2).join('.')
+    const ext = filename.split('.').slice(-1).join()
     const path = _path.resolve(jobs_dir) + '/' + filename
 
-    if (ext === 'jobs.toml') {
+    if (ext === 'toml') {
       const toml = await TOML.parseFile(path)
       for (const key in toml) {
         if (!toml.hasOwnProperty(key)) continue

@@ -118,7 +118,7 @@ exports.runcmd = function (cmd, opt, onLog, onSpawn, onExit)
 
       /* get updated environment variables */
       const env_file_path = tmpdir + `/env-pid${runner.pid}.log`
-      const envs = await cfg_ldr.load_env(env_file_path)
+      const envs = await cfg_ldr.load_env([env_file_path])
 
       /* callback after environment variables are updated */
       onExit && onExit(cmd, exitcode, true, envs)
@@ -145,6 +145,7 @@ exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog, onTes
   const cwd = targetProps['cwd'] || '.'
   const user = targetProps['user'] || 'current'
   const spawn = targetProps['spawn'] || 'direct'
+  const source = targetProps['source']
 
   if (cmd === '') {
     onExit(cmd, 0, false, run_cfg.envs)
@@ -152,15 +153,22 @@ exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog, onTes
   }
 
   /* prepare spawn environment */
-  const defaultEnv = {
+  var allEnv = {
     'PATH': process.env['PATH'],
     'USER': user,
     'USERNAME': user,
     'HOME': (user == 'root') ? '/root' : '/home/' + user,
     'SHELL': '/bin/sh'
   }
+
   const jobEnv = run_cfg.envs || {}
-  const allEnv = extend(defaultEnv, jobEnv)
+  allEnv = extend(allEnv, jobEnv)
+
+  if (source) {
+    const importEnv = await cfg_ldr.load_env(source, allEnv)
+    console.log(importEnv)
+    extend(allEnv, importEnv)
+  }
 
   const opts = {
     'env': allEnv,
@@ -349,10 +357,13 @@ if (require.main === module) {
   ;(async function () {
     const jobs = await cfg_ldr.load_jobs('./test-jobs')
     const cfgs = await cfg_ldr.load_cfg('./config.template.toml')
+
+    const target = 'goodbye:talk-later?later_hours=2&reason="I am heading for a meeting"'
+
     const run_cfg = {
       jobs: jobs,
       envs: cfgs.env,
-      target: 'goodbye:talk-later?later_hours=2&reason="I am heading for a meeting"'
+      target: target
     }
 
     const ret = exports.run(run_cfg, async function (completed) {
