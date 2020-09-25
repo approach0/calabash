@@ -25,7 +25,7 @@ function loggerGet(name) {
   if (logger == undefined) {
     logger = loggers[name] = {
       'prev': undefined,
-      'cnt': 0,
+      'cnt': 0
     }
   }
   return logger
@@ -66,7 +66,7 @@ function file_read(filepath, onData) {
   try{
     fs.accessSync(filepath, fs.F_OK)
   } catch(e) {
-    return
+    throw new Error(`log for ${name} is not found.`)
   }
   const content = fs.readFileSync(filepath, "utf8")
   onData(content)

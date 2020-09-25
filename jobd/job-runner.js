@@ -325,11 +325,17 @@ function envAddTargetArgs(envs, target) {
 exports.run = function (run_cfg, onComplete) {
   /* list dependent jobs and parse target parameters, if any */
   const target = envAddTargetArgs(run_cfg.envs, run_cfg.target)
-  const runList = exports.getRunList(run_cfg.jobs, target)
 
   /* safe-guard some keys */
   run_cfg.dryrun = run_cfg.dryrun || false
   run_cfg.status = run_cfg.status || false
+  run_cfg.single = run_cfg.single || false
+
+  var runList
+  if (run_cfg.single)
+    runList = [target]
+  else
+    runList = exports.getRunList(run_cfg.jobs, target)
 
   const task_id = exports.runlist(run_cfg, runList, onComplete)
   return {task_id, runList}

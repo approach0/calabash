@@ -1,4 +1,4 @@
-const jobs_ldr = require('./jobs-ldr.js')
+const cfg_ldr = require('./cfg-ldr.js')
 const job_runner = require('./job-runner.js')
 const tasks = require('./tasks.js')
 const logger = require('./logger.js')
@@ -7,15 +7,34 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 
+const { program } = require('commander')
+
 const port = 8964
-var jobs_dir = './test-jobs'
-var cfg_path = './config.template.toml'
 
-const args = process.argv.slice(2)
-if (args.length === 1)
-  jobs_dir = args[0]
-console.log(`jobd: loading jobs from ${jobs_dir} ...`)
+/* parse program arguments */
+program
+  .usage(`[options]\n` +
+  `Example: node ${__filename} --jobs-dir ./test-jobs --config ./config.template.toml`)
+  .option('--jobs-dir <jobs directory>', 'specify jobs directory')
+  .option('--config <config file path>', 'specify config file')
 
+program.parse(process.argv)
+
+/* load config and jobs */
+const jobs_dir = program.jobsDir || './test-jobs'
+const cfg_path = program.config || './config.template.toml'
+
+console.log(`Loading: jobs_dir=${jobs_dir}, cfg_path=${cfg_path}`)
+
+var jobs = null
+var cfgs = {}
+
+;(async function () {
+  jobs = await cfg_ldr.load_jobs(jobs_dir)
+  cfgs = await cfg_ldr.load_cfg(cfg_path)
+})()
+
+/* setup express HTTP server */
 process.on('SIGINT', function() {
   console.log('')
   console.log('Bye bye.')
@@ -29,9 +48,7 @@ app.use(cors())
 app.listen(port)
 console.log(`Listen on ${port}`)
 
-const jobs = jobs_ldr.load_jobs(jobs_dir)
-const cfgs = jobs_ldr.load_cfg(jobs_dir)
-
+/* rout handlers for HTTP server */
 app
 .get('/', async function (req, res) {
   res.json({
@@ -63,7 +80,7 @@ app
 .get('/get/job/:jobname', async function (req, res) {
   try {
     const jobname = req.params.jobname
-    const props = jobs.depGraph.getNodeData(jobname)
+    const props = jobs.getNodeData(jobname)
     res.json({jobname, props})
 
   } catch (err) {
@@ -75,11 +92,11 @@ app
 
 .get('/get/jobs', async function (req, res) {
   try {
-    const all_nodes = jobs.depGraph.overallOrder()
-	  const ret_objs = all_nodes.map(n => {
+    const all_nodes = jobs.overallOrder()
+    const ret_objs = all_nodes.map(n => {
       return {
         name: n,
-        props: jobs.depGraph.getNodeData(n)
+        props: jobs.getNodeData(n)
       }
     })
     res.json({'res': 'successful', 'jobs': ret_objs})
@@ -103,10 +120,9 @@ app
   }
 })
 
-.get('/get/envs', async function (req, res) {
+.get('/get/config', async function (req, res) {
   try {
-    const envs = jobs.envs
-    res.json({envs})
+    res.json(cfgs)
 
   } catch (err) {
     res.json({
@@ -118,19 +134,18 @@ app
 .post('/runjob', async function (req, res) {
   try {
     const reqJSON = req.body
-    const goal_job = reqJSON['goal'] || ''
-    const dry_run = reqJSON['dry_run'] || false
-    const single_job = reqJSON['single_job'] || false
-    const status_task = reqJSON['status_task'] || false
 
-    var runList = []
-    if (single_job)
-      runList = [goal_job]
-    else
-      runList = await job_runner.getRunList(jobs, goal_job)
+    const run_cfg = {
+      jobs: jobs,
+      envs: cfgs.env,
+      dryrun: reqJSON['dry_run'],
+      status: reqJSON['status_task'],
+      single: reqJSON['single_job'],
+      target: reqJSON['goal'] || ''
+    }
 
-    const taskID = await job_runner.runlist(jobs, runList, dry_run, status_task)
-    res.json({taskID})
+    const ret = job_runner.run(run_cfg)
+    res.json(ret)
 
   } catch (err) {
     res.json({
@@ -138,21 +153,3 @@ app
     })
   }
 })
-
-if (false) {
-  const axios = require('axios')
-
-  setTimeout(() => {
-    axios.post(`http://localhost:${port}/runjob`, {
-      goal: 'hello-world:say-helloworld',
-      dry_run: false,
-      single_job: false,
-    })
-    .then(function (res) {
-      console.log(res.data)
-    })
-    .catch(function (err) {
-      console.log(err)
-    })
-  }, 3000)
-}
