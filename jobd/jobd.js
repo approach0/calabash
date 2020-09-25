@@ -56,17 +56,17 @@ app
   })
 })
 
-.get('/get/log/:jobname', async function (req, res) {
-  const jobname = req.params.jobname
-  var logdata = ''
+.get('/get/log/:logid', async function (req, res) {
+  const id = req.params.logid
+  var log = ''
 
   try {
-    logger.read(jobname,
+    logger.read(id,
       data => {
-        logdata += data
+        log += data
       },
       () => {
-        res.json({jobname, logdata})
+        res.json({id, log})
       }
     )
 
