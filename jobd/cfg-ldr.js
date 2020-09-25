@@ -25,7 +25,10 @@ exports.load_env = function (env_file) {
         const key = fields[0]
         /* we exclude those system reserved env variables */
         if (!reserved.includes(key) && key !== undefined) {
-          obj[key] = fields.slice(1).join('=')
+          let right_str = fields.slice(1).join('=')
+          /* by default, printenv will not quote strings, if we source it latter
+           * there will be error. so in case of spaces present, we quote it here */
+          obj[key] = (right_str.split(' ').length > 1) ? `"${right_str}"` : right_str
         }
 
         return obj

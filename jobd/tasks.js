@@ -68,8 +68,8 @@ exports.exit_notify = function(task_id, idx, exitcode) {
   return 1
 }
 
-exports.get_list = function() {
-  return Object.keys(g_tasks).map(task_id => {
+exports.get_list = function(taskID) {
+  const returnStaticTaskDesc = function (task_id) {
     return {
       "taskid": task_id,
       "runList": g_tasks[task_id].map(item => {
@@ -78,7 +78,15 @@ exports.get_list = function() {
         return clone
       })
     }
-  })
+  }
+
+  if (taskID !== undefined) {
+    return [returnStaticTaskDesc(taskID)]
+  } else {
+    return Object.keys(g_tasks).map(task_id => {
+      return returnStaticTaskDesc(task_id)
+    })
+  }
 }
 
 if (require.main === module) {

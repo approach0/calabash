@@ -6,6 +6,7 @@ const process_ = require('process')
 const pty = require('node-pty-prebuilt-multiarch')
 const childProcess = require('child_process')
 const os = require('os')
+const querystring = require('querystring')
 
 function masterLog(line) {
   logger.write('_master_', line)
@@ -42,7 +43,7 @@ exports.syncLoop = function (arr, doing, done) {
   loop.again()
 }
 
-exports.getRunList = async function (jobs, target) {
+exports.getRunList = function (jobs, target) {
   const deps = jobs.dependenciesOf(target)
   deps.push(target)
   return deps
@@ -217,9 +218,7 @@ exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, next) {
 
 }
 
-exports.runlist = async function (run_cfg, runList, _dryrun, _status, onComplete) {
-  const dryrun = _dryrun || false
-  const status = _status || false
+exports.runlist = function (run_cfg, runList, onComplete) {
   let failcnt = 0
 
   /* start task */
@@ -228,8 +227,8 @@ exports.runlist = async function (run_cfg, runList, _dryrun, _status, onComplete
     masterLog(`[ job-runner ] start task: ${list_job_names}.`)
   }
 
-  const task_id = await tasks.add_task(runList, status)
-  console.log(`[ job-runner ] task ID: ${task_id}`)
+  const task_id = tasks.add_task(runList, run_cfg.status)
+  masterLog(`[ job-runner ] task ID: ${task_id}, envs: ` + JSON.stringify(run_cfg.envs))
 
   /* main loop */
   exports.syncLoop(runList,
@@ -243,7 +242,7 @@ exports.runlist = async function (run_cfg, runList, _dryrun, _status, onComplete
       let ref = props['ref']
       if (ref) {
         let subList = exports.getRunList(run_cfg.jobs, ref)
-        exports.runlist(run_cfg, subList, dryrun, status, (completed) => {
+        exports.runlist(run_cfg, subList, (completed) => {
           if (completed)
             loop.next()
           else
@@ -263,7 +262,7 @@ exports.runlist = async function (run_cfg, runList, _dryrun, _status, onComplete
         slaveLog(jobname, `[ exitcode = ${exitcode} ] ${jobname}`)
         tasks.exit_notify(task_id, idx, exitcode) /* update task meta info */
 
-        if (retry && !status) {
+        if (retry && !run_cfg.status) {
           if (exitcode == 0) {
             failcnt = 0
             setTimeout(loop.next, 500)
@@ -283,7 +282,7 @@ exports.runlist = async function (run_cfg, runList, _dryrun, _status, onComplete
         }
       }
 
-      if (dryrun) {
+      if (run_cfg.dryrun) {
         const targetProps = run_cfg.jobs.getNodeData(jobname)
         const cmd = parse_exec(targetProps['exec'])
 
@@ -302,7 +301,7 @@ exports.runlist = async function (run_cfg, runList, _dryrun, _status, onComplete
     /* done loop */
     function (_, idx, loop, completed) {
       let list_job_names = runList.join(', ')
-      masterLog(`[ finished (${completed}) ] ${list_job_names}.`)
+      masterLog(`[ job-runner ] finished task#${task_id} (${completed}): ${list_job_names}.`)
       onComplete && onComplete(completed)
     }
   )
@@ -310,18 +309,42 @@ exports.runlist = async function (run_cfg, runList, _dryrun, _status, onComplete
   return task_id
 }
 
+function envAddTargetArgs(envs, target) {
+  const args = target.split('?')
+  if (args.length > 1) {
+    const argEnvs = querystring.parse(args[1])
+    extend(envs, argEnvs)
+  }
+  return args[0]
+}
+
+exports.run = function (run_cfg, onComplete) {
+  /* list dependent jobs and parse target parameters, if any */
+  const target = envAddTargetArgs(run_cfg.envs, run_cfg.target)
+  const runList = exports.getRunList(run_cfg.jobs, target)
+
+  /* safe-guard some keys */
+  run_cfg.dryrun = run_cfg.dryrun || false
+  run_cfg.status = run_cfg.status || false
+
+  const task_id = exports.runlist(run_cfg, runList, onComplete)
+  return {task_id, runList}
+}
+
 if (require.main === module) {
   ;(async function () {
     const jobs = await cfg_ldr.load_jobs('./test-jobs')
     const cfgs = await cfg_ldr.load_cfg('./config.template.toml')
-    const run_cfg = {jobs, envs: cfgs.env}
+    const run_cfg = {
+      jobs: jobs,
+      envs: cfgs.env,
+      target: 'goodbye:talk-later?later_hours=2&reason="I am heading for a meeting"'
+    }
 
-    const runList = await exports.getRunList(jobs, 'goodbye:talk-later')
-    console.log(runList)
-
-    exports.runlist(run_cfg, runList, 0, 0, async function (completed) {
-      console.log(JSON.stringify(await tasks.get_list()))
+    const ret = exports.run(run_cfg, async function (completed) {
+      console.log(JSON.stringify(tasks.get_list(ret.task_id)))
     })
+    console.log(ret)
 
   })()
 }

@@ -1,3 +1,4 @@
 [talk-later]
-exec = "echo Alright $YOUR_NAME, talk to you later!"
+# print goodbye message, note env variable $reason contains quotes, use xargs to trim them
+exec = "echo Alright $YOUR_NAME, talk to you later in $later_hours hours! $reason | xargs"
 dep = hello:introduce-me
