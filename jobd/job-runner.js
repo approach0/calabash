@@ -119,15 +119,15 @@ exports.runcmd = function (cmd, opt, onLog, onSpawn, onExit)
       process.stdin.resume()
       process.stdin.pause()
 
-      /* callback */
-      onExit && onExit(cmd, exitcode, true)
-
       /* get updated environment variables */
       const env_file_path = tmpdir + `/env-pid${runner.pid}.log`
       const envs = await cfg_ldr.load_env(env_file_path)
 
+      /* callback after environment variables are updated */
+      onExit && onExit(cmd, exitcode, true, envs)
+
       /* return both exitcode and environment variables */
-      resolve([exitcode, envs])
+      resolve(exitcode)
     })
   })
 }
@@ -142,7 +142,7 @@ function parse_exec(input)
     return input.replace(/\n/g, '; ')
 }
 
-exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, next) {
+exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onTestFail) {
   const targetProps = run_cfg.jobs.getNodeData(jobname)
   const cmd = parse_exec(targetProps['exec'])
   const cwd = targetProps['cwd'] || '.'
@@ -150,7 +150,7 @@ exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, next) {
   const spawn = targetProps['spawn'] || 'direct'
 
   if (cmd === '') {
-    onExit(cmd, 0, false)
+    onExit(cmd, 0, false, run_cfg.envs)
     return
   }
 
@@ -185,32 +185,29 @@ exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, next) {
     /* main command */
     if (targetProps['if']) {
       const ifcmd = targetProps['if']
-      const [exitcode, _] = await exports.runcmd(ifcmd, opts, onLog, onSpawn, (_cmd, _, __) => {
-        onExit(_cmd, 0 /* keep successful for test command */, false)
+      const exitcode = await exports.runcmd(ifcmd, opts, onLog, onSpawn, (_cmd, _, __) => {
+        onExit(_cmd, 0 /* keep successful for test command */, false, run_cfg.envs)
       })
 
       if (exitcode != 0) {
-        next()
+        onTestFail()
         return
       }
 
     } else if (targetProps['if_not']) {
       const incmd = targetProps['if_not']
-      const [exitcode, _] = await exports.runcmd(incmd, opts, onLog, onSpawn, (_cmd, _, __) => {
-        onExit(_cmd, 0 /* keep successful for test command */, false)
+      const exitcode = await exports.runcmd(incmd, opts, onLog, onSpawn, (_cmd, _, __) => {
+        onExit(_cmd, 0 /* keep successful for test command */, false, run_cfg.envs)
       })
 
       if (exitcode == 0) {
-        next()
+        onTestFail()
         return
       }
     }
 
     /* main command */
-    const [_, envs] = await exports.runcmd(cmd, opts, onLog, onSpawn, onExit)
-
-    /* update environment variables */
-    run_cfg.envs = envs
+    await exports.runcmd(cmd, opts, onLog, onSpawn, onExit)
 
   } catch (err) {
     console.error('[Error]', err.toString())
@@ -255,12 +252,19 @@ exports.runlist = function (run_cfg, runList, onComplete) {
       const onSpawn = function (cmd, usr, pid) {
         slaveLog(jobname, `[ spawn by ${usr}, pid=${pid} ] ${jobname}`)
         slaveLog(jobname, `[ ${jobname} ] ${cmd}`)
-        tasks.spawn_notify(task_id, idx, pid) /* update task meta info */
+
+        /* update task meta info */
+        tasks.spawn_notify(task_id, idx, run_cfg.envs, pid)
       }
 
-      const onExit = function (cmd, exitcode, retry) {
+      const onExit = function (cmd, exitcode, retry, envs) {
         slaveLog(jobname, `[ exitcode = ${exitcode} ] ${jobname}`)
-        tasks.exit_notify(task_id, idx, exitcode) /* update task meta info */
+
+        /* carray updated environment variables */
+        run_cfg.envs = envs
+
+        /* update task meta info */
+        tasks.exit_notify(task_id, idx, run_cfg.envs, exitcode)
 
         if (retry && !run_cfg.status) {
           if (exitcode == 0) {
@@ -288,7 +292,7 @@ exports.runlist = function (run_cfg, runList, onComplete) {
 
         slaveLog(jobname, `[ dry run ] ${jobname}`)
         onSpawn(cmd, 'dry', -1)
-        onExit(cmd, 0, false)
+        onExit(cmd, 0, false, {})
         return
       }
 
