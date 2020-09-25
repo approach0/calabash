@@ -29,6 +29,8 @@ exports.add_task = function(runList, _status_task) {
       spawn_time: null,
       checkalive: null,
       exit_time: null,
+      start_envs: {},
+      end_envs: {},
       exitcode: -1
     }
   })
