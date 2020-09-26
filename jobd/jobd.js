@@ -121,6 +121,19 @@ app
   }
 })
 
+.get('/get/task/:taskid', async function (req, res) {
+  try {
+    const taskid = req.params.taskid
+    const task = await tasks.get(taskid)
+    res.json({task})
+
+  } catch (err) {
+    res.json({
+      'error': err.toString()
+    })
+  }
+})
+
 .get('/get/config', async function (req, res) {
   try {
     res.json(cfgs)

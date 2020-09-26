@@ -13,6 +13,7 @@ program
   .option('-J, --list-jobs', 'list all jobs')
   .option('--list-config', 'list configuration variables')
   .option('--list-tasks <all | active | unactive>', 'list tasks')
+  .option('--show-task <task ID>', 'show specific task')
 
 program.parse(process.argv)
 
@@ -54,6 +55,23 @@ if (program.listJobs) {
 
 if (program.listConfig) {
   const url = `${program.args[0]}/get/config`
+  const options = {}
+
+  console.log(url, options)
+
+  axios.get(url, options)
+  .then(function (res) {
+    const str = JSON.stringify(res.data, null, 2)
+    console.log(str)
+  })
+  .catch(function (err) {
+    console.log(err)
+  });
+}
+
+if (program.showTask) {
+  const taskID = program.showTask
+  const url = `${program.args[0]}/get/task/${taskID}`
   const options = {}
 
   console.log(url, options)
