@@ -9,11 +9,15 @@ const childProcess = require('child_process')
 const querystring = require('querystring')
 
 function logAndPrint(line, logIDs) {
-  logIDs.forEach(logID => {
+  [...logIDs, 'MASTER'].forEach(logID => {
     logger.write(logID, line)
   })
 
-  console.log(logIDs.join(',').padEnd(10) + ' |', line)
+  const fixed = (len, input) => {
+    return (input.length > len - 3) ? `${input.substring(0, len - 3)}...` : input.padEnd(len)
+  }
+
+  console.log(fixed(30, logIDs.join(',')) + ' |', line)
 }
 
 exports.syncLoop = function (arr, doing, done) {
@@ -37,7 +41,9 @@ exports.syncLoop = function (arr, doing, done) {
     }
   }
 
-  loop.again()
+  setTimeout(() => {
+    loop.again()
+  }, 0)
 }
 
 exports.getRunList = function (jobs, target) {
@@ -77,6 +83,7 @@ exports.runcmd = function (cmd, opt, onLog, onSpawn)
     /* spawn runner process */
     let runner
     const tmpdir = os.tmpdir()
+    //console.log(opt.env_declare)
     try {
       const hooked_cmd =
       opt.env_declare +
@@ -84,7 +91,7 @@ exports.runcmd = function (cmd, opt, onLog, onSpawn)
         ec=$?;
         declare -x > ${tmpdir}/env-pid$$.log;
         declare -fx >> ${tmpdir}/env-pid$$.log;
-        exit $ec; 
+        exit $ec;
       }\n` +
       'trap __hook__ EXIT \n' + cmd
 
@@ -143,6 +150,8 @@ exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog) {
   const cwd = targetProps['cwd'] || '.'
   const user = targetProps['user'] || 'current'
   const spawn = targetProps['spawn'] || 'direct'
+  const ifcmd = (targetProps['if'] === undefined) ? null : String(targetProps['if'])
+  const incmd = (targetProps['if_not'] === undefined) ? null : String(targetProps['if_not'])
 
   if (cmd === '') {
     onExit(cmd, -1, 0)
@@ -170,30 +179,26 @@ exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog) {
   try {
 
     /* main command */
-    if (targetProps['if']) {
-      const ifcmd = targetProps['if']
+    if (typeof ifcmd === 'string') {
+      onLog(`[IF ${ifcmd}] ${cmd}`)
       const [pid, exitcode] = await exports.runcmd(ifcmd, opts, onLog, onSpawn)
 
       if (exitcode != 0) {
-        onLog(`[ test failed ] ${ifcmd}`)
-        onExit(ifcmd, pid, 0)
+        onExit(ifcmd, pid, exitcode, 'treat_as_success')
         return
-
       } else {
-        onExit(ifcmd, pid, exitcode, false)
+        onExit(ifcmd, pid, exitcode, 'no_loop_ctrl')
       }
 
-    } else if (targetProps['if_not']) {
-      const incmd = targetProps['if_not']
+    } else if (typeof incmd === 'string') {
+      onLog(`[IF NOT ${incmd}] ${cmd}`)
       const [pid, exitcode] = await exports.runcmd(incmd, opts, onLog, onSpawn)
 
       if (exitcode == 0) {
-        onLog(`[ test failed ] ${incmd}`)
-        onExit(incmd, pid, 0)
+        onExit(incmd, pid, exitcode, 'treat_as_success')
         return
-
       } else {
-        onExit(incmd, pid, exitcode, false)
+        onExit(incmd, pid, exitcode, 'no_loop_ctrl')
       }
     }
 
@@ -216,10 +221,8 @@ exports.runlist = function (run_cfg, runList, onComplete) {
 
   logAndPrint(
     `[ job-runner ] start task#${task_id}: ${list_job_names}.`,
-    ['MASTER', `task-${task_id}`]
+    [`task-${task_id}`]
   )
-
-  console.log(run_cfg.envs)
 
   /* main loop */
   exports.syncLoop(runList,
@@ -229,43 +232,29 @@ exports.runlist = function (run_cfg, runList, onComplete) {
       let jobname = runList[idx]
       let props = run_cfg.jobs.getNodeData(jobname)
 
-      /* recursive calling runlist for ref jobs */
-      let ref = props['ref']
-      if (ref) {
-        let subList = exports.getRunList(run_cfg.jobs, ref)
-        exports.runlist(run_cfg, subList, (completed) => {
-          if (completed)
-            loop.next()
-          else
-            loop.brk()
-        })
-        return
-      }
-
       /* prepare process callbacks */
       const onLog = function (lines) {
         const line_arr = lines.split('\n')
         line_arr.forEach(function (line) {
-          logAndPrint(line, ['MASTER', `job-${jobname}`, `task-${task_id}`])
+          logAndPrint(line, [`job-${jobname}`, `task-${task_id}`])
         })
       }
 
       const onSpawn = function (cmd, usr, pid) {
-        onLog(`[ spawn by ${usr}, pid=${pid} ] ${jobname}`)
-        onLog(`[ ${jobname} ] ${cmd}`)
+        onLog(`[ spawn pid=${pid} ] ${cmd}`)
 
         /* update task meta info */
         tasks.spawn_notify(task_id, idx, pid)
       }
 
-      const onExit = async function (cmd, pid, exitcode, _loop_ctrl) {
-        onLog(`[ exitcode = ${exitcode} ] ${jobname}`)
+      const onExit = async function (cmd, pid, _exitcode, flag) {
+        onLog(`[ exitcode = ${_exitcode} ] ${cmd}`)
 
         /* update task meta info */
+        const exitcode = (flag === 'treat_as_success') ? 0 : _exitcode
         tasks.exit_notify(task_id, idx, exitcode)
 
-        const loop_ctrl = _loop_ctrl || true
-        if (!loop_ctrl)
+        if (flag === 'no_loop_ctrl')
           return
 
         /* get updated environment variables */
@@ -292,13 +281,26 @@ exports.runlist = function (run_cfg, runList, onComplete) {
         }
       }
 
+      onLog(`[ job ] ${jobname} of task#${task_id}`)
+
+      /* handle dryrun and reference */
+      let ref = props['ref']
       if (run_cfg.dryrun) {
         const targetProps = run_cfg.jobs.getNodeData(jobname)
         const cmd = parse_exec(targetProps['exec'])
 
-        onLog(`[ dry run ] ${jobname}`)
         onSpawn(cmd, 'dry', -1)
         onExit(cmd, -1, 0)
+        return
+
+      } else if (ref) {
+        let subList = exports.getRunList(run_cfg.jobs, ref)
+        exports.runlist(run_cfg, subList, (completed) => {
+          if (completed)
+            loop.next()
+          else
+            loop.brk()
+        })
         return
       }
 
@@ -309,7 +311,7 @@ exports.runlist = function (run_cfg, runList, onComplete) {
     function (_, idx, loop, completed) {
       logAndPrint(
         `[ job-runner ] finished task#${task_id} (${completed}): ${list_job_names}.`,
-        ['MASTER', `task-${task_id}`]
+        [`task-${task_id}`]
       )
       onComplete && onComplete(completed)
     }
@@ -359,7 +361,6 @@ if (require.main === module) {
     //const target = 'hello:say-myname'
     const [target, env] = exports.parseTargetArgs('goodbye:talk-later?later_hours=2&reason=I am heading for a meeting')
     const envs = exports.declare_envs(cfgs.env) + exports.declare_envs(env)
-    console.log(envs)
 
     const run_cfg = {
       jobs: jobs,
