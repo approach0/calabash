@@ -26,6 +26,7 @@ exports.add_task = function(runList, _status_task) {
       jobname: item,
       pid: -1,
       alive: false,
+      log: '',
       spawn_time: null,
       checkalive: null,
       exit_time: null,
@@ -34,6 +35,17 @@ exports.add_task = function(runList, _status_task) {
   })
 
   return use_id
+}
+
+exports.log_notify = function(task_id, idx, lines) {
+  const task = g_tasks[task_id]
+  if (task) {
+    const meta = task[idx]
+    meta['log'] += lines
+    return 0
+  }
+
+  return 1
 }
 
 exports.spawn_notify = function(task_id, idx, pid) {

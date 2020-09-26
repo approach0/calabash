@@ -245,6 +245,8 @@ exports.runlist = function (run_cfg, runList, onComplete) {
         line_arr.forEach(function (line) {
           logAndPrint(line, [`job-${jobname}`, `task-${task_id}`])
         })
+
+        tasks.log_notify(task_id, idx, lines)
       }
 
       const onSpawn = function (cmd, usr, pid) {
