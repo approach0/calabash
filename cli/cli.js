@@ -1,6 +1,8 @@
 const axios = require('axios')
 const { program } = require('commander')
 
+const DEFAULT_URL = 'http://localhost:8964'
+
 program
   .usage(`<URL> [options]\n` +
   `Example: node ${__filename} --job hello:world http://localhost:8964`)
@@ -13,6 +15,10 @@ program
   .option('--list-tasks <all | active | unactive>', 'list tasks')
 
 program.parse(process.argv)
+
+if (program.args.length == 0) {
+  program.args.push(DEFAULT_URL)
+}
 
 if (program.log) {
   const url = `${program.args[0]}/get/log/${program.log}`
