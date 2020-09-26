@@ -3,49 +3,6 @@ const TOML = require('fast-toml')
 const DepGraph = require('dependency-graph').DepGraph
 const _path = require('path')
 
-const spawn = require('child_process').spawn
-
-exports.load_env = function (source_args, env) {
-  // system reserved env variables
-  const reserved = ['PWD', 'SHLVL', '_', 'PATH', 'SHELL', 'HOME', 'USER', 'USERNAME', '']
-  var output = ''
-
-  return new Promise((resolve, reject) => {
-    const source =
-      'set -a \n' +
-      'source ' + source_args.join(' ') + '\n' +
-      'set +a \n' +
-      'printenv'
-
-    const proc = spawn('/bin/sh', ['-c', source], {
-      'env': env || {}
-    })
-
-    proc.stdout.on('data', data => { output += data.toString() })
-    proc.stderr.on('data', data => { console.error('[error]', data.toString()) })
-    proc.on('error', () => { reject() })
-
-    proc.on('close', () => {
-      //console.log(output)
-      const env_dict = output.split('\n').reduce((obj, line) => {
-        const fields = line.split('=')
-        const key = fields[0]
-        /* we exclude those system reserved env variables */
-        if (!reserved.includes(key) && key !== undefined) {
-          let right_str = fields.slice(1).join('=')
-          /* by default, printenv will not quote strings, if we source it latter
-           * there will be error. so in case of spaces present, we quote it here */
-          obj[key] = (right_str.split(' ').length > 1) ? `"${right_str}"` : right_str
-        }
-
-        return obj
-      }, {})
-
-      resolve(env_dict)
-    })
-  })
-}
-
 exports.load_cfg = async function (cfg_path) {
 	return await TOML.parseFile(cfg_path)
 }

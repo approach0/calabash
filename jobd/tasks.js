@@ -29,8 +29,6 @@ exports.add_task = function(runList, _status_task) {
       spawn_time: null,
       checkalive: null,
       exit_time: null,
-      start_envs: {},
-      end_envs: {},
       exitcode: -1
     }
   })
@@ -38,14 +36,13 @@ exports.add_task = function(runList, _status_task) {
   return use_id
 }
 
-exports.spawn_notify = function(task_id, idx, envs, pid) {
+exports.spawn_notify = function(task_id, idx, pid) {
   const task = g_tasks[task_id]
   if (task) {
     const meta = task[idx]
     meta['pid'] = pid
     meta['alive'] = true
     meta['spawn_time'] = Date.now()
-    meta['start_envs'] = Object.assign({}, envs)
     meta['checkalive'] = setInterval(function () {
       if (!pidIsRunning(pid)) {
         flagDead(meta)
@@ -58,12 +55,11 @@ exports.spawn_notify = function(task_id, idx, envs, pid) {
   return 1
 }
 
-exports.exit_notify = function(task_id, idx, envs, exitcode) {
+exports.exit_notify = function(task_id, idx, exitcode) {
   const task = g_tasks[task_id]
   if (task) {
     const meta = task[idx]
     meta['exitcode'] = exitcode
-    meta['end_envs'] = Object.assign({}, envs)
     flagDead(meta)
 
     return 0

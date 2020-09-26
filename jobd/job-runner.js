@@ -1,11 +1,11 @@
+const os = require('os')
+const fs = require('fs')
 const cfg_ldr = require('./cfg-ldr.js')
 const logger = require('./logger.js')
 const tasks = require('./tasks.js')
-const extend = require('util')._extend
 const process_ = require('process')
 const pty = require('node-pty-prebuilt-multiarch')
 const childProcess = require('child_process')
-const os = require('os')
 const querystring = require('querystring')
 
 function logAndPrint(line, logIDs) {
@@ -13,7 +13,7 @@ function logAndPrint(line, logIDs) {
     logger.write(logID, line)
   })
 
-  console.log(logIDs.join(',') + ' |', line)
+  console.log(logIDs.join(',').padEnd(10) + ' |', line)
 }
 
 exports.syncLoop = function (arr, doing, done) {
@@ -46,7 +46,7 @@ exports.getRunList = function (jobs, target) {
   return deps
 }
 
-exports.runcmd = function (cmd, opt, onLog, onSpawn, onExit)
+exports.runcmd = function (cmd, opt, onLog, onSpawn)
 {
   /* choose between pty.spawn and childProcess.spawn */
   let spawnFun = pty.spawn
@@ -79,13 +79,19 @@ exports.runcmd = function (cmd, opt, onLog, onSpawn, onExit)
     const tmpdir = os.tmpdir()
     try {
       const hooked_cmd =
-      `__hook__() { ec=$?; env > ${tmpdir}/env-pid$$.log; exit $ec; }\n` +
+      opt.env_declare +
+      `__hook__() {
+        ec=$?;
+        declare -x > ${tmpdir}/env-pid$$.log;
+        declare -fx >> ${tmpdir}/env-pid$$.log;
+        exit $ec; 
+      }\n` +
       'trap __hook__ EXIT \n' + cmd
 
-      runner = spawnFun('/bin/sh', ['-c', hooked_cmd], {
+      runner = spawnFun('/bin/bash', ['-c', hooked_cmd], {
         uid, gid,
         'cwd': opt.cwd,
-        'env': opt.env,
+        'env': opt.env_basic,
         'cols': 80,
         'rows': 30,
         'name': 'xterm-color'
@@ -116,15 +122,7 @@ exports.runcmd = function (cmd, opt, onLog, onSpawn, onExit)
       process.stdin.resume()
       process.stdin.pause()
 
-      /* get updated environment variables */
-      const env_file_path = tmpdir + `/env-pid${runner.pid}.log`
-      const envs = await cfg_ldr.load_env([env_file_path])
-
-      /* callback after environment variables are updated */
-      onExit && onExit(cmd, exitcode, true, envs)
-
-      /* return both exitcode and environment variables */
-      resolve(exitcode)
+      resolve([runner.pid, exitcode])
     })
   })
 }
@@ -139,21 +137,20 @@ function parse_exec(input)
     return input.replace(/\n/g, '; ')
 }
 
-exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog, onTestFail) {
+exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog) {
   const targetProps = run_cfg.jobs.getNodeData(jobname)
   const cmd = parse_exec(targetProps['exec'])
   const cwd = targetProps['cwd'] || '.'
   const user = targetProps['user'] || 'current'
   const spawn = targetProps['spawn'] || 'direct'
-  const source = targetProps['source']
 
   if (cmd === '') {
-    onExit(cmd, 0, false, run_cfg.envs)
+    onExit(cmd, -1, 0)
     return
   }
 
   /* prepare spawn environment */
-  var allEnv = {
+  var basicEnv = {
     'PATH': process.env['PATH'],
     'USER': user,
     'USERNAME': user,
@@ -161,17 +158,9 @@ exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog, onTes
     'SHELL': '/bin/sh'
   }
 
-  const jobEnv = run_cfg.envs || {}
-  allEnv = extend(allEnv, jobEnv)
-
-  if (source) {
-    const importEnv = await cfg_ldr.load_env(source, allEnv)
-    console.log(importEnv)
-    extend(allEnv, importEnv)
-  }
-
   const opts = {
-    'env': allEnv,
+    'env_basic': basicEnv,
+    'env_declare': run_cfg.envs,
     'cwd': cwd,
     'user': user,
     'group': user,
@@ -183,29 +172,34 @@ exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog, onTes
     /* main command */
     if (targetProps['if']) {
       const ifcmd = targetProps['if']
-      const exitcode = await exports.runcmd(ifcmd, opts, onLog, onSpawn, (_cmd, _, __) => {
-        onExit(_cmd, 0 /* keep successful for test command */, false, run_cfg.envs)
-      })
+      const [pid, exitcode] = await exports.runcmd(ifcmd, opts, onLog, onSpawn)
 
       if (exitcode != 0) {
-        onTestFail()
+        onLog(`[ test failed ] ${ifcmd}`)
+        onExit(ifcmd, pid, 0)
         return
+
+      } else {
+        onExit(ifcmd, pid, exitcode, false)
       }
 
     } else if (targetProps['if_not']) {
       const incmd = targetProps['if_not']
-      const exitcode = await exports.runcmd(incmd, opts, onLog, onSpawn, (_cmd, _, __) => {
-        onExit(_cmd, 0 /* keep successful for test command */, false, run_cfg.envs)
-      })
+      const [pid, exitcode] = await exports.runcmd(incmd, opts, onLog, onSpawn)
 
       if (exitcode == 0) {
-        onTestFail()
+        onLog(`[ test failed ] ${incmd}`)
+        onExit(incmd, pid, 0)
         return
+
+      } else {
+        onExit(incmd, pid, exitcode, false)
       }
     }
 
     /* main command */
-    await exports.runcmd(cmd, opts, onLog, onSpawn, onExit)
+    const [pid, exitcode] = await exports.runcmd(cmd, opts, onLog, onSpawn)
+    onExit(cmd, pid, exitcode)
 
   } catch (err) {
     console.error('[Error]', err.toString())
@@ -221,14 +215,11 @@ exports.runlist = function (run_cfg, runList, onComplete) {
   const task_id = tasks.add_task(runList, run_cfg.status)
 
   logAndPrint(
-    `[ job-runner ] start task: ${list_job_names}.`,
+    `[ job-runner ] start task#${task_id}: ${list_job_names}.`,
     ['MASTER', `task-${task_id}`]
   )
 
-  logAndPrint(
-    `[ job-runner ] task ID: ${task_id}, envs: ` + JSON.stringify(run_cfg.envs),
-    ['MASTER', `task-${task_id}`]
-  )
+  console.log(run_cfg.envs)
 
   /* main loop */
   exports.syncLoop(runList,
@@ -264,19 +255,24 @@ exports.runlist = function (run_cfg, runList, onComplete) {
         onLog(`[ ${jobname} ] ${cmd}`)
 
         /* update task meta info */
-        tasks.spawn_notify(task_id, idx, run_cfg.envs, pid)
+        tasks.spawn_notify(task_id, idx, pid)
       }
 
-      const onExit = function (cmd, exitcode, retry, envs) {
+      const onExit = async function (cmd, pid, exitcode, _loop_ctrl) {
         onLog(`[ exitcode = ${exitcode} ] ${jobname}`)
 
-        /* carray updated environment variables */
-        run_cfg.envs = envs
-
         /* update task meta info */
-        tasks.exit_notify(task_id, idx, run_cfg.envs, exitcode)
+        tasks.exit_notify(task_id, idx, exitcode)
 
-        if (retry && !run_cfg.status) {
+        const loop_ctrl = _loop_ctrl || true
+        if (!loop_ctrl)
+          return
+
+        /* get updated environment variables */
+        const env_file_path = os.tmpdir() + `/env-pid${pid}.log`
+        run_cfg.envs = await fs.readFileSync(env_file_path, 'utf-8')
+
+        if (!run_cfg.status) {
           if (exitcode == 0) {
             failcnt = 0
             setTimeout(loop.next, 500)
@@ -302,14 +298,11 @@ exports.runlist = function (run_cfg, runList, onComplete) {
 
         onLog(`[ dry run ] ${jobname}`)
         onSpawn(cmd, 'dry', -1)
-        onExit(cmd, 0, false, {})
+        onExit(cmd, -1, 0)
         return
       }
 
-      exports.runjob(run_cfg, jobname, onSpawn, onExit, onLog, function () {
-        onLog(`[ test failed ] ${jobname}`)
-        loop.next()
-      })
+      exports.runjob(run_cfg, jobname, onSpawn, onExit, onLog)
     },
 
     /* done loop */
@@ -325,19 +318,24 @@ exports.runlist = function (run_cfg, runList, onComplete) {
   return task_id
 }
 
-function envAddTargetArgs(envs, target) {
+/* declare non-functional env variables */
+exports.declare_envs = function (env) {
+  return Object.keys(env).reduce((accum, key) => {
+    return accum + `declare -x ${key}="${env[key]}"\n`
+  }, '')
+}
+
+exports.parseTargetArgs = function (target) {
   const args = target.split('?')
   if (args.length > 1) {
-    const argEnvs = querystring.parse(args[1])
-    extend(envs, argEnvs)
+    const argEnv = querystring.parse(args[1])
+    return [args[0], argEnv]
+  } else {
+    return [args[0], {}]
   }
-  return args[0]
 }
 
 exports.run = function (run_cfg, onComplete) {
-  /* list dependent jobs and parse target parameters, if any */
-  const target = envAddTargetArgs(run_cfg.envs, run_cfg.target)
-
   /* safe-guard some keys */
   run_cfg.dryrun = run_cfg.dryrun || false
   run_cfg.status = run_cfg.status || false
@@ -345,9 +343,9 @@ exports.run = function (run_cfg, onComplete) {
 
   var runList
   if (run_cfg.single)
-    runList = [target]
+    runList = [run_cfg.target]
   else
-    runList = exports.getRunList(run_cfg.jobs, target)
+    runList = exports.getRunList(run_cfg.jobs, run_cfg.target)
 
   const task_id = exports.runlist(run_cfg, runList, onComplete)
   return {task_id, runList}
@@ -358,11 +356,14 @@ if (require.main === module) {
     const jobs = await cfg_ldr.load_jobs('./test-jobs')
     const cfgs = await cfg_ldr.load_cfg('./config.template.toml')
 
-    const target = 'goodbye:talk-later?later_hours=2&reason="I am heading for a meeting"'
+    //const target = 'hello:say-myname'
+    const [target, env] = exports.parseTargetArgs('goodbye:talk-later?later_hours=2&reason=I am heading for a meeting')
+    const envs = exports.declare_envs(cfgs.env) + exports.declare_envs(env)
+    console.log(envs)
 
     const run_cfg = {
       jobs: jobs,
-      envs: cfgs.env,
+      envs: envs ,
       target: target
     }
 
