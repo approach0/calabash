@@ -87,13 +87,16 @@ exports.runcmd = function (cmd, opt, onLog, onSpawn)
     try {
       const hooked_cmd =
       opt.env_declare +
-      `__hook__() {
-        ec=$?;
+      `__on_exit__() {
+        exitcode=$?;
+        { set +x; } 2> /dev/null
         declare -x > ${tmpdir}/env-pid$$.log;
         declare -fx >> ${tmpdir}/env-pid$$.log;
-        exit $ec;
+        exit $exitcode;
       }\n` +
-      'trap __hook__ EXIT \n' + cmd
+      'trap __on_exit__ EXIT \n' +
+      'set -x \n' +
+       cmd
 
       runner = spawnFun('/bin/bash', ['-c', hooked_cmd], {
         uid, gid,
@@ -358,7 +361,6 @@ if (require.main === module) {
     const jobs = await cfg_ldr.load_jobs('./test-jobs')
     const cfgs = await cfg_ldr.load_cfg('./config.template.toml')
 
-    //const target = 'hello:say-myname'
     const [target, env] = exports.parseTargetArgs('goodbye:talk-later?later_hours=2&reason=I am heading for a meeting')
     const envs = exports.declare_envs(cfgs.env) + exports.declare_envs(env)
 

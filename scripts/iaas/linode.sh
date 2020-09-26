@@ -6,4 +6,6 @@ source $SCRIPT_PATH/../common.env.sh
 
 LINODE_CLI="$DOCKER run linode-cli /root/wrap-run.sh $LINODE_TOKEN --suppress-warnings"
 
-list_nodes() { $LINODE_CLI linodes list; }
+list_nodes() {
+  $LINODE_CLI linodes list
+}

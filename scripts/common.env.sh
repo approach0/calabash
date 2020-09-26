@@ -1,2 +1,2 @@
 # common environment variables
-export DOCKER=docker
+DOCKER=docker

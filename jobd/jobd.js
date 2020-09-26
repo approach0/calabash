@@ -136,13 +136,16 @@ app
   try {
     const reqJSON = req.body
 
+    const [target, argenv] = job_runner.parseTargetArgs(reqJSON['goal'])
+    const envs =
+      job_runner.declare_envs(cfgs.env) +
+      job_runner.declare_envs(argenv)
+
     const run_cfg = {
-      jobs: jobs,
-      envs: cfgs.env,
       dryrun: reqJSON['dry_run'],
       status: reqJSON['status_task'],
       single: reqJSON['single_job'],
-      target: reqJSON['goal'] || ''
+      jobs, envs, target
     }
 
     const ret = job_runner.run(run_cfg)

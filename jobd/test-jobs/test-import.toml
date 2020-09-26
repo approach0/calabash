@@ -1,3 +1,0 @@
-[list-linodes]
-source = [$SCRIPTS/iaas/linode.sh, $LINODE_TOKEN]
-exec = list_nodes
