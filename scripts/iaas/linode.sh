@@ -9,3 +9,7 @@ LINODE_CLI="$DOCKER run linode-cli /root/wrap-run.sh $LINODE_TOKEN --suppress-wa
 list_nodes() {
   $LINODE_CLI linodes list
 }
+
+list_node_types() {
+  $LINODE_CLI linodes types
+}

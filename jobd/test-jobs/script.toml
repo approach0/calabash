@@ -1,6 +1,0 @@
-[list-linodes]
-verbose = false
-exec = [
-  source $SCRIPTS/iaas/linode.sh $LINODE_TOKEN,
-  list_nodes
-]
