@@ -88,15 +88,17 @@ exports.runcmd = function (cmd, opt, onLog, onSpawn)
       const hooked_cmd =
       opt.env_declare +
       `__on_exit__() {
-        exitcode=$?;
-        { set +x; } 2> /dev/null
-        declare -x > ${tmpdir}/env-pid$$.log;
-        declare -fx >> ${tmpdir}/env-pid$$.log;
-        exit $exitcode;
+        exitcode=$?
+        ${opt.verbose ? '{ set +x; } 2> /dev/null' : ''}
+        declare -x > ${tmpdir}/env-pid$$.log
+        declare -fx >> ${tmpdir}/env-pid$$.log
+        exit $exitcode
       }\n` +
       'trap __on_exit__ EXIT \n' +
-      'set -x \n' +
-       cmd
+       (opt.verbose ? 'set -x \n' : '') +
+       cmd;
+
+      //console.log(hooked_cmd)
 
       runner = spawnFun('/bin/bash', ['-c', hooked_cmd], {
         uid, gid,
@@ -155,6 +157,7 @@ exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog) {
   const spawn = targetProps['spawn'] || 'direct'
   const ifcmd = (targetProps['if'] === undefined) ? null : String(targetProps['if'])
   const incmd = (targetProps['if_not'] === undefined) ? null : String(targetProps['if_not'])
+  const verbose = targetProps['verbose'] || false
 
   if (cmd === '') {
     onExit(cmd, -1, 0)
@@ -173,6 +176,7 @@ exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog) {
   const opts = {
     'env_basic': basicEnv,
     'env_declare': run_cfg.envs,
+    'verbose': verbose,
     'cwd': cwd,
     'user': user,
     'group': user,
