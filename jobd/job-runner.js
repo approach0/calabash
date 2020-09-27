@@ -8,6 +8,8 @@ const pty = require('node-pty-prebuilt-multiarch')
 const childProcess = require('child_process')
 const querystring = require('querystring')
 
+const logHeaderLen = 35
+
 function logAndPrint(line, logIDs) {
   [...logIDs, 'MASTER'].forEach(logID => {
     logger.write(logID, line)
@@ -17,7 +19,7 @@ function logAndPrint(line, logIDs) {
     return (input.length > len - 3) ? `${input.substring(0, len - 3)}...` : input.padEnd(len)
   }
 
-  console.log(fixed(30, logIDs.join(',')) + ' |', line)
+  console.log(fixed(logHeaderLen, logIDs.join(', ')) + ' |', line)
 }
 
 exports.syncLoop = function (arr, doing, done) {
@@ -89,6 +91,7 @@ exports.runcmd = function (cmd, opt, onLog, onSpawn)
       opt.env_declare +
       `__on_exit__() {
         exitcode=$?
+        ${opt.source ? '{ set +a; } 2> /dev/null' : ''}
         ${opt.verbose ? '{ set +x; } 2> /dev/null' : ''}
         declare -x > ${tmpdir}/env-pid$$.log
         declare -fx >> ${tmpdir}/env-pid$$.log
@@ -96,6 +99,7 @@ exports.runcmd = function (cmd, opt, onLog, onSpawn)
       }\n` +
       'trap __on_exit__ EXIT \n' +
        (opt.verbose ? 'set -x \n' : '') +
+       (opt.source ? 'set -a \n' : '') +
        cmd;
 
       //console.log(hooked_cmd)
@@ -151,6 +155,7 @@ function parse_exec(input)
 
 exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog) {
   const targetProps = run_cfg.jobs.getNodeData(jobname)
+  const source = parse_exec(targetProps['source'])
   const cmd = parse_exec(targetProps['exec'])
   const cwd = targetProps['cwd'] || '.'
   const user = targetProps['user'] || 'current'
@@ -184,10 +189,19 @@ exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog) {
   }
 
   try {
+    /* source command */
+    if (source) {
+      const source_opts = Object.assign({source: true}, opts)
+      const [pid, exitcode] = await exports.runcmd(source, source_opts, onLog, onSpawn)
+      await onExit(source, pid, exitcode, 'no_loop_ctrl')
 
-    /* main command */
+      /* update environment variables */
+      opts.env_declare = run_cfg.envs
+    }
+
+    /* test command */
     if (typeof ifcmd === 'string') {
-      onLog(`[IF ${ifcmd}] ${cmd}`)
+      onLog(`[ if ${ifcmd} ] ${cmd}`)
       const [pid, exitcode] = await exports.runcmd(ifcmd, opts, onLog, onSpawn)
 
       if (exitcode != 0) {
@@ -198,7 +212,7 @@ exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog) {
       }
 
     } else if (typeof incmd === 'string') {
-      onLog(`[IF NOT ${incmd}] ${cmd}`)
+      onLog(`[ if not ${incmd} ] ${cmd}`)
       const [pid, exitcode] = await exports.runcmd(incmd, opts, onLog, onSpawn)
 
       if (exitcode == 0) {
@@ -210,8 +224,10 @@ exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog) {
     }
 
     /* main command */
-    const [pid, exitcode] = await exports.runcmd(cmd, opts, onLog, onSpawn)
-    onExit(cmd, pid, exitcode)
+    {
+      const [pid, exitcode] = await exports.runcmd(cmd, opts, onLog, onSpawn)
+      onExit(cmd, pid, exitcode)
+    }
 
   } catch (err) {
     console.error('[Error]', err.toString())
@@ -265,12 +281,12 @@ exports.runlist = function (run_cfg, runList, onComplete) {
         const exitcode = (flag === 'treat_as_success') ? 0 : _exitcode
         tasks.exit_notify(task_id, idx, exitcode)
 
-        if (flag === 'no_loop_ctrl')
-          return
-
         /* get updated environment variables */
         const env_file_path = os.tmpdir() + `/env-pid${pid}.log`
         run_cfg.envs = await fs.readFileSync(env_file_path, 'utf-8')
+
+        if (flag === 'no_loop_ctrl')
+          return
 
         if (!run_cfg.status) {
           if (exitcode == 0) {
@@ -292,7 +308,7 @@ exports.runlist = function (run_cfg, runList, onComplete) {
         }
       }
 
-      onLog(`[ job ] ${jobname} of task#${task_id}`)
+      onLog(`[ start job ] ${jobname} of task#${task_id}`)
 
       /* handle dryrun and reference */
       let ref = props['ref']

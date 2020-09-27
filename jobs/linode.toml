@@ -1,21 +1,13 @@
 [docker-pull]
-exec = [
-  source $script/iaas/linode.sh $linode_token,
-  $DOCKER pull ga6840/linode-cli:lastest
-]
-if_not = docker image inspect linode-cli
+source = . $scripts/iaas/linode.sh $linode_token
+exec = $DOCKER pull ga6840/linode-cli:lastest
+if_not = $DOCKER image inspect linode-cli &> /dev/null
 
 [list-nodes]
 verbose = false
-exec = [
-  source $scripts/iaas/linode.sh $linode_token,
-  list_nodes
-]
+exec = list_nodes
 dep = linode:docker-pull
 
 [list-nodetypes]
-exec = [
-  source $scripts/iaas/linode.sh $linode_token,
-  list_node_types
-]
+exec = list_node_types
 dep = linode:docker-pull
