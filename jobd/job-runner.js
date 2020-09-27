@@ -341,7 +341,11 @@ exports.declare_envs = function (env) {
 exports.parseTargetArgs = function (target) {
   const args = target.split('?')
   if (args.length > 1) {
-    const argEnv = querystring.parse(args[1])
+    let argEnv = querystring.parse(args[1])
+
+    // get rid of [Object: null prototype]
+    argEnv = JSON.parse(JSON.stringify(argEnv))
+
     return [args[0], argEnv]
   } else {
     return [args[0], {}]
@@ -369,8 +373,9 @@ if (require.main === module) {
     const jobs = await cfg_ldr.load_jobs('./test-jobs')
     const cfgs = await cfg_ldr.load_cfg('./config.template.toml')
 
-    const [target, env] = exports.parseTargetArgs('goodbye:talk-later?later_hours=2&reason=I am heading for a meeting')
-    const envs = exports.declare_envs(cfgs.env) + exports.declare_envs(env)
+    const [target, args] = exports.parseTargetArgs('goodbye:talk-later?later_hours=3')
+    const envObj = Object.assign(cfgs, args) // overwrite/merge into default configs
+    const envs = exports.declare_envs(envObj)
 
     const run_cfg = {
       jobs: jobs,

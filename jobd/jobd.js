@@ -149,10 +149,9 @@ app
   try {
     const reqJSON = req.body
 
-    const [target, argenv] = job_runner.parseTargetArgs(reqJSON['goal'])
-    const envs =
-      job_runner.declare_envs(cfgs.env) +
-      job_runner.declare_envs(argenv)
+    const [target, args] = job_runner.parseTargetArgs(reqJSON['goal'])
+    const envObj = Object.assign(cfgs, args) // overwrite/merge into default configs
+    const envs = job_runner.declare_envs(envObj)
 
     const run_cfg = {
       dryrun: reqJSON['dry_run'],

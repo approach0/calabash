@@ -1,3 +1,6 @@
 [env]
-LINODE_TOKEN = YOUR_LINODE_TOKEN
-MY_NAME = Wei
+my_name = Wei
+
+[later]
+hours = 2
+reason = I'm heading for a meeting

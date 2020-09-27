@@ -3,8 +3,25 @@ const TOML = require('fast-toml')
 const DepGraph = require('dependency-graph').DepGraph
 const _path = require('path')
 
+function delayering(obj, outobj, stack) {
+  for (var property in obj) {
+    if (obj.hasOwnProperty(property)) {
+      const next_stack = stack ? stack + '_' + property : property
+      if (typeof obj[property] == "object") {
+        delayering(obj[property], outobj, next_stack);
+      } else {
+        const key = next_stack.replace(/^env_/, "")
+        outobj[key] = obj[property]
+      }
+    }
+  }
+}
+
 exports.load_cfg = async function (cfg_path) {
-	return await TOML.parseFile(cfg_path)
+  let cfg_obj_tree = await TOML.parseFile(cfg_path)
+  let cfg_obj_plain = {}
+  delayering(cfg_obj_tree, cfg_obj_plain)
+  return cfg_obj_plain
 }
 
 exports.load_jobs = async function (jobs_dir) {

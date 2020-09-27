@@ -7,7 +7,7 @@ exec = [
 [say-myname]
 # with random exit-code just for testing failure handlers
 exec = '''
-echo My name is ${MY_NAME}
+echo My name is ${my_name}
 exit $(shuf -i 0-3 -n 1)
 '''
 
