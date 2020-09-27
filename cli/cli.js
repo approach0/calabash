@@ -25,8 +25,6 @@ if (program.log) {
   const url = `${program.args[0]}/get/log/${program.log}`
   const options = {}
 
-  console.log(url, options)
-
   axios.get(url, options)
   .then(function (res) {
     const str = JSON.stringify(res.data, null, 2)
@@ -41,8 +39,6 @@ if (program.listJobs) {
   const url = `${program.args[0]}/get/jobs`
   const options = {}
 
-  console.log(url, options)
-
   axios.get(url, options)
   .then(function (res) {
     const str = JSON.stringify(res.data, null, 2)
@@ -56,8 +52,6 @@ if (program.listJobs) {
 if (program.listConfig) {
   const url = `${program.args[0]}/get/config`
   const options = {}
-
-  console.log(url, options)
 
   axios.get(url, options)
   .then(function (res) {
@@ -74,8 +68,6 @@ if (program.showTask) {
   const url = `${program.args[0]}/get/task/${taskID}`
   const options = {}
 
-  console.log(url, options)
-
   axios.get(url, options)
   .then(function (res) {
     const str = JSON.stringify(res.data, null, 2)
@@ -90,8 +82,6 @@ if (program.listTasks) {
   const filter = program.listTasks
   const url = `${program.args[0]}/get/tasks/${filter}`
   const options = {}
-
-  console.log(url, options)
 
   axios.get(url, options)
   .then(function (res) {
@@ -110,8 +100,6 @@ if (program.job) {
     dry_run: program.dryrun || false,
     single_job: program.single || false
   }
-
-  console.log(url, options)
 
   axios.post(url, options)
   .then(function (res) {

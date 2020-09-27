@@ -59,14 +59,14 @@ exports.runcmd = function (cmd, opt, onLog, onSpawn)
   let stdout = function (o) {return o}
   let stderr = function (o) {return {'on': function (d) {}}}
   let stdin  = function (o) {return o}
-  let stdlog = function (o) {onLog(o)}
+  let stdlog = function (o) {onLog(o, true)}
 
   if (opt.spawn == 'direct') {
     spawnFun = childProcess.spawn
     stdout = function (o) {return o.stdout}
     stderr = function (o) {return o.stderr}
     stdin  = function (o) {return o.stdin}
-    stdlog = function (o) {onLog(o.toString())}
+    stdlog = function (o) {onLog(o.toString(), true)}
   } else if (opt.spawn != 'pty') {
     onLog('[ error ] spawn method unrecognized.')
   }
@@ -240,17 +240,19 @@ exports.runlist = function (run_cfg, runList, onComplete) {
       let props = run_cfg.jobs.getNodeData(jobname)
 
       /* prepare process callbacks */
-      const onLog = function (lines) {
+      const onLog = function (lines, pure_cmd_output) {
         const line_arr = lines.split('\n')
         line_arr.forEach(function (line) {
           logAndPrint(line, [`job-${jobname}`, `task-${task_id}`])
         })
 
-        tasks.log_notify(task_id, idx, lines)
+        if (pure_cmd_output || false) {
+          tasks.log_notify(task_id, idx, lines)
+        }
       }
 
       const onSpawn = function (cmd, usr, pid) {
-        onLog(`[ spawn pid=${pid} ] ${cmd}`)
+        onLog(`[ spawn pid=${pid} ] ${cmd}`, false)
 
         /* update task meta info */
         tasks.spawn_notify(task_id, idx, pid)
