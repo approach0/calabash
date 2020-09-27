@@ -33,7 +33,7 @@ if (program.log) {
     console.log(str)
   })
   .catch(function (err) {
-    console.log(err)
+    console.error(err.toString())
   });
 }
 
@@ -49,7 +49,7 @@ if (program.listJobs) {
     console.log(str)
   })
   .catch(function (err) {
-    console.log(err)
+    console.error(err.toString())
   });
 }
 
@@ -65,7 +65,7 @@ if (program.listConfig) {
     console.log(str)
   })
   .catch(function (err) {
-    console.log(err)
+    console.error(err.toString())
   });
 }
 
@@ -82,7 +82,7 @@ if (program.showTask) {
     console.log(str)
   })
   .catch(function (err) {
-    console.log(err)
+    console.error(err.toString())
   });
 }
 
@@ -99,7 +99,7 @@ if (program.listTasks) {
     console.log(str)
   })
   .catch(function (err) {
-    console.log(err)
+    console.error(err.toString())
   });
 }
 
@@ -119,6 +119,6 @@ if (program.job) {
     console.log(str)
   })
   .catch(function (err) {
-    console.log(err)
+    console.error(err.toString())
   });
 }
