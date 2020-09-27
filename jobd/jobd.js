@@ -9,7 +9,7 @@ const cors = require('cors')
 
 const { program } = require('commander')
 
-const port = 8964
+const default_port = 8964
 
 /* parse program arguments */
 program
@@ -20,7 +20,7 @@ program
 
 program.parse(process.argv)
 
-/* load config and jobs */
+/* load configurations and setup HTTP server */
 const jobs_dir = program.jobsDir || './test-jobs'
 const cfg_path = program.config || './config.template.toml'
 
@@ -29,24 +29,24 @@ console.log(`Loading: jobs_dir=${jobs_dir}, cfg_path=${cfg_path}`)
 var jobs = null
 var cfgs = {}
 
+var app = express()
+app.use(bodyParser.json())
+app.use(cors())
+
 ;(async function () {
   jobs = await cfg_ldr.load_jobs(jobs_dir)
   cfgs = await cfg_ldr.load_cfg(cfg_path)
+
+  const port = cfgs.server_port || default_port
+  app.listen(port)
+  console.log(`Listen on ${port}`)
 })()
 
-/* setup express HTTP server */
 process.on('SIGINT', function() {
   console.log('')
   console.log('Bye bye.')
   process.exit()
 })
-
-var app = express()
-app.use(bodyParser.json())
-app.use(cors())
-
-app.listen(port)
-console.log(`Listen on ${port}`)
 
 /* rout handlers for HTTP server */
 app
