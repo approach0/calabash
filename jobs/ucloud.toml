@@ -1,0 +1,7 @@
+[source]
+verbose = false
+source = . $scripts/iaas/ucloud.sh $ucloud_pubkey $ucloud_prikey
+
+[list-nodes]
+exec = ucloud_list_nodes
+dep = ucloud:source

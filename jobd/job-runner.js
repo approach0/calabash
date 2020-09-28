@@ -164,11 +164,6 @@ exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog) {
   const incmd = (targetProps['if_not'] === undefined) ? null : String(targetProps['if_not'])
   const verbose = targetProps['verbose'] || false
 
-  if (cmd === '') {
-    onExit(cmd, -1, 0)
-    return
-  }
-
   /* prepare spawn environment */
   var basicEnv = {
     'PATH': process.env['PATH'],
@@ -224,9 +219,11 @@ exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog) {
     }
 
     /* main command */
-    {
+    if (cmd) {
       const [pid, exitcode] = await exports.runcmd(cmd, opts, onLog, onSpawn)
       onExit(cmd, pid, exitcode)
+    } else {
+      onExit(cmd, -1, 0)
     }
 
   } catch (err) {
@@ -283,7 +280,12 @@ exports.runlist = function (run_cfg, runList, onComplete) {
 
         /* get updated environment variables */
         const env_file_path = os.tmpdir() + `/env-pid${pid}.log`
-        run_cfg.envs = await fs.readFileSync(env_file_path, 'utf-8')
+        try {
+          run_cfg.envs = await fs.readFileSync(env_file_path, 'utf-8')
+        } catch (_) {
+          /* for mock-up processes, we do not expect a valid pid number */
+          ;
+        }
 
         if (flag === 'no_loop_ctrl')
           return
