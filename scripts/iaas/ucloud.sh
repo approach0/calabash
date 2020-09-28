@@ -8,26 +8,120 @@ source $SCRIPT_PATH/../common.env.sh
 UCLOUD_CLI_IMG=${DOCKER_MIRROR}ga6840/ucloud-cli:latest
 UCLOUD_CLI="$DOCKER run -it $UCLOUD_CLI_IMG /root/wrap-run.sh $UCLOUD_CLI_PUBKEY $UCLOUD_CLI_PRIKEY"
 
-ucloud_node_list() {
-  $UCLOUD_CLI --json uhost list --region cn-gd
+ucloud_existing_regions() {
+  $UCLOUD_CLI api --Action GetProjectResourceCount --ProductType uhost | python -c "if True:
+  import json, sys
+  j = json.load(sys.stdin)
+  a = filter(lambda x: x['ProductType'].startswith('uhost'), j['Infos'])
+  a = list(a)
+  if len(a) > 0:
+    a = a[0]['RegionInfos']
+    a = map(lambda x: x['Region'], a)
+    print(' '.join(a))
+  "
 }
 
 ucloud_regions() {
   $UCLOUD_CLI region
 }
 
+ucloud_node_list_region() {
+  REGION=$1
+  FLAGS=$2
+  $UCLOUD_CLI $FLAGS uhost list --region=$REGION
+}
+
+ucloud_node_list() {
+  for region in `ucloud_existing_regions`; do
+    ucloud_node_list_region $region
+  done
+}
+
+ucloud_node_list_labels() {
+  labels=""
+  for region in `ucloud_existing_regions`; do
+    labels="$labels `ucloud_node_list_region $region --json | python -c "if True:
+    import json, sys
+    j = json.load(sys.stdin)
+    a = map(lambda x: x['UHostName'], j)
+    a = list(set(a))
+    print(' '.join(a))
+    "`"
+  done
+  echo "$labels"
+}
+
 ucloud_node_create() {
   PASSWD=$1
-  $UCLOUD_CLI uhost create --cpu 1 --memory-gb 1 --password $PASSWD --image-id uimage-j0r4vh --region cn-gd --zone cn-gd-02 --charge-type 'Dynamic' --firewall-id firewall-njshvwlr --vpc-id uvnet-touf2ybp --subnet-id subnet-b2ksux2q --create-eip-bandwidth-mb 1 --name 'calabash_node'
+  LABEL=$2  # calabash-swarm3-master
+  REGION=$3 # cn-gd, cn-bj2, tw-tp, hk
+  SPECS=$4   # 1cpu-1gb-1mb
+  IMAGE=$5  # 'Debian 9'
+
+  image_id=`$UCLOUD_CLI --json image list --region $REGION | python -c "if True:
+  import json, sys
+  j = json.load(sys.stdin)
+  a = filter(lambda x: x['ImageName'].startswith('${IMAGE}'), j)
+  print(list(a)[0]['ImageID'])
+  "`
+
+  n_cpu=$(echo $SPECS | awk -F'-' '{print $1}' | grep -o '[0-9]*')
+  n_mem=$(echo $SPECS | awk -F'-' '{print $2}' | grep -o '[0-9]*')
+  n_bwd=$(echo $SPECS | awk -F'-' '{print $3}' | grep -o '[0-9]*')
+
+  zones=`$UCLOUD_CLI --json region | python -c "if True:
+  import json, sys
+  j = json.load(sys.stdin)
+  a = filter(lambda x: x['Region'] == '${REGION}', j)
+  print(list(a)[0]['Zones'])
+  "`
+  zone=$(echo $zones | awk -F',' '{print $1}')
+
+  firewall=`$UCLOUD_CLI --json firewall list --region $REGION | python -c "if True:
+  import json, sys
+  j = json.load(sys.stdin)
+  a = filter(lambda x: 'TCP|80' in x['Rule'], j)
+  print(list(a)[0]['ResourceID'])
+  "`
+
+  $UCLOUD_CLI uhost create \
+    --password $PASSWD \
+    --name $LABEL \
+    --cpu $n_cpu \
+    --memory-gb $n_mem \
+    --image-id $image_id \
+    --region $REGION \
+    --zone $zone \
+    --charge-type 'Dynamic' \
+    --firewall-id $firewall \
+    --create-eip-bandwidth-mb $n_bwd
 }
 
 ucloud_node_delete() {
   HOSTID=$1
-  $UCLOUD_CLI uhost delete --region cn-gd --yes --uhost-id $HOSTID
+  for region in `ucloud_existing_regions`; do
+    $UCLOUD_CLI uhost delete --region $region --yes --uhost-id $HOSTID
+  done
 }
 
 ucloud_account_balance() {
   $UCLOUD_CLI api --Action DescribeAccountSummary
+}
+
+ucloud_node_filter_by_label() {
+  prefix=$1
+  IDs=""
+  for region in `ucloud_existing_regions`; do
+    IDs="$IDs `ucloud_node_list_region $region --json | python -c "if True:
+    import json, sys
+    j = json.load(sys.stdin)
+    a = filter(lambda x: x['UHostName'].startswith('${prefix}'), j)
+    a = map(lambda x: str(x['ResourceID']), a)
+    a = list(set(a))
+    print(' '.join(a))
+    "`"
+  done
+  echo "$IDs"
 }
 
 ucloud_node_set_label() {
