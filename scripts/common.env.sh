@@ -3,6 +3,7 @@
 DOCKER=docker
 #DOCKER_MIRROR=hub-mirror.c.163.com/
 
+# less verbose SSH command, disallowing pasword promption
 SSH="ssh -o PasswordAuthentication=no -o StrictHostKeyChecking=no"
 
 rname_short() {
