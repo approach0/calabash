@@ -14,6 +14,7 @@ swarm_allocate() {
   [ $4 == 'manager' ] && FLAG='m' || FLAG='w'
   PASSWD=$5
   CONFIG=$(echo $6 | sed 's/,/ /g') # ap-southeast,g6-nanode-1,linode/debian10
+  PORT=$7
 
   label=calabash-${USR}-${SWARM}-${FLAG}-$(rname_short)
   echo 'creating node ...'
@@ -25,19 +26,20 @@ swarm_allocate() {
   echo 'getting node IP ...'
   IP=`${IaaS}_node_map_ipaddr $nodeID`
 
-  return $IP
-}
+  echo 'updating ~/.ssh/known_hosts'
+  ssh-keygen -R $IP
 
-swarm_install()
-{
-  IP=$1
-  PASSWD=$2
-  PORT=$3
-  OLDPORT=22
-
+  echo 'copying pubkey ...'
   $SSH_SCRIPTS/ssh-copy-id.expect root@$IP $PASSWD
+  if [ $? -ne 0 ]; then
+    return 1
+  fi
+
+  echo 'change sshd port ...'
+  OLDPORT=22
   $SSH_SCRIPTS/sshd-change-port.sh root@$IP $OLDPORT $PORT
 
+  echo 'install docker ...'
   $SSH -p $PORT root@$IP "
     apt-get update
 
