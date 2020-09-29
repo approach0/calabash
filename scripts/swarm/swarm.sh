@@ -26,14 +26,25 @@ swarm_allocate() {
   echo 'getting node IP ...'
   IP=`${IaaS}_node_map_ipaddr $nodeID`
 
-  echo 'updating ~/.ssh/known_hosts'
+  echo 'updating ~/.ssh/known_hosts ...'
   ssh-keygen -R $IP
 
-  echo 'copying pubkey ...'
-  $SSH_SCRIPTS/ssh-copy-id.expect root@$IP $PASSWD
-  if [ $? -ne 0 ]; then
-    return 1
-  fi
+  fail=0
+  while true; do
+    echo 'copying pubkey ...'
+    $SSH_SCRIPTS/ssh-copy-id.expect root@$IP $PASSWD
+    if [ $? -ne 0 ]; then
+      let 'fail = fail + 1'
+      if [ $fail -ge 3 ]; then
+        echo "failed $fail time(s), abort ..."
+        return 1
+      else
+        echo "failed $fail time(s), retry ..."
+      fi
+    else
+      break
+    fi
+  done
 
   echo 'change sshd port ...'
   OLDPORT=22
