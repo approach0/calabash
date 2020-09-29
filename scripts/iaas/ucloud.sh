@@ -48,7 +48,13 @@ ucloud_node_list_labels() {
     print(' '.join(a))
     "`"
   done
-  echo "$labels"
+  echo "$labels" | python -c "if True:
+  import json, sys
+  r = sys.stdin.read()
+  a = r.split()
+  a = list(set(a))
+  print(' '.join(a))
+  "
 }
 
 ucloud_node_create() {

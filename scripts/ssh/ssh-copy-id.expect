@@ -17,14 +17,14 @@ expect {
 		exp_continue
 	}
 
-	"*assword*" {
-		send "$password\n"
-		exp_continue
-	}
-
 	"*denied*" {
 		send_user "\n<expect> Wrong password!\n"
 		exit 1
+	}
+
+	"*assword*" {
+		send "$password\n"
+		exp_continue
 	}
 
 	"*added*" {
