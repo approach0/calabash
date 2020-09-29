@@ -26,6 +26,21 @@ linode_node_list_labels() {
   "
 }
 
+linode_node_filter_by_label() {
+  prefix=$1
+  if [ "$prefix" == '' ]; then
+    return
+  fi;
+
+  linode_node_list --json | python -c "if True:
+  import json, sys
+  j = json.load(sys.stdin)
+  a = filter(lambda x: x['label'].startswith('${prefix}'), j)
+  a = map(lambda x: str(x['id']), a)
+  print(' '.join(a))
+  "
+}
+
 linode_node_create() {
   PASSWD=$1
   LABEL=$2  # calabash-usrname-3-m
@@ -41,26 +56,29 @@ linode_node_create() {
     --image=$IMAGE \
     --booted=true \
     --private_ip=false
+
+  echo 'Just created, testing status ...'
+
+  nodeID=$(linode_node_filter_by_label $LABEL)
+  while true; do
+    $LINODE_CLI --json linodes view $nodeID | python -c "if True:
+    import json, sys
+    j = json.load(sys.stdin)
+    status = j[0]['status']
+    print(status)
+    quit('running' == status)
+    "
+    if [ $? -eq 1 ]; then
+      break
+    else
+      sleep 10
+    fi
+  done
 }
 
 linode_node_delete() {
   nodeID=$1
   $LINODE_CLI linodes delete $nodeID
-}
-
-linode_node_filter_by_label() {
-  prefix=$1
-  if [ "$prefix" == '' ]; then
-    return
-  fi;
-
-  linode_node_list --json | python -c "if True:
-  import json, sys
-  j = json.load(sys.stdin)
-  a = filter(lambda x: x['label'].startswith('${prefix}'), j)
-  a = map(lambda x: str(x['id']), a)
-  print(' '.join(a))
-  "
 }
 
 linode_node_map_ipaddr() {

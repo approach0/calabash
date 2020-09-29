@@ -59,7 +59,7 @@ ucloud_node_list_labels() {
 
 ucloud_node_create() {
   PASSWD=$1
-  LABEL=$2  # calabash_new-usrname
+  LABEL=$2  # calabash-usrname-3-m
   REGION=$3 # cn-gd, cn-bj2, tw-tp, hk
   SPECS=$4   # 1cpu-1gb-1mb
   IMAGE=$5  # 'Debian 9'
