@@ -59,7 +59,7 @@ ucloud_node_list_labels() {
 
 ucloud_node_create() {
   PASSWD=$1
-  LABEL=$2  # calabash-swarm3-master
+  LABEL=$2  # calabash_new-usrname
   REGION=$3 # cn-gd, cn-bj2, tw-tp, hk
   SPECS=$4   # 1cpu-1gb-1mb
   IMAGE=$5  # 'Debian 9'
@@ -131,6 +131,17 @@ ucloud_node_filter_by_label() {
     "`"
   done
   echo "$IDs"
+}
+
+ucloud_node_map_ipaddr() {
+  nodeID=$1
+  for region in `ucloud_existing_regions`; do
+    $UCLOUD_CLI --json uhost list --uhost-id $nodeID --region=$region | python -c "if True:
+    import json, sys
+    j = json.load(sys.stdin)
+    print(j[0]['PublicIP'])
+    "
+  done
 }
 
 ucloud_node_set_label() {

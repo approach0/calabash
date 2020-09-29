@@ -28,7 +28,7 @@ linode_node_list_labels() {
 
 linode_node_create() {
   PASSWD=$1
-  LABEL=$2  # calabash-swarm3-master
+  LABEL=$2  # calabash-usrname-3-m
   REGION=$3 # ap-southeast, us-west
   SPECS=$4  # g6-nanode-1
   IMAGE=$5  # linode/debian10
@@ -60,6 +60,15 @@ linode_node_filter_by_label() {
   a = filter(lambda x: x['label'].startswith('${prefix}'), j)
   a = map(lambda x: str(x['id']), a)
   print(' '.join(a))
+  "
+}
+
+linode_node_map_ipaddr() {
+  nodeID=$1
+  $LINODE_CLI --json linodes view $nodeID | python -c "if True:
+  import json, sys
+  j = json.load(sys.stdin)
+  print(j[0]['ipv4'][0])
   "
 }
 

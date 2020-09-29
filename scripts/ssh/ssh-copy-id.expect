@@ -1,5 +1,5 @@
 #!/usr/bin/expect
-set timeout 8
+set timeout 32
 
 set hostname [lindex $argv 0]
 set password [lindex $argv 1]
