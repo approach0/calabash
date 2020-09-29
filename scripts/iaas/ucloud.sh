@@ -64,6 +64,7 @@ ucloud_node_create() {
   a = filter(lambda x: x['ImageName'].startswith('${IMAGE}'), j)
   print(list(a)[0]['ImageID'])
   "`
+  echo "use image: $image_id"
 
   n_cpu=$(echo $SPECS | awk -F'-' '{print $1}' | grep -o '[0-9]*')
   n_mem=$(echo $SPECS | awk -F'-' '{print $2}' | grep -o '[0-9]*')
@@ -76,6 +77,7 @@ ucloud_node_create() {
   print(list(a)[0]['Zones'])
   "`
   zone=$(echo $zones | awk -F',' '{print $1}')
+  echo "use zone: $zone"
 
   firewall=`$UCLOUD_CLI --json firewall list --region $REGION | python -c "if True:
   import json, sys
@@ -83,6 +85,7 @@ ucloud_node_create() {
   a = filter(lambda x: 'TCP|80' in x['Rule'], j)
   print(list(a)[0]['ResourceID'])
   "`
+  echo "use firewall: $firewall"
 
   $UCLOUD_CLI uhost create \
     --password $PASSWD \

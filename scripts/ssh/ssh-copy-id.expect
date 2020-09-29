@@ -1,0 +1,39 @@
+#!/usr/bin/expect
+set timeout 8
+
+set hostname [lindex $argv 0]
+set password [lindex $argv 1]
+
+spawn ssh-copy-id $hostname
+
+expect {
+	timeout {
+		send_user "\n<expect> Timeout!\n"
+		exit 1
+	}
+
+	"*re you sure you want to continue connecting" {
+		send "yes\n"
+		exp_continue
+	}
+
+	"*assword*" {
+		send "$password\n"
+		exp_continue
+	}
+
+	"*denied*" {
+		send_user "\n<expect> Wrong password!\n"
+		exit 1
+	}
+
+	"*added*" {
+		send_user "\n<expect> Key added!\n"
+		exit 0
+	}
+
+	"*already exist*" {
+		send_user "\n<expect> Key Already exist!\n"
+		exit 0
+	}
+}
