@@ -58,7 +58,7 @@ swarm_allocate() {
     which docker || sh get-docker.sh
 
     # get mosh in case of login in slow connection
-    apt-get install -y mosh
+    apt-get install -y -qq --no-install-recommends mosh
     echo '=== mosh login ==='
     echo mosh --ssh=\"'ssh -p ${PORT}'\" root@${IP}
   "

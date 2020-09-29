@@ -4,7 +4,7 @@ DOCKER=docker
 #DOCKER_MIRROR=hub-mirror.c.163.com/
 
 # less verbose SSH command, disallowing pasword promption
-SSH="ssh -o PasswordAuthentication=no -o StrictHostKeyChecking=no"
+SSH="ssh -o PasswordAuthentication=no -o StrictHostKeyChecking=no -o ConnectTimeout=32"
 
 rname_short() {
   mktemp | awk -F'.' '{print $2}'
