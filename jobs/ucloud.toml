@@ -9,7 +9,10 @@ dep = ucloud:source
 
 [delete-node]
 spawn = pty
-exec = ucloud_node_delete $nodeid
+exec = [
+  check_args type nodeid,
+  ucloud_node_delete $nodeid
+]
 dep = ucloud:source
 
 [account-balance]

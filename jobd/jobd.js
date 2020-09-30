@@ -21,25 +21,35 @@ program
 program.parse(process.argv)
 
 /* load configurations and setup HTTP server */
-const jobs_dir = program.jobsDir || './test-jobs'
-const cfg_path = program.config || './config.template.toml'
-
-console.log(`Loading: jobs_dir=${jobs_dir}, cfg_path=${cfg_path}`)
-
 var jobs = null
 var cfgs = {}
+var jobs_dir = './test-jobs'
+var cfg_path = './config.template.toml'
 
 var app = express()
 app.use(bodyParser.json())
 app.use(cors())
 
 ;(async function () {
-  jobs = await cfg_ldr.load_jobs(jobs_dir)
-  cfgs = await cfg_ldr.load_cfg(cfg_path)
+  try {
+    /* loading config file */
+    cfg_path = program.config || cfg_path
+    console.log(`Loading cfg_path=${cfg_path}`)
+    cfgs = await cfg_ldr.load_cfg(cfg_path)
 
-  const port = cfgs.server_port || default_port
-  app.listen(port)
-  console.log(`Listen on ${port}`)
+    /* loading jobs */
+    jobs_dir = cfgs.job_dir || program.jobsDir || jobs_dir
+    console.log(`Loading jobs_dir=${jobs_dir}`)
+    jobs = await cfg_ldr.load_jobs(jobs_dir)
+
+    /* setup HTTP server */
+    const port = cfgs.port || default_port
+    app.listen(port)
+    console.log(`Listen on ${port}`)
+  } catch (err) {
+    console.error(err.toString())
+    process.exit(1)
+  }
 })()
 
 process.on('SIGINT', function() {

@@ -10,7 +10,7 @@ function delayering(obj, outobj, stack) {
       if (typeof obj[property] == "object") {
         delayering(obj[property], outobj, next_stack);
       } else {
-        const key = next_stack.replace(/^env_/, "")
+        const key = next_stack.replace(/^environment_/, "")
         outobj[key] = obj[property]
       }
     }

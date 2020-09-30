@@ -1,42 +1,46 @@
 [allocate]
 source = [
-	. $scripts/iaas/linode.sh $linode_token,
-	. $scripts/iaas/ucloud.sh $ucloud_pubkey $ucloud_prikey,
-	. $scripts/random/random.sh,
+  . $scripts/iaas/linode.sh $linode_token,
+  . $scripts/iaas/ucloud.sh $ucloud_pubkey $ucloud_prikey,
+  . $scripts/random/random.sh,
 ]
 spawn = pty
 exec = [
-	'check_args type swarm_id usr'
-	'eval iaas=\${node_type_${type}_iaas}',
-	'eval passwd=\${node_type_${type}_passwd}',
-	'eval region=\${node_type_${type}_region}',
-	'eval specs=\${node_type_${type}_specs}',
-	'eval distro="\${node_type_${type}_distro}"',
-	'node_label=calabash-${usr}-${swarm_id}-$(rname_short)',
-	'${iaas}_node_create $passwd $node_label $region $specs "$distro"',
-	export node_label
+  check_args type swarm_id usr
+  'eval iaas=\${node_type_${type}_provider}',
+  'eval passwd=\${${iaas}_node_passwd}',
+  'eval region=\${node_type_${type}_region}',
+  'eval specs=\${node_type_${type}_specs}',
+  'eval distro="\${node_type_${type}_distro}"',
+
+  'node_label=calabash-${usr}-${swarm_id}-$(rname_short)',
+  '${iaas}_node_create $passwd $node_label $region $specs $distro',
+
+  export node_label
 ]
 
 [install]
 source = [
-	. $scripts/iaas/linode.sh $linode_token,
-	. $scripts/iaas/ucloud.sh $ucloud_pubkey $ucloud_prikey,
-	. $scripts/ssh/ssh.sh,
-	. $scripts/swarm/swarm.sh,
+  . $scripts/iaas/linode.sh $linode_token,
+  . $scripts/iaas/ucloud.sh $ucloud_pubkey $ucloud_prikey,
+  . $scripts/ssh/ssh.sh,
+  . $scripts/swarm/swarm.sh,
 ]
 spawn = pty
 user = root # for ssh-copy-id to find identity file.
 
 exec = [
-	'check_args type node_label'
-	'eval iaas=\${node_type_${type}_iaas}',
-	'eval passwd=\${node_type_${type}_passwd}',
-	'eval port=\${node_type_${type}_ssh_port}',
-	'export nodeID=`${iaas}_node_filter_by_label $node_label`',
-	'export nodeIP=`${iaas}_node_map_ipaddr $nodeID`',
-	'ssh-keygen -R $nodeIP',
-	'$scripts/ssh/ssh-copy-id.expect root@$nodeIP $passwd',
-	'sshd_change_port root@$nodeIP 22 $port',
-	'swarm_install root@$nodeIP $port'
+  check_args type node_label,
+  'eval iaas=\${node_type_${type}_provider}',
+  'eval passwd=\${${iaas}_node_passwd}',
+  'eval port=\${node_type_${type}_ssh_port}',
+
+  'export nodeID=`${iaas}_node_filter_by_label $node_label`',
+  'export nodeIP=`${iaas}_node_map_ipaddr $nodeID`',
+
+  'ssh-keygen -R $nodeIP',
+  '$scripts/ssh/ssh-copy-id.expect root@$nodeIP $passwd',
+  'sshd_change_port root@$nodeIP 22 $port',
+  'swarm_install root@$nodeIP $port'
 ]
 dep = swarm:allocate

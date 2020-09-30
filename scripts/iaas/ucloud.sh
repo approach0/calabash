@@ -61,7 +61,7 @@ ucloud_node_create() {
   LABEL=$2  # calabash-usrname-3-m
   REGION=$3 # cn-gd, cn-bj2, tw-tp, hk
   SPECS=$4   # 1cpu-1gb-1mb
-  IMAGE="$5"  # 'Debian 9'
+  IMAGE="$(echo $5 | sed -e 's/_/ /g')"  # 'Debian_9'
 
   image_id=`$UCLOUD_CLI --json image list --region $REGION | python -c "if True:
   import json, sys

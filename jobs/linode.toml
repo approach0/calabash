@@ -7,7 +7,10 @@ exec = linode_node_list
 dep = linode:source
 
 [delete-node]
-exec = linode_node_delete $nodeid
+exec = [
+  check_args type nodeid,
+  linode_node_delete $nodeid
+]
 dep = linode:source
 
 [account-balance]
