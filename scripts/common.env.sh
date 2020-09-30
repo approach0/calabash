@@ -3,13 +3,18 @@
 DOCKER=docker
 #DOCKER_MIRROR=hub-mirror.c.163.com/
 
-# less verbose SSH command, disallowing pasword promption
+# less verbose SSH command, disallowing password prompt
 SSH="ssh -o PasswordAuthentication=no -o StrictHostKeyChecking=no -o ConnectTimeout=32"
 
-rname_short() {
-  mktemp | awk -F'.' '{print $2}'
-}
-
-rname_uuid() {
-  cat /proc/sys/kernel/random/uuid
+# check variable existence
+check_args() {
+  set -e
+  for argname in $@; do
+    echo "checking argument $argname=${!argname}"
+    if [ "${!argname}" == '' ]; then
+      echo 'empty argument, abort.'
+      exit 1
+    fi
+  done
+  set +e
 }

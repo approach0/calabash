@@ -3,5 +3,14 @@ verbose = false
 source = . $scripts/iaas/linode.sh $linode_token
 
 [list-nodes]
-exec = linode_list_nodes
+exec = linode_node_list
 dep = linode:source
+
+[delete-node]
+exec = linode_node_delete $nodeid
+dep = linode:source
+
+[account-balance]
+exec = linode_account_balance
+dep = linode:source
+
