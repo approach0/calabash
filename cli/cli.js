@@ -99,7 +99,7 @@ if (program.job) {
   const options = {
     goal: program.job,
     dry_run: program.dryrun || false,
-    single_job: program.single || false
+    single_job: program.single || false,
     insist_job: program.insist || false
   }
 
