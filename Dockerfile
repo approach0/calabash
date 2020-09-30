@@ -9,7 +9,7 @@ RUN apt-get install -y nodejs
 
 # install python/pip
 RUN apt-get install -y python3-pip
-RUN ln -s `which python3` /usr/bin/python
+RUN ln -sf `which python3` /usr/bin/python
 
 # clone this project
 RUN mkdir -p /code
