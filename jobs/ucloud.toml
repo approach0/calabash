@@ -10,7 +10,7 @@ dep = ucloud:source
 [delete-node]
 spawn = pty
 exec = [
-  check_args type nodeid,
+  check_args nodeid
   ucloud_node_delete $nodeid
 ]
 dep = ucloud:source

@@ -8,7 +8,7 @@ dep = linode:source
 
 [delete-node]
 exec = [
-  check_args type nodeid,
+  check_args nodeid
   linode_node_delete $nodeid
 ]
 dep = linode:source
