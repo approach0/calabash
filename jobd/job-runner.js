@@ -92,6 +92,7 @@ exports.runcmd = function (cmd, opt, onLog, onSpawn)
   const ow_declare = exports.declare_envs({
     'PATH': process.env['PATH'],
     'USER': opt.user,
+    'TERM': 'xterm-256color',
     'USERNAME': opt.user,
     'HOME': (opt.user == 'root') ? '/root' : '/home/' + opt.user,
     'SHELL': '/bin/sh'
