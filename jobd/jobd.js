@@ -165,7 +165,7 @@ app
 
     const run_cfg = {
       dryrun: reqJSON['dry_run'],
-      status: reqJSON['status_task'],
+      insist: reqJSON['insist_job'],
       single: reqJSON['single_job'],
       jobs, envs, target
     }

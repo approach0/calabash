@@ -245,7 +245,7 @@ exports.runlist = function (run_cfg, runList, onComplete) {
 
   /* start task */
   const list_job_names = runList.join(', ')
-  const task_id = tasks.add_task(runList, run_cfg.status)
+  const task_id = tasks.add_task(runList, run_cfg.insist)
 
   logAndPrint(
     `[ job-runner ] start task#${task_id}: ${list_job_names}.`,
@@ -298,7 +298,7 @@ exports.runlist = function (run_cfg, runList, onComplete) {
         if (flag === 'no_loop_ctrl')
           return
 
-        if (!run_cfg.status) {
+        if (!run_cfg.insist) {
           if (exitcode == 0) {
             failcnt = 0
             setTimeout(loop.next, 500)
@@ -333,7 +333,7 @@ exports.runlist = function (run_cfg, runList, onComplete) {
       } else if (ref) {
         let subList = exports.getRunList(run_cfg.jobs, ref)
         exports.runlist(run_cfg, subList, (completed) => {
-          if (completed)
+          if (completed && !run_cfg.insist)
             loop.next()
           else
             loop.brk()
@@ -374,7 +374,7 @@ exports.parseTargetArgs = function (target) {
 exports.run = function (run_cfg, onComplete) {
   /* safe-guard some keys */
   run_cfg.dryrun = run_cfg.dryrun || false
-  run_cfg.status = run_cfg.status || false
+  run_cfg.insist = run_cfg.insist || false
   run_cfg.single = run_cfg.single || false
 
   var runList

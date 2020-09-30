@@ -28,7 +28,6 @@ source = [
 ]
 spawn = pty
 user = root # for ssh-copy-id to find identity file.
-
 exec = [
   check_args type node_label,
   'eval iaas=\${node_type_${type}_provider}',
@@ -43,4 +42,25 @@ exec = [
   'sshd_change_port root@$nodeIP 22 $port',
   'swarm_install root@$nodeIP $port'
 ]
+if_not = $SSH which docker
 dep = swarm:allocate
+
+[init]
+source = . $scripts/swarm/swarm.sh
+exec = [
+  check_args nodeIP,
+  $SSH root@$nodeIP $DOCKER swarm init
+]
+dep = swarm:install
+
+[leave]
+source = . $scripts/swarm/swarm.sh
+exec = $DOCKER swarm leave --force
+
+[kv-get]
+source = . $scripts/swarm/swarm.sh
+exec = [
+  check_args key,
+  swarm_db_get $key
+]
+if = which $DOCKER

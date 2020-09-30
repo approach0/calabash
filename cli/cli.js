@@ -10,6 +10,7 @@ program
   .option('--log <log ID>', 'print job by ID (MASTER, job-<jobID>, or task-<taskID>)')
   .option('--dryrun', 'dryrun mode')
   .option('--single', 'run w/o any dependent job')
+  .option('--insist', 'run through jobs even if some dependencies is failed')
   .option('-J, --list-jobs', 'list all jobs')
   .option('--list-config', 'list configuration variables')
   .option('--list-tasks <all | active | unactive>', 'list tasks')
@@ -99,6 +100,7 @@ if (program.job) {
     goal: program.job,
     dry_run: program.dryrun || false,
     single_job: program.single || false
+    insist_job: program.insist || false
   }
 
   axios.post(url, options)

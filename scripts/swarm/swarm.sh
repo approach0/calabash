@@ -16,3 +16,24 @@ swarm_install() {
     echo mosh --ssh=\"'ssh -p ${SSH_PORT}'\" ${SSH_ADDR}
   "
 }
+
+swarm_db_set() {
+  KEY=$1
+  VAL="$2"
+  echo "$VAL" | $DOCKER config create $KEY -
+}
+
+swarm_db_get() {
+  KEY=$1
+  $DOCKER config inspect --format='{{(json .Spec.Data)}}' $KEY | cut -d'\"' -f2 | base64 -d -
+}
+
+swarm_node_is_in() {
+  state=$($DOCKER info -f '{{(.Swarm.LocalNodeState)}}')
+  [ "$state" == "active" ] && return 0 || return 1
+}
+
+swarm_node_is_manager() {
+  state=$($DOCKER info -f '{{(.Swarm.ControlAvailable)}}')
+  [ "$state" == "true" ] && return 0 || return 1
+}
