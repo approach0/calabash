@@ -48,6 +48,13 @@ exports.syncLoop = function (arr, doing, done) {
   }, 0)
 }
 
+/* declare non-functional env variables */
+exports.declare_envs = function (env) {
+  return Object.keys(env).reduce((accum, key) => {
+    return accum + `declare -x ${key}="${env[key]}"\n`
+  }, '')
+}
+
 exports.getRunList = function (jobs, target) {
   const deps = jobs.dependenciesOf(target)
   deps.push(target)
@@ -81,14 +88,24 @@ exports.runcmd = function (cmd, opt, onLog, onSpawn)
     gid = process_.getgid()
   }
 
+  /* overwrite/necessary environment */
+  const ow_declare = exports.declare_envs({
+    'PATH': process.env['PATH'],
+    'USER': opt.user,
+    'USERNAME': opt.user,
+    'HOME': (opt.user == 'root') ? '/root' : '/home/' + opt.user,
+    'SHELL': '/bin/sh'
+  })
+
   return new Promise((resolve, reject) => {
     /* spawn runner process */
     let runner
     const tmpdir = os.tmpdir()
-    //console.log(opt.env_declare)
+    //console.log(opt.declare)
     try {
       const hooked_cmd =
-      opt.env_declare +
+      opt.declare +
+      ow_declare +
       `__on_exit__() {
         exitcode=$?
         ${opt.source ? '{ set +a; } 2> /dev/null' : ''}
@@ -103,11 +120,10 @@ exports.runcmd = function (cmd, opt, onLog, onSpawn)
        cmd;
 
       //console.log(hooked_cmd)
-
       runner = spawnFun('/bin/bash', ['-c', hooked_cmd], {
         uid, gid,
         'cwd': opt.cwd,
-        'env': opt.env_basic,
+        'env': {},
         'cols': 80,
         'rows': 30,
         'name': 'xterm-color'
@@ -165,17 +181,8 @@ exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog) {
   const verbose = targetProps['verbose'] || false
 
   /* prepare spawn environment */
-  var basicEnv = {
-    'PATH': process.env['PATH'],
-    'USER': user,
-    'USERNAME': user,
-    'HOME': (user == 'root') ? '/root' : '/home/' + user,
-    'SHELL': '/bin/sh'
-  }
-
   const opts = {
-    'env_basic': basicEnv,
-    'env_declare': run_cfg.envs,
+    'declare': run_cfg.envs,
     'verbose': verbose,
     'cwd': cwd,
     'user': user,
@@ -191,7 +198,7 @@ exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog) {
       await onExit(source, pid, exitcode, 'no_loop_ctrl')
 
       /* update environment variables */
-      opts.env_declare = run_cfg.envs
+      opts.declare = run_cfg.envs
     }
 
     /* test command */
@@ -265,7 +272,7 @@ exports.runlist = function (run_cfg, runList, onComplete) {
       }
 
       const onSpawn = function (cmd, usr, pid) {
-        onLog(`[ spawn pid=${pid} ] ${cmd}`, false)
+        onLog(`[ spawn pid=${pid}, user=${usr} ] ${cmd}`, false)
 
         /* update task meta info */
         tasks.spawn_notify(task_id, idx, pid)
@@ -347,13 +354,6 @@ exports.runlist = function (run_cfg, runList, onComplete) {
   )
 
   return task_id
-}
-
-/* declare non-functional env variables */
-exports.declare_envs = function (env) {
-  return Object.keys(env).reduce((accum, key) => {
-    return accum + `declare -x ${key}="${env[key]}"\n`
-  }, '')
 }
 
 exports.parseTargetArgs = function (target) {

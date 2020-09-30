@@ -15,6 +15,7 @@ exit $(shuf -i 0-3 -n 1)
 spawn = pty # spawn a real pty process that can accept user input
 exec = [
 	'read -p "Your name?" YOUR_NAME',
-	'echo "Hi $YOUR_NAME"'
+	'echo "Hi $YOUR_NAME"',
+	export YOUR_NAME # carry on this variable to later jobs
 ]
 dep = [hello:say-hello, hello:say-myname]
