@@ -13,7 +13,7 @@ RUN ln -s `which python3` /usr/bin/python
 
 # clone this project
 RUN mkdir -p /code
-RUN git clone --depth https://github.com/approach0/calabash /code/calabash
+RUN git clone --depth 1 https://github.com/approach0/calabash /code/calabash
 WORKDIR /code/calabash
 RUN (cd cli && npm install)
 RUN (cd jobd && npm install)
