@@ -1,5 +1,6 @@
 #!/bin/bash
 LINODE_TOKEN=$1
+DOCKER_MIRROR=$2
 
 source $(dirname ${BASH_SOURCE[0]})/../common.env.sh
 

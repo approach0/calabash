@@ -1,11 +1,17 @@
 #!/bin/bash
 UCLOUD_CLI_PUBKEY=$1
 UCLOUD_CLI_PRIKEY=$2
+UHUB_USERNAME=$3
+UHUB_PASSWORD=$4
+DOCKER_MIRROR=$5
 
 source $(dirname ${BASH_SOURCE[0]})/../common.env.sh
 
 UCLOUD_CLI_IMG=${DOCKER_MIRROR}ga6840/ucloud-cli:latest
 UCLOUD_CLI="$DOCKER run -it $UCLOUD_CLI_IMG /root/wrap-run.sh $UCLOUD_CLI_PUBKEY $UCLOUD_CLI_PRIKEY"
+
+# login
+$DOCKER login $DOCKER_MIRROR -u $UHUB_USERNAME -p $UHUB_PASSWORD
 
 ucloud_existing_regions() {
   $UCLOUD_CLI api --Action GetProjectResourceCount --ProductType uhost | python -c "if True:

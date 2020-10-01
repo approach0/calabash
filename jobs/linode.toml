@@ -1,6 +1,6 @@
 [source]
 verbose = false
-source = . $scripts/iaas/linode.sh $linode_token
+source = . $scripts/iaas/linode.sh $linode_token $linode_docker_mirror
 
 [list-nodes]
 exec = linode_node_list

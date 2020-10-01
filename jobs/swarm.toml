@@ -1,7 +1,7 @@
 [allocate]
 source = [
-  . $scripts/iaas/linode.sh $linode_token,
-  . $scripts/iaas/ucloud.sh $ucloud_pubkey $ucloud_prikey,
+  . $scripts/iaas/linode.sh $linode_token $linode_docker_mirror,
+  . $scripts/iaas/ucloud.sh $ucloud_pubkey $ucloud_prikey $ucloud_username $ucloud_password $ucloud_docker_mirror,
   . $scripts/random/random.sh,
 ]
 spawn = pty

@@ -1,7 +1,6 @@
 # common environment variables
 
 DOCKER=docker
-#DOCKER_MIRROR=hub-mirror.c.163.com/
 
 # less verbose SSH command, disallowing password prompt
 SSH="ssh -o PasswordAuthentication=no -o StrictHostKeyChecking=no -o ConnectTimeout=32"
