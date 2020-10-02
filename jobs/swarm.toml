@@ -21,8 +21,8 @@ exec = [
 
 [install]
 source = [
-  . $scripts/iaas/linode.sh $linode_token,
-  . $scripts/iaas/ucloud.sh $ucloud_pubkey $ucloud_prikey,
+  . $scripts/iaas/linode.sh $linode_token $linode_docker_mirror,
+  . $scripts/iaas/ucloud.sh $ucloud_pubkey $ucloud_prikey $ucloud_username $ucloud_password $ucloud_docker_mirror,
   . $scripts/ssh/ssh.sh,
   . $scripts/swarm/swarm.sh,
 ]
@@ -42,25 +42,30 @@ exec = [
   'sshd_change_port root@$nodeIP 22 $port',
   'swarm_install root@$nodeIP $port'
 ]
-if_not = $SSH which docker
 dep = swarm:allocate
 
-[init]
+[bootstrap]
 source = . $scripts/swarm/swarm.sh
 exec = [
-  check_args nodeIP,
-  $SSH root@$nodeIP $DOCKER swarm init
+  check_args type nodeIP,
+  'eval port=\${node_type_${type}_ssh_port}',
+  $SSH -p $port root@$nodeIP $DOCKER swarm init,
+  swarm_update_secret_file root@$nodeIP $port $swarm_config_key $_config_file_
+  # now create the first node in swarm
+  'version=`swarm_config_get root@$nodeIP $port ${swarm_config_key}.latest`',
+  iaas=ucloud, # TODO: get iaas from node label
+  'eval docker_mirror=\${${iaas}_docker_mirror}',
+  'command=`echo ${swarm_service_0_docker_exec} | sed -e "s/{{version}}/${version}/g"`',
+  '''
+  set -x
+  $SSH -p $port root@$nodeIP $DOCKER service create \
+  --name ${swarm_service_0_name} \
+  --publish published=${swarm_service_0_portmap},target=$jobd_port \
+  --hostname="{{.Service.Name}}-{{.Task.Slot}}" \
+  --secret ${swarm_config_key}.$version \
+  ${docker_mirror}${swarm_service_0_docker_image} \
+  ${command}
+  set +x
+  '''
 ]
-dep = swarm:install
-
-[leave]
-source = . $scripts/swarm/swarm.sh
-exec = $DOCKER swarm leave --force
-
-[kv-get]
-source = . $scripts/swarm/swarm.sh
-exec = [
-  check_args key,
-  swarm_db_get $key
-]
-if = which $DOCKER
+#dep = swarm:install

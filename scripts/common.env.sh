@@ -2,8 +2,10 @@
 
 DOCKER=docker
 
-# less verbose SSH command, disallowing password prompt
-SSH="ssh -o PasswordAuthentication=no -o StrictHostKeyChecking=no -o ConnectTimeout=32"
+# less verbose SSH commands, disallowing password prompt
+SSH_OPTS="-o PasswordAuthentication=no -o StrictHostKeyChecking=no -o ConnectTimeout=32" 
+SSH="ssh $SSH_OPTS"
+SCP="scp $SSH_OPTS"
 
 # check variable existence
 check_args() {

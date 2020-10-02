@@ -36,6 +36,8 @@ app.use(cors())
     cfg_path = program.config || cfg_path
     console.log(`Loading cfg_path=${cfg_path}`)
     cfgs = await cfg_ldr.load_cfg(cfg_path)
+    cfgs._config_file_ = cfg_path
+    console.log(cfgs)
 
     /* loading jobs */
     jobs_dir = cfgs.job_dir || program.jobsDir || jobs_dir
@@ -43,7 +45,7 @@ app.use(cors())
     jobs = await cfg_ldr.load_jobs(jobs_dir)
 
     /* setup HTTP server */
-    const port = cfgs.port || default_port
+    const port = cfgs.jobd_port || default_port
     app.listen(port)
     console.log(`Listen on ${port}`)
   } catch (err) {
@@ -62,7 +64,7 @@ process.on('SIGINT', function() {
 app
 .get('/', async function (req, res) {
   res.json({
-    'test': 'hello world'
+    'jobd': 'hello world'
   })
 })
 
