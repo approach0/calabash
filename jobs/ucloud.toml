@@ -1,6 +1,9 @@
 [source]
 verbose = false
-source = . $scripts/iaas/ucloud.sh $ucloud_pubkey $ucloud_prikey $ucloud_username $ucloud_password $ucloud_docker_mirror
+source = [
+  . $scripts/common.env.sh,
+  '. $scripts/iaas/ucloud.sh `unpack \$iaas_ucloud_{pubkey,prikey,username,password,docker_mirror}`'
+]
 
 [list-nodes]
 spawn = pty

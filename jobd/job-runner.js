@@ -162,12 +162,14 @@ exports.runcmd = function (cmd, opt, onLog, onSpawn)
 
 function parse_exec(input)
 {
-  if (input === undefined)
+  if (input === undefined) {
     return ''
-  else if (Array.isArray(input))
-    return input.join('; ')
-  else
-    return input.replace(/\n/g, '; ')
+  } else if (Array.isArray(input)) {
+    const trim_in = input.map(s => s.trim())
+    return trim_in.join('\n')
+  } else {
+    return input
+  }
 }
 
 exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog) {

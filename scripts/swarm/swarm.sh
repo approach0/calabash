@@ -5,17 +5,8 @@ source $(dirname ${BASH_SOURCE[0]})/../random/random.sh
 swarm_install() {
   SSH_ADDR=$1
   SSH_PORT=$2
-  $SSH -p $SSH_PORT $SSH_ADDR "
-    apt-get update
-
-    which docker || curl -fsSL https://get.docker.com -o get-docker.sh
-    which docker || sh get-docker.sh
-
-    # get mosh in case of login in slow connection
-    apt-get install -y -qq --no-install-recommends mosh
-    echo '=== mosh login ==='
-    echo mosh --ssh=\"'ssh -p ${SSH_PORT}'\" ${SSH_ADDR}
-  "
+  HOST_CFG=$3
+  $SSH -p $SSH_PORT $SSH_ADDR 'bash -s' -- < $scripts/swarm/install.$HOST_CFG.sh
 }
 
 swarm_node_is_in() {
@@ -36,10 +27,12 @@ swarm_update_secret_file() {
   tmpfile=`mktemp`
   randver=`rname_uuid`
   $SCP -P $SSH_PORT $CONFIG_FILE $SSH_ADDR:$tmpfile
-  $SSH -p $SSH_PORT $SSH_ADDR "$DOCKER config rm $SECRET_KEY.latest"
-  $SSH -p $SSH_PORT $SSH_ADDR "echo $randver | $DOCKER config create $SECRET_KEY.latest -"
-  $SSH -p $SSH_PORT $SSH_ADDR "$DOCKER secret create $SECRET_KEY.$randver $tmpfile"
-  $SSH -p $SSH_PORT $SSH_ADDR "rm -f $tmpfile"
+  $SSH -p $SSH_PORT $SSH_ADDR 'bash -s' -- <<- EOF
+    $DOCKER config rm $SECRET_KEY.latest
+    echo $randver | $DOCKER config create $SECRET_KEY.latest -
+    $DOCKER secret create $SECRET_KEY.$randver $tmpfile
+    rm -f $tmpfile
+	EOF
 }
 
 swarm_config_get() {
@@ -48,4 +41,15 @@ swarm_config_get() {
   CONFIG_KEY=$3
   $SSH -p $SSH_PORT $SSH_ADDR \
     "$DOCKER config inspect --format='{{(json .Spec.Data)}}' $CONFIG_KEY | cut -d'\"' -f2 | base64 -d -"
+}
+
+swarm_node_label() {
+  SSH_ADDR=$1
+  SSH_PORT=$2
+  LABELS="$3"
+  $SSH -p $SSH_PORT $SSH_ADDR 'bash -s' -- <<- EOF
+    swarmNodeID=\$($DOCKER info -f "{{.Swarm.NodeID}}")
+    [ -n "$LABELS" ] && $DOCKER node update \$swarmNodeID --label-add '$LABELS'
+    $DOCKER node inspect \$swarmNodeID -f "{{(json .Spec.Labels)}}"
+	EOF
 }

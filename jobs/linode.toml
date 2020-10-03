@@ -1,6 +1,9 @@
 [source]
 verbose = false
-source = . $scripts/iaas/linode.sh $linode_token $linode_docker_mirror
+source = [
+  . $scripts/common.env.sh,
+  '. $scripts/iaas/linode.sh `unpack \$iaas_linode_{token,docker_mirror}`'
+]
 
 [list-nodes]
 exec = linode_node_list
@@ -16,4 +19,3 @@ dep = linode:source
 [account-balance]
 exec = linode_account_balance
 dep = linode:source
-
