@@ -1,0 +1,51 @@
+[environment]
+scripts = ./scripts
+job_dir = ./jobs
+jobd_port = 8964
+
+[iaas]
+providers = [linode, ucloud]
+
+  [iaas.linode]
+  token = <<REPLACE_ME>>
+  docker_mirror = docker.io/ # hub-mirror.c.163.com/
+
+    [iaas.linode.config_1]
+    region = ap-southeast
+    specs = 'g6-nanode-1'
+    distro = linode/debian10
+    ssh_port = <<REPLACE_ME>>
+    password = <<REPLACE_ME>>
+
+  [iaas.ucloud]
+  pubkey = <<REPLACE_ME>>
+  prikey = <<REPLACE_ME>>
+  docker_mirror = uhub.service.ucloud.cn/
+  username = <<REPLACE_ME>>
+  password = <<REPLACE_ME>>
+
+    [iaas.ucloud.config_1]
+    region = cn-gd
+    specs = 1cpu-1gb-1mb
+    distro = 'Debian_9'
+    ssh_port = 22
+    password = <<REPLACE_ME>>
+
+[swarm]
+config_key = calabash_config
+
+  [swarm.service_bootstrap]
+  name = calabash
+  portmap = 80
+  docker_image = ga6840/calabash
+  docker_exec = 'node ./jobd/jobd.js --config /run/secrets/calabash_config.{{version}}'
+
+  [swarm.service_1]
+  mesh_bind = *
+  mesh_replicas = 1
+  mesh_sharding = 1
+  portmap = 8934
+  docker_image = foo
+  docker_exec = bar
+  network_type = overlay
+  network_name = baz
