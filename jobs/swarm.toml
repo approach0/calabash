@@ -48,12 +48,14 @@ dep = swarm:allocate
 source = . $scripts/swarm/swarm.sh
 exec = [
   check_args type nodeIP,
+  'eval iaas=\${node_type_${type}_provider}',
   'eval port=\${node_type_${type}_ssh_port}',
   $SSH -p $port root@$nodeIP $DOCKER swarm init,
+  'swarmNodeID=`docker info -f "{{(.Swarm.NodeID)}}"`',
+  docker node update --label-add "iaas=$iaas" $swarmNodeID,
   swarm_update_secret_file root@$nodeIP $port $swarm_config_key $_config_file_
   # now create the first node in swarm
   'version=`swarm_config_get root@$nodeIP $port ${swarm_config_key}.latest`',
-  iaas=ucloud, # TODO: get iaas from node label
   'eval docker_mirror=\${${iaas}_docker_mirror}',
   'command=`echo ${swarm_service_0_docker_exec} | sed -e "s/{{version}}/${version}/g"`',
   '''
