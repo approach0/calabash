@@ -10,18 +10,18 @@ SCP="scp $SSH_OPTIONS" # Do not use SSH_OPTS for scp, it is undocumented but wil
 
 # check variable existence
 check_args() {
-  set -e
-  for argname in $@; do
-    echo "checking argument $argname=${!argname}"
-    if [ "${!argname}" == '' ]; then
-      echo 'empty argument, abort.'
-      exit 1
-    fi
-  done
-  set +e
+	set -e
+	for argname in $@; do
+		echo "checking argument $argname=${!argname}"
+		if [ "${!argname}" == '' ]; then
+			echo 'empty argument, abort.'
+			exit 1
+		fi
+	done
+	set +e
 }
 
 # unpack curly brace expandable variables
 unpack() {
-  eval echo $@
+	eval echo $@
 }

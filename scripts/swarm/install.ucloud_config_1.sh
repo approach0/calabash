@@ -7,12 +7,12 @@ link2=http://mirrors.aliyun.com/docker-ce/linux/debian/dists/buster/pool/stable/
 link3=http://mirrors.aliyun.com/docker-ce/linux/debian/dists/buster/pool/stable/amd64/docker-ce_19.03.9~3-0~debian-buster_amd64.deb
 
 install() {
-  url=$1
-  fname=`basename $1`
-  if [ ! -e $fname ]; then
-    wget $url
-    dpkg -i $fname
-  fi
+	url=$1
+	fname=`basename $1`
+	if [ ! -e $fname ]; then
+		wget $url
+		dpkg -i $fname
+	fi
 }
 
 install $link1
