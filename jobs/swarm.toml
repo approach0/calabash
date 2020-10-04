@@ -9,7 +9,7 @@ exec = [
   check_args iaascfg,
   'provider=`echo $iaascfg | cut -d "_" -f 1`',
   'read region specs distro passwd <<< $(unpack \$iaas_${iaascfg}_{region,specs,distro,password})',
-  'node_label=calabash-$(rname_short)',
+  'node_label=calabash-${cbuser-$admin_name}-$(rname_short)',
   '${provider}_node_create $passwd $node_label $region $specs $distro',
   export node_label
 ]
@@ -27,15 +27,20 @@ exec = [
   # unpack parameters
   'provider=`echo $iaascfg | cut -d "_" -f 1`',
   'read passwd port <<< $(unpack \$iaas_${iaascfg}_{password,ssh_port})',
+  'read docker_mirror <<< $(unpack \$iaas_${provider}_docker_mirror)',
   # get node ID and IP
   'nodeID=`${provider}_node_filter_by_label $node_label`',
   'nodeIP=`${provider}_node_map_ipaddr $nodeID`',
-  # install ssh key, setup ssh port, and install docker-engine.
+  # refresh local known host list
   ssh-keygen -R $nodeIP,
+  # allow ssh login from this host and from remote itself
   '$scripts/ssh/ssh-copy-id.expect root@$nodeIP $passwd',
+  sshd_allow_self_login $nodeIP $port
+  # change remote sshd port
   sshd_change_port root@$nodeIP 22 $port,
-  swarm_install root@$nodeIP $port $iaascfg
-  # export/return node IP address
+  # install docker engine
+  swarm_install root@$nodeIP $port $iaascfg $docker_mirror,
+  # export node IP address
   export nodeIP
 ]
 dep = swarm:allocate
@@ -45,36 +50,21 @@ source = . $scripts/swarm/swarm.sh
 exec = [
   check_args iaascfg nodeIP,
   # unpack parameters
-  'provider=`echo $iaascfg | cut -d "_" -f 1`',
-  'read passwd port <<< $(unpack \$iaas_${iaascfg}_{password,ssh_port})',
-  'read docker_mirror <<< $(unpack \$iaas_${provider}_docker_mirror)',
-  # initialize docker warm for the first time
-  $SSH -p $port root@$nodeIP $DOCKER swarm init,
-  # set label for this root swarm manager
-  'swarm_node_label root@$nodeIP $port iaascfg=$iaascfg',
-  # upload config file as docker swarm secret/config
-  swarm_update_secret_file root@$nodeIP $port $swarm_config_key $_config_file_,
-  # unpack service parameters
-  '''
-  read srv_name portmap docker_img docker_exec <<< \
-  $(unpack \$swarm_service_bootstrap_{name,portmap,docker_image,docker_exec})
-  ''',
-  'version=`swarm_config_get root@$nodeIP $port ${swarm_config_key}.latest`',
-  'command=`echo $docker_exec | sed -e "s/{{version}}/${version}/g"`',
-  # now create the first swarm service
-  '$SSH -p $port root@$nodeIP $DOCKER service rm ${srv_name}',
-  '''
-  set -x
-  $SSH -p $port root@$nodeIP \
-  $DOCKER service create --name ${srv_name} \
-  --publish published=${portmap},target=${jobd_port} \
-  --hostname="{{.Service.Name}}-{{.Task.Slot}}" \
-  --secret ${swarm_config_key}.${version} \
-  ${docker_mirror}${docker_img} ${command}
-  set +x
-  '''
+  'read port <<< $(unpack \$iaas_${iaascfg}_ssh_port)',
+
+#  # initialize docker warm for the first time
+#  $SSH -p $port root@$nodeIP $DOCKER swarm init,
+
+#  # set label for this root swarm manager
+#  'swarm_node_label root@$nodeIP $port iaascfg=$iaascfg',
+
+## upload config file as docker swarm secret/config
+#	swarm_update_secret_file root@$nodeIP $port calabash_config $_config_file_,
+
+#  # setup the first service
+  swarm_service_deploy $nodeIP $port calabash,
 ]
-dep = swarm:install
+#dep = swarm:install
 
 [expand]
 source = . $scripts/swarm/swarm.sh

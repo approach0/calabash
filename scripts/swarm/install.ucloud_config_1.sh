@@ -1,4 +1,6 @@
 #!/bin/sh
+REGISTRY=$1
+
 sed -i s@/deb.debian.org/@/mirrors.aliyun.com/@g /etc/apt/sources.list
 apt-get update
 
@@ -18,3 +20,10 @@ install() {
 install $link1
 install $link2
 install $link3
+
+# setup docker registry mirror
+cat > '/etc/docker/daemon.json' << EOF
+{
+	"registry-mirrors": ["$REGISTRY"]
+}
+EOF

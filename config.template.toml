@@ -2,6 +2,7 @@
 scripts = ./scripts
 job_dir = ./jobs
 jobd_port = 8964
+admin_name = admin
 
 [iaas]
 providers = [linode, ucloud]
