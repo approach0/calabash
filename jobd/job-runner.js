@@ -10,7 +10,7 @@ const querystring = require('querystring')
 
 const logHeaderLen = 35
 
-function logAndPrint(line, logIDs) {
+function logAndPrintLine(line, logIDs) {
   [...logIDs, 'MASTER'].forEach(logID => {
     logger.write(logID, line)
   })
@@ -249,7 +249,7 @@ exports.runlist = function (run_cfg, runList, onComplete) {
   const list_job_names = runList.join(', ')
   const task_id = tasks.add_task(runList, run_cfg.insist)
 
-  logAndPrint(
+  logAndPrintLine(
     `[ job-runner ] start task#${task_id}: ${list_job_names}.`,
     [`task-${task_id}`]
   )
@@ -264,9 +264,10 @@ exports.runlist = function (run_cfg, runList, onComplete) {
 
       /* prepare process callbacks */
       const onLog = function (lines, pure_cmd_output) {
-        const line_arr = lines.split('\n')
+        const trimLines = lines.trim('\n')
+        const line_arr = trimLines.split('\n')
         line_arr.forEach(function (line) {
-          logAndPrint(line, [`job-${jobname}`, `task-${task_id}`])
+          logAndPrintLine(line, [`job-${jobname}`, `task-${task_id}`])
         })
 
         if (pure_cmd_output || false) {
@@ -348,7 +349,7 @@ exports.runlist = function (run_cfg, runList, onComplete) {
 
     /* done loop */
     function (_, idx, loop, completed) {
-      logAndPrint(
+      logAndPrintLine(
         `[ job-runner ] finished task#${task_id} (${completed}): ${list_job_names}.`,
         [`task-${task_id}`]
       )
