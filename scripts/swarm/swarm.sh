@@ -73,7 +73,7 @@ swarm_service_deploy() {
 		shortname=`echo $argvar | grep -o -P "(?<=service_${service_name}_).+"`
 		eval "$shortname='${!argvar}'"
 	done
-	constraints=$(eval echo $(for c in ${!constraints_@}; do echo -n "--constraints=\"'\$$c'\" "; done))
+	constraints=$(eval echo $(for c in ${!constraints_@}; do echo -n "--constraints=\$$c "; done))
 
 	# for config files, there is a little work here...
 	configs=''
@@ -82,7 +82,7 @@ swarm_service_deploy() {
 		val=`echo ${!config} | cut -d ':' -f 2`
 		#ver=`swarm_config_get root@$managerIP $managerPort ${key}.latest`
 		ver=12.3
-		configs="$configs --secret src='${key}.${ver}',target='$val'"
+		configs="$configs --secret src=${key}.${ver},target=$val"
 	done
 
 	# print what we got so far
@@ -92,11 +92,13 @@ swarm_service_deploy() {
 
 	set -x
 	$SSH -p $managerPort root@$managerIP \
-		$DOCKER service create --name ${service_id} \
-		--hostname="'{{.Service.Name}}-{{.Task.Slot}}'" \
-		--publish ${portmap} \
-		$configs \
-		$constraints \
-		${docker_image} "'${docker_exec}'"
+		$DOCKER service create \
+			--name ${service_id} \
+			--network=${network} \
+			--hostname='{{.Service.Name}}-{{.Task.Slot}}' \
+			--publish=${portmap} \
+			$configs \
+			$constraints \
+			${docker_image} "${docker_exec}"
 	set +x
 }
