@@ -10,7 +10,7 @@ const querystring = require('querystring')
 
 const logHeaderLen = 35
 
-function logAndPrintLine(line, logIDs) {
+function logAndPrintLine(line, logIDs, newline) {
   [...logIDs, 'MASTER'].forEach(logID => {
     logger.write(logID, line)
   })
@@ -19,7 +19,8 @@ function logAndPrintLine(line, logIDs) {
     return (input.length > len - 3) ? `${input.substring(0, len - 3)}...` : input.padEnd(len)
   }
 
-  console.log(fixed(logHeaderLen, logIDs.join(', ')) + ' |', line)
+  const info = fixed(logHeaderLen, logIDs.join(', ')) + ' |'
+  console.log(info, line)
 }
 
 exports.syncLoop = function (arr, doing, done) {
@@ -264,8 +265,8 @@ exports.runlist = function (run_cfg, runList, onComplete) {
 
       /* prepare process callbacks */
       const onLog = function (lines, pure_cmd_output) {
-        const trimLines = lines.trim('\n')
-        const line_arr = trimLines.split('\n')
+        const line_arr = lines.split('\n')
+        line_arr.pop()
         line_arr.forEach(function (line) {
           logAndPrintLine(line, [`job-${jobname}`, `task-${task_id}`])
         })
