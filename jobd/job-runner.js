@@ -10,7 +10,7 @@ const querystring = require('querystring')
 
 const logHeaderLen = 35
 
-function logAndPrintLine(line, logIDs, newline) {
+function logAndPrintLine(line, logIDs) {
   [...logIDs, 'MASTER'].forEach(logID => {
     logger.write(logID, line)
   })
