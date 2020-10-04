@@ -1,6 +1,3 @@
-[hostname]
-exec = hostname
-
 [allocate]
 source = [
   . $scripts/common.env.sh,
@@ -45,16 +42,16 @@ dep = swarm:allocate
 
 [bootstrap]
 source = . $scripts/swarm/swarm.sh
-#verbose = true
 exec = [
   check_args iaascfg nodeIP,
   # unpack parameters
   'provider=`echo $iaascfg | cut -d "_" -f 1`',
   'read passwd port <<< $(unpack \$iaas_${iaascfg}_{password,ssh_port})',
   'read docker_mirror <<< $(unpack \$iaas_${provider}_docker_mirror)',
-  #initialize docker warm for the first time
+  # initialize docker warm for the first time
   $SSH -p $port root@$nodeIP $DOCKER swarm init,
-  'swarm_node_label root@$nodeIP $port iaas=$provider',
+  # set label for this root swarm manager
+  'swarm_node_label root@$nodeIP $port iaascfg=$iaascfg',
   # upload config file as docker swarm secret/config
   swarm_update_secret_file root@$nodeIP $port $swarm_config_key $_config_file_,
   # unpack service parameters
@@ -76,5 +73,19 @@ exec = [
   ${docker_mirror}${docker_img} ${command}
   set +x
   '''
+]
+dep = swarm:install
+
+[expand]
+source = . $scripts/swarm/swarm.sh
+exec = [
+  check_args iaascfg nodeIP role,
+  # unpack parameters
+  'read port <<< $(unpack \$iaas_${iaascfg}_{ssh_port})',
+  # join the swarm
+  joinCommand=`docker swarm join-token $role | grep token`,
+  $SSH -p $port root@$nodeIP $DOCKER $joinCommand,
+  # set label for this new swarm node
+  'swarm_node_label root@$nodeIP $port iaascfg=$iaascfg',
 ]
 dep = swarm:install
