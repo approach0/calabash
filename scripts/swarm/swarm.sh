@@ -59,6 +59,7 @@ swarm_service_deploy() {
 	managerIP=$1
 	managerPort=$2
 	service_name=$3
+	max_restart=${service_max_restart-3}
 	# extra arguments are service_<name>_<arg> from environment variables
 	extra_args='
 		num_instance mesh_replicas mesh_sharding constraints
@@ -110,7 +111,8 @@ swarm_service_deploy() {
 				--constraint=node.labels.shard==${shard} \
 				$mounts \
 				$role_args \
-				${docker_image} "${docker_exec}"
+				--restart-max-attempts=$max_restart \
+				${docker_image} bash -c "'${docker_exec}'"
 		set +x
 	done
 }
