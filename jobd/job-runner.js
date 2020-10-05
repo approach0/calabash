@@ -264,14 +264,15 @@ exports.runlist = function (run_cfg, runList, onComplete) {
       let props = run_cfg.jobs.getNodeData(jobname)
 
       /* prepare process callbacks */
-      const onLog = function (lines, pure_cmd_output) {
+      const onLog = function (lines, is_exec_output) {
         const line_arr = lines.split('\n')
-        line_arr.pop()
+        // non exec output will not have a trailing newline
+        is_exec_output && line_arr.pop()
         line_arr.forEach(function (line) {
           logAndPrintLine(line, [`job-${jobname}`, `task-${task_id}`])
         })
 
-        if (pure_cmd_output || false) {
+        if (is_exec_output || false) {
           tasks.log_notify(task_id, idx, lines)
         }
       }
