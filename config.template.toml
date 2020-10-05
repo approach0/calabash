@@ -1,52 +1,60 @@
 [environment]
 scripts = ./scripts
 job_dir = ./jobs
-jobd_port = 8964
 admin_name = admin
 
 [iaas]
 providers = [linode, ucloud]
 
   [iaas.linode]
-  token = <<REPLACE_ME>>
-  docker_mirror = docker.io/ # hub-mirror.c.163.com/
+  token = ___
+  docker_mirror = https://docker.io
+  # docker mirror alternatives: https://hub-mirror.c.163.com
+  docker_image = ga6840/linode-cli:latest
 
     [iaas.linode.config_1]
     region = ap-southeast
     specs = 'g6-nanode-1'
     distro = linode/debian10
-    ssh_port = <<REPLACE_ME>>
-    password = <<REPLACE_ME>>
+    ssh_port = 8921
+    password = ___
 
   [iaas.ucloud]
-  pubkey = <<REPLACE_ME>>
-  prikey = <<REPLACE_ME>>
-  docker_mirror = uhub.service.ucloud.cn/
-  username = <<REPLACE_ME>>
-  password = <<REPLACE_ME>>
+  pubkey = ___ 
+  prikey = ___
+  docker_mirror = https://uhub.service.ucloud.cn
+  docker_image = ga6840/ucloud-cli:latest
+  username = ___
+  password = ___
 
     [iaas.ucloud.config_1]
     region = cn-gd
     specs = 1cpu-1gb-1mb
     distro = 'Debian_9'
     ssh_port = 22
-    password = <<REPLACE_ME>>
+    password = ___
 
-[swarm]
-config_key = calabash_config
+[service]
+max_restart = 3
 
-  [swarm.service_bootstrap]
-  name = calabash
-  portmap = 80
-  docker_image = ga6840/calabash
-  docker_exec = 'node ./jobd/jobd.js --config /run/secrets/calabash_config.{{version}}'
-
-  [swarm.service_1]
-  mesh_bind = *
+  [service.calabash]
   mesh_replicas = 1
   mesh_sharding = 1
-  portmap = 8934
-  docker_image = foo
-  docker_exec = bar
-  network_type = overlay
-  network_name = baz
+
+  network = bridge
+  portmap = 80:8964
+
+  # See https://docs.docker.com/engine/reference/commandline/service_create
+  constraints = [
+    'node.role==manager'
+  ]
+
+  docker_image = ga6840/calabash
+  configs = [
+    'calabash_config:/code/calabash/config.toml'
+  ]
+  mounts = [
+    'src=/var/run/docker.sock,dst=/var/run/docker.sock',
+		'src=/tmp,dst=/mnt/test,ro=true',
+  ]
+  docker_exec = node ./jobd/jobd.js --config ./config.toml | tee -a /var/log/calabash.log
