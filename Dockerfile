@@ -1,7 +1,13 @@
 # base image
 FROM debian:buster
+RUN sed -i s@/deb.debian.org/@/mirrors.aliyun.com/@g /etc/apt/sources.list
 RUN apt-get update
-RUN apt-get install -y curl git
+RUN apt-get install -y curl git wget
+
+# install docker cli
+ARG clipkg=docker-ce-cli_19.03.9~3-0~debian-buster_amd64.deb
+RUN wget http://mirrors.aliyun.com/docker-ce/linux/debian/dists/buster/pool/stable/amd64/$clipkg
+RUN dpkg -i $clipkg
 
 # install nodejs
 RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
@@ -11,7 +17,7 @@ RUN apt-get install -y nodejs
 RUN apt-get install -y python3-pip
 RUN ln -sf `which python3` /usr/bin/python
 
-# clone this project
+# clone and build this project
 RUN mkdir -p /code
 RUN git clone --depth 1 https://github.com/approach0/calabash /code/calabash
 WORKDIR /code/calabash
