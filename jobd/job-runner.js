@@ -278,7 +278,7 @@ exports.runlist = function (run_cfg, runList, onComplete) {
       }
 
       const onSpawn = function (cmd, usr, pid) {
-        onLog(`[ spawn pid=${pid}, user=${usr} ] ${cmd}`, false)
+        onLog(`[ spawn pid=${pid}, user=${usr} ] ${cmd}`)
 
         /* update task meta info */
         tasks.spawn_notify(task_id, idx, pid)

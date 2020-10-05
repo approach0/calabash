@@ -8,6 +8,7 @@ program
   `Example: node ${__filename} --job hello:world http://localhost:8964`)
   .option('-j, --job <job ID>', 'run Job')
   .option('--log <log ID>', 'print job by ID (MASTER, job-<jobID>, or task-<taskID>)')
+  .option('--prue-log <task ID>', 'show specific task prue log w/o jobd wrapper')
   .option('--dryrun', 'dryrun mode')
   .option('--single', 'run w/o any dependent job')
   .option('--insist', 'run through jobs even if some dependencies is failed')
@@ -28,8 +29,7 @@ if (program.log) {
 
   axios.get(url, options)
   .then(function (res) {
-    const str = JSON.stringify(res.data, null, 2)
-    console.log(str)
+    console.log(res.data['log'])
   })
   .catch(function (err) {
     console.error(err.toString())
@@ -75,6 +75,22 @@ if (program.showTask) {
     console.log(str)
   })
   .catch(function (err) {
+    console.error(err.toString())
+  });
+}
+
+if (program.prueLog) {
+  const taskID = program.prueLog
+  const url = `${program.args[0]}/get/task/${taskID}`
+  const options = {}
+
+  axios.get(url, options)
+  .then(function (res) {
+    const task = res.data['task']['runList']
+    task.forEach(job => {
+      console.log(job['log'])
+    })
+  }).catch(function (err) {
     console.error(err.toString())
   });
 }
