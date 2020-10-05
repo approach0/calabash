@@ -2,7 +2,7 @@
 verbose = false
 source = [
   . $scripts/common.env.sh,
-  '. $scripts/iaas/linode.sh `unpack \$iaas_linode_{token,docker_mirror}`'
+  . $scripts/iaas/all.sh
 ]
 
 [list-nodes]
@@ -11,7 +11,7 @@ dep = linode:source
 
 [delete-node]
 exec = [
-  check_args nodeid
+  require_args nodeid,
   linode_node_delete $nodeid
 ]
 dep = linode:source

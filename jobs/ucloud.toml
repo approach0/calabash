@@ -2,7 +2,7 @@
 verbose = false
 source = [
   . $scripts/common.env.sh,
-  '. $scripts/iaas/ucloud.sh `unpack \$iaas_ucloud_{pubkey,prikey,username,password,docker_mirror}`'
+  . $scripts/iaas/all.sh
 ]
 
 [list-nodes]
@@ -13,7 +13,7 @@ dep = ucloud:source
 [delete-node]
 spawn = pty
 exec = [
-  check_args nodeid
+  require_args nodeid,
   ucloud_node_delete $nodeid
 ]
 dep = ucloud:source

@@ -9,7 +9,7 @@ SSH="ssh $SSH_OPTIONS"
 SCP="scp $SSH_OPTIONS" # Do not use SSH_OPTS for scp, it is undocumented but will affect scp behaviour.
 
 # check variable existence
-check_args() {
+require_args() {
 	set -e
 	for argname in $@; do
 		echo "checking argument $argname=${!argname}"

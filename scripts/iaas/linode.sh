@@ -1,10 +1,9 @@
 #!/bin/bash
-LINODE_TOKEN=$1
-DOCKER_MIRROR=$2
+LINODE_CLI_IMG=$1
+LINODE_TOKEN=$2
 
 source $(dirname ${BASH_SOURCE[0]})/../common.env.sh
 
-LINODE_CLI_IMG=${DOCKER_MIRROR}ga6840/linode-cli:latest
 LINODE_CLI="$DOCKER run $LINODE_CLI_IMG /root/wrap-run.sh $LINODE_TOKEN --suppress-warnings"
 
 linode_regions() {

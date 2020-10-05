@@ -15,7 +15,7 @@ sshd_allow_self_login() {
 	IP=$1
 	PORT=$2
 	$SSH -p $PORT root@$IP <<- EOF
-		ssh-keygen -f ~/.ssh/id_rsa -t rsa -N "''"
+		ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
 		cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 		chmod og-wx ~/.ssh/authorized_keys
 	EOF

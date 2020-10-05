@@ -12,6 +12,7 @@ cat > '/etc/docker/daemon.json' << EOF
 	"registry-mirrors": ["$REGISTRY"]
 }
 EOF
+systemctl reload docker
 
 # get mosh in case of login in slow connection
 apt-get install -y -qq --no-install-recommends mosh

@@ -1,17 +1,21 @@
 #!/bin/bash
-UCLOUD_CLI_PUBKEY=$1
-UCLOUD_CLI_PRIKEY=$2
-UHUB_USERNAME=$3
-UHUB_PASSWORD=$4
-DOCKER_MIRROR=$5
+UCLOUD_CLI_IMG=$1
+UCLOUD_CLI_PUBKEY=$2
+UCLOUD_CLI_PRIKEY=$3
+DOCKER_REGISTRY=$4
+UHUB_USERNAME=$5
+UHUB_PASSWORD=$6
 
 source $(dirname ${BASH_SOURCE[0]})/../common.env.sh
 
-UCLOUD_CLI_IMG=${DOCKER_MIRROR}ga6840/ucloud-cli:latest
 UCLOUD_CLI="$DOCKER run -it $UCLOUD_CLI_IMG /root/wrap-run.sh $UCLOUD_CLI_PUBKEY $UCLOUD_CLI_PRIKEY"
 
 # login
-$DOCKER login $DOCKER_MIRROR -u $UHUB_USERNAME -p $UHUB_PASSWORD
+if [ -n "$DOCKER_REGISTRY" ]; then
+	$DOCKER login $DOCKER_REGISTRY -u $UHUB_USERNAME -p $UHUB_PASSWORD
+else
+	echo 'ucloud no login.'
+fi
 
 ucloud_existing_regions() {
 	$UCLOUD_CLI api --Action GetProjectResourceCount --ProductType uhost | python -c "if True:
@@ -37,9 +41,13 @@ ucloud_node_list_region() {
 }
 
 ucloud_node_list() {
-	for region in `ucloud_existing_regions`; do
+	regions=`ucloud_existing_regions`
+	for region in $regions; do
 		ucloud_node_list_region $region
 	done
+	if [ -z $regions ]; then
+		echo "no ucloud node."
+	fi
 }
 
 ucloud_node_list_labels() {

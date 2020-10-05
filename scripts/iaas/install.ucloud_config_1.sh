@@ -27,3 +27,4 @@ cat > '/etc/docker/daemon.json' << EOF
 	"registry-mirrors": ["$REGISTRY"]
 }
 EOF
+systemctl reload docker

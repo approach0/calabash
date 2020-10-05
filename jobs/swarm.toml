@@ -6,7 +6,7 @@ source = [
 ]
 spawn = pty
 exec = [
-  check_args iaascfg,
+  require_args iaascfg,
   'provider=`echo $iaascfg | cut -d "_" -f 1`',
   'read region specs distro passwd <<< $(unpack \$iaas_${iaascfg}_{region,specs,distro,password})',
   'node_label=calabash-${cbuser-$admin_name}-$(rname_short)',
@@ -23,7 +23,7 @@ source = [
 spawn = pty
 user = root # for ssh-copy-id to find identity file.
 exec = [
-  check_args iaascfg node_label,
+  require_args iaascfg node_label,
   # unpack parameters
   'provider=`echo $iaascfg | cut -d "_" -f 1`',
   'read passwd port <<< $(unpack \$iaas_${iaascfg}_{password,ssh_port})',
@@ -35,7 +35,7 @@ exec = [
   ssh-keygen -R $nodeIP,
   # allow ssh login from this host and from remote itself
   '$scripts/ssh/ssh-copy-id.expect root@$nodeIP $passwd',
-  sshd_allow_self_login $nodeIP $port
+  sshd_allow_self_login $nodeIP 22
   # change remote sshd port
   sshd_change_port root@$nodeIP 22 $port,
   # install docker engine
@@ -48,28 +48,32 @@ dep = swarm:allocate
 [bootstrap]
 source = . $scripts/swarm/swarm.sh
 exec = [
-  check_args iaascfg nodeIP,
+  require_args iaascfg nodeIP,
   # unpack parameters
   'read port <<< $(unpack \$iaas_${iaascfg}_ssh_port)',
 
-#  # initialize docker warm for the first time
-#  $SSH -p $port root@$nodeIP $DOCKER swarm init,
+  # initialize docker warm for the first time
+  $SSH -p $port root@$nodeIP $DOCKER swarm init,
 
-#  # set label for this root swarm manager
-#  'swarm_node_label root@$nodeIP $port iaascfg=$iaascfg',
+  # set label for this root swarm manager
+  'swarm_node_label root@$nodeIP $port iaascfg=$iaascfg',
+  'swarm_node_label root@$nodeIP $port shard=1',
 
-## upload config file as docker swarm secret/config
-#	swarm_update_secret_file root@$nodeIP $port calabash_config $_config_file_,
+  # upload config file as docker swarm secret/config
+  swarm_update_secret_file root@$nodeIP $port calabash_config $_config_file_,
 
-#  # setup the first service
+  # setup the first service
   swarm_service_deploy $nodeIP $port calabash,
+
+  # finally, print node IP
+  "echo Bootstrap node: $nodeIP"
 ]
-#dep = swarm:install
+dep = swarm:install
 
 [expand]
 source = . $scripts/swarm/swarm.sh
 exec = [
-  check_args iaascfg nodeIP role,
+  require_args iaascfg nodeIP role,
   # unpack parameters
   'read port <<< $(unpack \$iaas_${iaascfg}_{ssh_port})',
   # join the swarm

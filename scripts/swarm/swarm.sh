@@ -7,7 +7,7 @@ swarm_install() {
 	SSH_PORT=$2
 	HOST_CFG=$3
 	REGISTRY=$4
-	$SSH -p $SSH_PORT $SSH_ADDR 'bash -s' -- < $scripts/swarm/install.$HOST_CFG.sh $REGISTRY
+	$SSH -p $SSH_PORT $SSH_ADDR 'bash -s' -- < $scripts/iaas/install.$HOST_CFG.sh $REGISTRY
 }
 
 swarm_node_is_in() {
@@ -62,7 +62,7 @@ swarm_service_deploy() {
 	# extra arguments are service_<name>_<arg> from environment variables
 	extra_args='
 		num_instance mesh_replicas mesh_sharding constraints
-		docker_image configs docker_exec portmap network
+		docker_image configs mounts docker_exec portmap network
 	'
 
 	service_id=${service_name}-`rname_short`
@@ -73,15 +73,15 @@ swarm_service_deploy() {
 		shortname=`echo $argvar | grep -o -P "(?<=service_${service_name}_).+"`
 		eval "$shortname='${!argvar}'"
 	done
-	constraints=$(eval echo $(for c in ${!constraints_@}; do echo -n "--constraints=\$$c "; done))
+	constraints=$(eval echo $(for c in ${!constraints_@}; do echo -n "--constraint=\$$c "; done))
+	mounts=$(eval echo $(for m in ${!mounts_@}; do echo -n "--mount=type=bind,\$$m "; done))
 
 	# for config files, there is a little work here...
 	configs=''
 	for config in ${!configs_@}; do
 		key=`echo ${!config} | cut -d ':' -f 1`
 		val=`echo ${!config} | cut -d ':' -f 2`
-		#ver=`swarm_config_get root@$managerIP $managerPort ${key}.latest`
-		ver=12.3
+		ver=`swarm_config_get root@$managerIP $managerPort ${key}.latest`
 		configs="$configs --secret src=${key}.${ver},target=$val"
 	done
 
@@ -90,15 +90,27 @@ swarm_service_deploy() {
 		echo "deploy parameter [$shortname]: ${!shortname}"
 	done
 
-	set -x
-	$SSH -p $managerPort root@$managerIP \
-		$DOCKER service create \
-			--name ${service_id} \
-			--network=${network} \
-			--hostname='{{.Service.Name}}-{{.Task.Slot}}' \
-			--publish=${portmap} \
-			$configs \
-			$constraints \
-			${docker_image} "${docker_exec}"
-	set +x
+	# deploy service with sharding and replicas
+	for shard in `seq 1 $mesh_sharding`; do
+		echo "creating service ${service_id} for shard#${shard} ..."
+		if [ $shard -eq 1 ]; then
+			role_args="--publish=${portmap}"
+		else
+			role_args=""
+		fi
+		set -x
+		$SSH -p $managerPort root@$managerIP \
+			$DOCKER service create \
+				--name ${service_id}-shard${shard} \
+				--network=${network} \
+				--hostname='{{.Service.Name}}-{{.Task.Slot}}' \
+				--replicas $mesh_replicas \
+				$configs \
+				$constraints \
+				--constraint=node.labels.shard==${shard} \
+				$mounts \
+				$role_args \
+				${docker_image} "${docker_exec}"
+		set +x
+	done
 }
