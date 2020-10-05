@@ -81,5 +81,6 @@ exec = [
   $SSH -p $port root@$nodeIP $DOCKER $joinCommand,
   # set label for this new swarm node
   'swarm_node_label root@$nodeIP $port iaascfg=$iaascfg',
+  'swarm_node_label root@$nodeIP $port shard=${shard-1}',
 ]
 dep = swarm:install
