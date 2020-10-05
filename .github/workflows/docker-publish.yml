@@ -55,7 +55,7 @@ jobs:
 
       - name: Push image to GitHub Container Registry
         run: |
-          IMAGE_ID=ga6840/calabash
+          IMAGE_ID=uhub.service.ucloud.cn/ga6840/calabash
 
           # Strip git ref prefix from version
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
