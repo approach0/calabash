@@ -75,7 +75,7 @@ source = . $scripts/swarm/swarm.sh
 exec = [
   require_args iaascfg nodeIP role,
   # unpack parameters
-  'read port <<< $(unpack \$iaas_${iaascfg}_{ssh_port})',
+  'read port <<< $(unpack \$iaas_${iaascfg}_ssh_port)',
   # join the swarm
   'joinCommand=`docker swarm join-token $role | grep token`',
   $SSH -p $port root@$nodeIP $DOCKER $joinCommand,
