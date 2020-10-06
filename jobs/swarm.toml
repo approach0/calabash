@@ -56,8 +56,9 @@ exec = [
   $SSH -p $port root@$nodeIP $DOCKER swarm init,
 
   # set label for this root swarm manager
-  'swarm_node_label root@$nodeIP $port iaascfg=$iaascfg',
-  'swarm_node_label root@$nodeIP $port shard=1',
+  'swarmNodeID=`swarm_node_id root@$nodeIP $port`',
+  'swarm_node_label $swarmNodeID iaascfg=$iaascfg',
+  'swarm_node_label $swarmNodeID $port shard=1',
 
   # upload config file as docker swarm secret/config
   swarm_update_secret_file root@$nodeIP $port calabash_config $_config_file_,
@@ -80,7 +81,8 @@ exec = [
   'joinCommand=`docker swarm join-token $role | grep token`',
   $SSH -p $port root@$nodeIP $joinCommand,
   # set label for this new swarm node
-  'swarm_node_label root@$nodeIP $port iaascfg=$iaascfg',
-  'swarm_node_label root@$nodeIP $port shard=${shard-1}',
+  'swarmNodeID=`swarm_node_id root@$nodeIP $port`',
+  'swarm_node_label $swarmNodeID iaascfg=$iaascfg',
+  'swarm_node_label $swarmNodeID shard=${shard-1}',
 ]
 dep = swarm:install

@@ -46,15 +46,19 @@ swarm_config_get() {
 		"$DOCKER config inspect --format='{{(json .Spec.Data)}}' $CONFIG_KEY | cut -d'\"' -f2 | base64 -d -"
 }
 
-swarm_node_label() {
+swarm_node_id() {
 	SSH_ADDR=$1
 	SSH_PORT=$2
-	LABELS="$3"
 	$SSH -p $SSH_PORT $SSH_ADDR 'bash -s' -- <<- EOF
-		swarmNodeID=\$($DOCKER info -f "{{.Swarm.NodeID}}")
-		[ -n "$LABELS" ] && $DOCKER node update \$swarmNodeID --label-add '$LABELS'
-		$DOCKER node inspect \$swarmNodeID -f "{{(json .Spec.Labels)}}"
+		$DOCKER info -f "{{.Swarm.NodeID}}"
 	EOF
+}
+
+swarm_node_label() {
+	swarmNodeID=$1
+	LABELS="$3"
+	[ -n "$LABELS" ] && $DOCKER node update $swarmNodeID --label-add "$LABELS"
+	$DOCKER node inspect $swarmNodeID -f "{{(json .Spec.Labels)}}"
 }
 
 swarm_service_deploy() {
