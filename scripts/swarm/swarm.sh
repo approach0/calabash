@@ -7,7 +7,9 @@ swarm_install() {
 	SSH_PORT=$2
 	HOST_CFG=$3
 	REGISTRY=$4
-	$SSH -p $SSH_PORT $SSH_ADDR 'bash -s' -- < $scripts/iaas/install.$HOST_CFG.sh $REGISTRY
+	hostname=$5
+	$SSH -p $SSH_PORT $SSH_ADDR 'bash -s' -- < \
+		$scripts/iaas/install.$HOST_CFG.sh $REGISTRY $hostname
 }
 
 swarm_node_is_in() {

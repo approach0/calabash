@@ -1,5 +1,6 @@
 #!/bin/sh
 REGISTRY=$1
+hostname=$2
 
 sed -i s@/deb.debian.org/@/mirrors.aliyun.com/@g /etc/apt/sources.list
 apt-get update
@@ -28,3 +29,6 @@ cat > '/etc/docker/daemon.json' << EOF
 }
 EOF
 systemctl reload docker
+
+# change hostname
+echo "$hostname" > /etc/hostname

@@ -1,5 +1,6 @@
 #!/bin/sh
 REGISTRY=$1
+hostname=$2
 
 # install docker
 apt-get update
@@ -17,3 +18,6 @@ systemctl reload docker
 # get mosh in case of login in slow connection
 apt-get install -y -qq --no-install-recommends mosh
 echo Mosh Usage: mosh --ssh="'ssh -p 8921'" SSH_ADDR
+
+# change hostname
+echo "$hostname" > /etc/hostname
