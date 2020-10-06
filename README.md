@@ -14,11 +14,11 @@ and at the end it will output the bootstrap node IP address, you can now manimup
 $ node cli.js http://<IP>:<PORT> -j 'swarm:expand?iaascfg=ucloud_config_1&role=worker&typeIP=private'
 ```
 
-You can view the remote log by sepcifying a taskID
+You can view the remote log by sepcifying a taskID=123 for example
 ```sh
-node cli.js http://106.75.167.xxx --task-log 12
+node cli.js http://106.75.167.xxx --task-log 123
 ```
 alternatively
 ```sh
-node cli.js http://106.75.167.xxx --log task-2
+node cli.js http://106.75.167.xxx --log task-123
 ```
