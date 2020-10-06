@@ -56,9 +56,8 @@ exec = [
   $SSH -p $port root@$nodeIP $DOCKER swarm init,
 
   # set label for this root swarm manager
-  'swarmNodeID=`swarm_node_id root@$nodeIP $port`',
-  'swarm_node_label $swarmNodeID iaascfg=$iaascfg',
-  'swarm_node_label $swarmNodeID $port shard=1',
+  'swarm_node_label_bootstrap root@$nodeIP $port iaascfg=$iaascfg',
+  'swarm_node_label_bootstrap root@$nodeIP $port shard=1',
 
   # upload config file as docker swarm secret/config
   swarm_update_secret_file root@$nodeIP $port calabash_config $_config_file_,

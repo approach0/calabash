@@ -61,6 +61,17 @@ swarm_node_label() {
 	$DOCKER node inspect $swarmNodeID -f "{{(json .Spec.Labels)}}"
 }
 
+swarm_node_label_bootstrap() {
+	SSH_ADDR=$1
+	SSH_PORT=$2
+	LABELS="$3"
+	$SSH -p $SSH_PORT $SSH_ADDR 'bash -s' -- <<- EOF
+		swarmNodeID=\$($DOCKER info -f "{{.Swarm.NodeID}}")
+		[ -n "$LABELS" ] && $DOCKER node update \$swarmNodeID --label-add '$LABELS'
+		$DOCKER node inspect \$swarmNodeID -f "{{(json .Spec.Labels)}}"
+	EOF
+}
+
 swarm_service_deploy() {
 	managerIP=$1
 	managerPort=$2
