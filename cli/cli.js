@@ -8,7 +8,7 @@ program
   `Example: node ${__filename} --job hello:world http://localhost:8964`)
   .option('-j, --job <job ID>', 'run Job')
   .option('--log <log ID>', 'print job by ID (MASTER, job-<jobID>, or task-<taskID>)')
-  .option('--prue-log <task ID>', 'show specific task prue log w/o jobd wrapper')
+  .option('--task-log <task ID>', 'show specific task log w/o jobd wrapper')
   .option('--dryrun', 'dryrun mode')
   .option('--single', 'run w/o any dependent job')
   .option('--insist', 'run through jobs even if some dependencies is failed')
@@ -79,8 +79,8 @@ if (program.showTask) {
   });
 }
 
-if (program.prueLog) {
-  const taskID = program.prueLog
+if (program.taskLog) {
+  const taskID = program.taskLog
   const url = `${program.args[0]}/get/task/${taskID}`
   const options = {}
 
