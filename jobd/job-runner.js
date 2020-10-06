@@ -8,7 +8,7 @@ const pty = require('node-pty-prebuilt-multiarch')
 const childProcess = require('child_process')
 const querystring = require('querystring')
 
-const logHeaderLen = 35
+const logHeaderLen = 32
 
 function logAndPrintLine(line, logIDs) {
   const fixed = (len, input) => {
@@ -279,7 +279,7 @@ exports.runlist = function (run_cfg, runList, onComplete) {
           last !== '' && line_arr.push(last)
         }
         line_arr.forEach(function (line) {
-          logAndPrintLine(line, [`job-${jobname}`, `task-${task_id}`])
+          logAndPrintLine(line, [`task-${task_id}`, `job-${jobname}`])
         })
       }
 
