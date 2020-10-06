@@ -32,7 +32,7 @@ exec = [
   'nodeIP=`${provider}_node_map_ipaddr $nodeID ${typeIP-public}`',
   # refresh local known host list
   ssh-keygen -R $nodeIP,
-  # allow ssh login from this host to this remote peer
+  # allow ssh login from this host to new remote peer
   '$scripts/ssh/ssh-copy-id.expect root@$nodeIP $passwd',
   # change remote sshd port
   sshd_change_port root@$nodeIP 22 $port,

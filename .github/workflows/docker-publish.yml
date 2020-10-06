@@ -1,4 +1,4 @@
-name: Docker
+name: Push to ucloud DockerHub
 
 on:
   push:
