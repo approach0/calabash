@@ -21,3 +21,4 @@ echo Mosh Usage: mosh --ssh="'ssh -p 8921'" SSH_ADDR
 
 # change hostname
 echo "$hostname" > /etc/hostname
+hostname -F /etc/hostname

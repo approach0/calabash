@@ -33,11 +33,13 @@ exec = [
   # refresh local known host list
   ssh-keygen -R $nodeIP,
   # allow ssh login from this host to new remote peer
+  'set -x',
   '$scripts/ssh/ssh-copy-id.expect root@$nodeIP $passwd',
+  'set +x',
   # change remote sshd port
   sshd_change_port root@$nodeIP 22 $port,
   # install docker engine
-  swarm_install root@$nodeIP $port $iaascfg $docker_mirror $node_label.host,
+  'swarm_install root@$nodeIP $port $iaascfg $docker_mirror ${node_label}-host',
   # export node IP address
   export nodeIP
 ]

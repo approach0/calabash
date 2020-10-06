@@ -32,3 +32,4 @@ systemctl reload docker
 
 # change hostname
 echo "$hostname" > /etc/hostname
+hostname -F /etc/hostname
