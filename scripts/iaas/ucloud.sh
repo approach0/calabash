@@ -148,11 +148,22 @@ ucloud_node_filter_by_label() {
 
 ucloud_node_map_ipaddr() {
 	nodeID=$1
+	typeIP=$2 # public private
+
+	if [ "$typeIP" == "public" ]; then
+		qry=PublicIP
+	elif [ "$typeIP" == "private" ]; then
+		qry=PrivateIP
+	else
+		echo "typeIP not specified."
+		exit 1
+	fi
+
 	for region in `ucloud_existing_regions`; do
 		$UCLOUD_CLI --json uhost list --uhost-id $nodeID --region=$region | python -c "if True:
 		import json, sys
 		j = json.load(sys.stdin)
-		print(j[0]['PublicIP'])
+		print(j[0]['${qry}'])
 		"
 	done
 }

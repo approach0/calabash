@@ -1,6 +1,5 @@
 [allocate]
 source = [
-  . $scripts/common.env.sh,
   . $scripts/iaas/all.sh,
   . $scripts/random/random.sh
 ]
@@ -18,19 +17,19 @@ exec = [
 source = [
   . $scripts/iaas/all.sh,
   . $scripts/ssh/ssh.sh,
-  . $scripts/swarm/swarm.sh,
+  . $scripts/swarm/swarm.sh
 ]
 spawn = pty
 user = root # for ssh-copy-id to find identity file.
 exec = [
-  require_args iaascfg node_label,
+  require_args iaascfg node_label, # pass typeIP=private for private connection
   # unpack parameters
   'provider=`echo $iaascfg | cut -d "_" -f 1`',
   'read passwd port <<< $(unpack \$iaas_${iaascfg}_{password,ssh_port})',
   'read docker_mirror <<< $(unpack \$iaas_${provider}_docker_mirror)',
   # get node ID and IP
   'nodeID=`${provider}_node_filter_by_label $node_label`',
-  'nodeIP=`${provider}_node_map_ipaddr $nodeID`',
+  'nodeIP=`${provider}_node_map_ipaddr $nodeID ${typeIP-public}`',
   # refresh local known host list
   ssh-keygen -R $nodeIP,
   # allow ssh login from this host and from remote itself

@@ -1,5 +1,6 @@
 #!/bin/bash
 SCRIPT_DIR=$(dirname ${BASH_SOURCE[0]})
+source ${SCRIPT_DIR}/../common.env.sh # for `unpack'
 
 for envvar in ${!iaas_providers_@}; do
 	provider=${!envvar}

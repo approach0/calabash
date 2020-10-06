@@ -1,9 +1,6 @@
 [source]
 verbose = false
-source = [
-  . $scripts/common.env.sh,
-  . $scripts/iaas/all.sh
-]
+source = . $scripts/iaas/all.sh
 
 [list-nodes]
 spawn = pty
