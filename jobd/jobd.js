@@ -37,7 +37,7 @@ app.use(cors())
     console.log(`Loading cfg_path=${cfg_path}`)
     cfgs = await cfg_ldr.load_cfg(cfg_path)
     cfgs._config_file_ = cfg_path
-    console.log(cfgs)
+    //console.log(cfgs)
 
     /* loading jobs */
     jobs_dir = cfgs.job_dir || program.jobsDir || jobs_dir
@@ -162,7 +162,8 @@ app
     const reqJSON = req.body
 
     const [target, args] = job_runner.parseTargetArgs(reqJSON['goal'])
-    const envObj = Object.assign(cfgs, args) // overwrite/merge into default configs
+    const cfgsCopy = JSON.parse(JSON.stringify(cfgs))
+    const envObj = Object.assign(cfgsCopy, args) // overwrite/merge into default configs
     const envs = job_runner.declare_envs(envObj)
 
     const run_cfg = {

@@ -403,7 +403,7 @@ if (require.main === module) {
 
     const run_cfg = {
       jobs: jobs,
-      envs: envs ,
+      envs: envs,
       target: target
     }
 
