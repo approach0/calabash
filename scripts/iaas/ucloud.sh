@@ -72,10 +72,10 @@ ucloud_node_list_labels() {
 
 ucloud_node_create() {
 	PASSWD=$1
-	LABEL=$2	# calabash-usrname-3-m
+	LABEL=$2  # calabash-usrname-3-m
 	REGION=$3 # cn-gd, cn-bj2, tw-tp, hk
-	SPECS=$4	 # 1cpu-1gb-1mb
-	IMAGE="$(echo $5 | sed -e 's/_/ /g')"	# 'Debian_9'
+	SPECS=$4  # 1cpu-1gb-1mb
+	IMAGE="$(echo $5 | sed -e 's/_/ /g')" # 'Debian_9'
 
 	image_id=`$UCLOUD_CLI --json image list --region $REGION | python -c "if True:
 	import json, sys

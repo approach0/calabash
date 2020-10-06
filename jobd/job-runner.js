@@ -284,14 +284,16 @@ exports.runlist = function (run_cfg, runList, onComplete) {
       }
 
       const onSpawn = function (cmd, usr, pid) {
-        onLog(`[ spawn pid=${pid}, user=${usr} ] ${cmd}`)
+        const onelinecmd = cmd.replace(/\n/g, "; ")
+        onLog(`[ spawn pid=${pid}, user=${usr} ] ${onelinecmd}`)
 
         /* update task meta info */
         tasks.spawn_notify(task_id, idx, pid)
       }
 
       const onExit = async function (cmd, pid, _exitcode, flag) {
-        onLog(`[ exitcode = ${_exitcode} ] ${cmd}`)
+        const onelinecmd = cmd.replace(/\n/g, "; ")
+        onLog(`[ exitcode = ${_exitcode} ] ${onelinecmd}`)
 
         /* update task meta info */
         const exitcode = (flag === 'treat_as_success') ? 0 : _exitcode
