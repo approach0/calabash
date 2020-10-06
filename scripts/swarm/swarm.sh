@@ -23,11 +23,11 @@ is_swarm_manager() {
 }
 
 swarm_print_nodes() {
-	$DOCKER node ls -q | xargs $DOCKER node inspect -f '{{.Description.Hostname}} {{.CreatedAt}} {{.Status.Addr}} {{json .Spec}}'
+	$DOCKER node ls -q | xargs $DOCKER node inspect -f '{{.Description.Hostname}}  {{json .CreatedAt}}  {{.Status.Addr}}  {{json .Spec}}'
 }
 
 swarm_print_services() {
-	$DOCKER node ls -q | xargs $DOCKER node ps --format '{{.Node}} {{.Name}} {{.Image}} ({{.CurrentState}})'
+	$DOCKER node ls -q | xargs $DOCKER node ps --format '{{.Node}}  {{.Name}}  {{.Image}}  ({{.CurrentState}})'
 }
 
 swarm_update_secret_file() {
