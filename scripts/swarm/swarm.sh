@@ -27,7 +27,7 @@ swarm_print_nodes() {
 }
 
 swarm_print_services() {
-	$DOCKER node ls -q | xargs $DOCKER node ps --format '{{.Node}}  {{.Name}}  {{.Image}}  ({{.CurrentState}})'
+	$DOCKER node ps --format '{{.Node}}  {{.Name}}  {{.Image}}  ({{.CurrentState}})'
 }
 
 swarm_update_secret_file() {
