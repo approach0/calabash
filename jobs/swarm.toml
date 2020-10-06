@@ -99,6 +99,6 @@ exec = swarm_print_services
 [service-update]
 source = . $scripts/swarm/swarm.sh
 exec = [
-  require_args serviceID, # pass `tag=v123' for update version
-  swarm_service_update $serviceID $tag
+  require_args serviceid, # pass `tag=v123' for update version
+  swarm_service_update $serviceid $tag
 ]
