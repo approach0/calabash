@@ -15,5 +15,9 @@ $ node cli.js http://<IP>:<PORT> -j 'swarm:expand?iaascfg=ucloud_config_1&role=w
 
 You can view the remote log by sepcifying a taskID
 ```sh
-node cli.js http://106.75.167.207 --task-log 12
+node cli.js http://106.75.167.xxx --task-log 12
+```
+alternatively
+```sh
+node cli.js http://106.75.167.xxx --log task-2
 ```
