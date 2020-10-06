@@ -27,6 +27,7 @@ swarm_print_nodes() {
 }
 
 swarm_print_services() {
+	echo 'Past deployed service(s): '
 	$DOCKER node ps --format '{{.Node}}  {{.Name}}  {{.Image}}  ({{.CurrentState}} {{.Error}})'
 	echo 'Current running service(s): '
 	$DOCKER service ls
@@ -145,14 +146,15 @@ swarm_service_create() {
 }
 
 swarm_service_update() {
-	ser=$1
-	ver=${2-latest}
-	read docker_image <<< $(unpack \$service_${ser}_docker_image)
+	serviceID=$1
+	version=${2-latest}
+	serviceName=$(echo $serviceID | cut -d '-' -f 1)
+	read docker_image <<< $(unpack \$service_${serviceName}_docker_image)
 	set -x
 	$DOCKER service update \
 		--force \
 		--update-order=start-first \
-		--image ${docker_image}:${ver} \
-		$service_name
+		--image ${docker_image}:${version} \
+		$serviceID
 	set +x
 }
