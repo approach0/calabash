@@ -85,3 +85,13 @@ exec = [
   'swarm_node_label $swarmNodeID shard=${shard-1}',
 ]
 dep = swarm:install
+
+[list-nodes]
+source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
+exec = swarm_print_nodes
+
+[list-services]
+source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
+exec = swarm_print_services

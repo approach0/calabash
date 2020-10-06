@@ -12,14 +12,22 @@ swarm_install() {
 		$scripts/iaas/install.$HOST_CFG.sh $REGISTRY $hostname
 }
 
-swarm_node_is_in() {
+is_in_swarm() {
 	state=$($DOCKER info -f '{{(.Swarm.LocalNodeState)}}')
 	[ "$state" == "active" ] && return 0 || return 1
 }
 
-swarm_node_is_manager() {
+is_swarm_manager() {
 	state=$($DOCKER info -f '{{(.Swarm.ControlAvailable)}}')
 	[ "$state" == "true" ] && return 0 || return 1
+}
+
+swarm_print_nodes() {
+	$DOCKER node ls -q | xargs $DOCKER node inspect -f '{{.Description.Hostname}} {{.CreatedAt}} {{.Status.Addr}} {{json .Spec}}'
+}
+
+swarm_print_services() {
+	$DOCKER node ls -q | xargs $DOCKER node ps --format '{{.Node}} {{.Name}} {{.Image}} ({{.CurrentState}})'
 }
 
 swarm_update_secret_file() {
