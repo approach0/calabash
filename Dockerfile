@@ -2,7 +2,13 @@
 FROM debian:buster
 RUN sed -i s@/deb.debian.org/@/mirrors.aliyun.com/@g /etc/apt/sources.list
 RUN apt-get update
-RUN apt-get install -y curl git wget
+RUN apt-get install -y curl git wget expect
+
+# always have identities, and allow self-login
+ENV HOME=/root
+RUN ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''
+RUN cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+RUN chmod og-wx ~/.ssh/authorized_keys
 
 # install docker cli
 ARG clipkg=docker-ce-cli_19.03.9~3-0~debian-buster_amd64.deb

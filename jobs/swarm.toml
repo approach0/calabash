@@ -32,9 +32,8 @@ exec = [
   'nodeIP=`${provider}_node_map_ipaddr $nodeID ${typeIP-public}`',
   # refresh local known host list
   ssh-keygen -R $nodeIP,
-  # allow ssh login from this host and from remote itself
+  # allow ssh login from this host to this remote peer
   '$scripts/ssh/ssh-copy-id.expect root@$nodeIP $passwd',
-  sshd_allow_self_login $nodeIP 22
   # change remote sshd port
   sshd_change_port root@$nodeIP 22 $port,
   # install docker engine
@@ -72,7 +71,7 @@ dep = swarm:install
 [expand]
 source = . $scripts/swarm/swarm.sh
 exec = [
-  require_args iaascfg nodeIP role,
+  require_args iaascfg nodeIP role, # pass `shard=n' for naming shard
   # unpack parameters
   'read port <<< $(unpack \$iaas_${iaascfg}_ssh_port)',
   # join the swarm
