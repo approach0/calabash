@@ -9,13 +9,14 @@ const childProcess = require('child_process')
 const querystring = require('querystring')
 
 const logHeaderLen = 32
+const onelineCmdLen = 128
+
+function fixedWidth(len, input) {
+  return (input.length > len - 3) ? `${input.substring(0, len - 3)}...` : input.padEnd(len)
+}
 
 function logAndPrintLine(line, logIDs) {
-  const fixed = (len, input) => {
-    return (input.length > len - 3) ? `${input.substring(0, len - 3)}...` : input.padEnd(len)
-  }
-
-  const info = fixed(logHeaderLen, logIDs.join(', ')) + ' |';
+  const info = fixedWidth(logHeaderLen, logIDs.join(', ')) + ' |';
 
   /* log to file */
   [...logIDs, 'MASTER'].forEach(logID => {
@@ -284,7 +285,7 @@ exports.runlist = function (run_cfg, runList, onComplete) {
       }
 
       const onSpawn = function (cmd, usr, pid) {
-        const onelinecmd = cmd.replace(/\n/g, "; ")
+        const onelinecmd = fixedWidth(onelineCmdLen, cmd.replace(/\n/g, "; "))
         onLog(`[ spawn pid=${pid}, user=${usr} ] ${onelinecmd}`)
 
         /* update task meta info */
@@ -292,7 +293,7 @@ exports.runlist = function (run_cfg, runList, onComplete) {
       }
 
       const onExit = async function (cmd, pid, _exitcode, flag) {
-        const onelinecmd = cmd.replace(/\n/g, "; ")
+        const onelinecmd = fixedWidth(onelineCmdLen, cmd.replace(/\n/g, "; "))
         onLog(`[ exitcode = ${_exitcode} ] ${onelinecmd}`)
 
         /* update task meta info */
