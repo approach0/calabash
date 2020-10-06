@@ -11,15 +11,18 @@ const querystring = require('querystring')
 const logHeaderLen = 35
 
 function logAndPrintLine(line, logIDs) {
-  [...logIDs, 'MASTER'].forEach(logID => {
-    logger.write(logID, line)
-  })
-
   const fixed = (len, input) => {
     return (input.length > len - 3) ? `${input.substring(0, len - 3)}...` : input.padEnd(len)
   }
 
-  const info = fixed(logHeaderLen, logIDs.join(', ')) + ' |'
+  const info = fixed(logHeaderLen, logIDs.join(', ')) + ' |';
+
+  /* log to file */
+  [...logIDs, 'MASTER'].forEach(logID => {
+    logger.write(logID, info + line)
+  })
+
+  /* print to stdout */
   console.log(info, line)
 }
 
