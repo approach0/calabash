@@ -27,7 +27,9 @@ swarm_print_nodes() {
 }
 
 swarm_print_services() {
-	$DOCKER node ps --format '{{.Node}}  {{.Name}}  {{.Image}}  ({{.CurrentState}})'
+	$DOCKER node ps --format '{{.Node}}  {{.Name}}  {{.Image}}  ({{.CurrentState}} {{.Error}})'
+	echo 'Current running service(s): '
+	$DOCKER service ls
 }
 
 swarm_update_secret_file() {
@@ -80,7 +82,7 @@ swarm_node_label_bootstrap() {
 	EOF
 }
 
-swarm_service_deploy() {
+swarm_service_create() {
 	managerIP=$1
 	managerPort=$2
 	service_name=$3
@@ -140,4 +142,17 @@ swarm_service_deploy() {
 				${docker_image} bash -c "'${docker_exec}'"
 		set +x
 	done
+}
+
+swarm_service_update() {
+	ser=$1
+	ver=${2-latest}
+	read docker_image <<< $(unpack \$service_${ser}_docker_image)
+	set -x
+	$DOCKER service update \
+		--force \
+		--update-order=start-first \
+		--image ${docker_image}:${ver} \
+		$service_name
+	set +x
 }
