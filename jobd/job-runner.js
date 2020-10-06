@@ -269,15 +269,18 @@ exports.runlist = function (run_cfg, runList, onComplete) {
       /* prepare process callbacks */
       const onLog = function (lines, is_exec_output) {
         const line_arr = lines.split('\n')
-        // non exec output will not have a trailing newline
-        is_exec_output && line_arr.pop()
+
+        if (is_exec_output || false) {
+          // save to task-wise prue log
+          tasks.log_notify(task_id, idx, lines)
+
+          // pop the trailing field, if it contains anything, push back.
+          const last = line_arr.pop()
+          last !== '' && line_arr.push(last)
+        }
         line_arr.forEach(function (line) {
           logAndPrintLine(line, [`job-${jobname}`, `task-${task_id}`])
         })
-
-        if (is_exec_output || false) {
-          tasks.log_notify(task_id, idx, lines)
-        }
       }
 
       const onSpawn = function (cmd, usr, pid) {
