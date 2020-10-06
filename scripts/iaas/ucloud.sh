@@ -117,6 +117,9 @@ ucloud_node_create() {
 		--charge-type 'Dynamic' \
 		--firewall-id $firewall \
 		--create-eip-bandwidth-mb $n_bwd
+
+	echo 'wait a few seconds ...'
+	sleep 60
 }
 
 ucloud_node_delete() {
