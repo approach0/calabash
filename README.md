@@ -1,8 +1,9 @@
 ### Bootstrap
 First, run jobd server
 ```sh
-node ./jobd/jobd.js --config ./config.toml
+# node ./jobd/jobd.js --config ./config.toml
 ```
+(the jobd daemon uses docker so you have to run it as root)
 
 Then bootstrap the calabash to remote node using CLI
 ```sh
