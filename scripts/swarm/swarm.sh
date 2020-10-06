@@ -56,7 +56,7 @@ swarm_node_id() {
 
 swarm_node_label() {
 	swarmNodeID=$1
-	LABELS="$3"
+	LABELS="$2"
 	[ -n "$LABELS" ] && $DOCKER node update $swarmNodeID --label-add "$LABELS"
 	$DOCKER node inspect $swarmNodeID -f "{{(json .Spec.Labels)}}"
 }
