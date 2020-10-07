@@ -8,8 +8,9 @@ exec = [
   require_args iaascfg,
   'provider=`echo $iaascfg | cut -d "_" -f 1`',
   'read region specs distro passwd <<< $(unpack \$iaas_${iaascfg}_{region,specs,distro,password})',
-  'node_label=calabash-${cbuser-$admin_name}-$(rname_short)',
+  'node_label=calabash-${cbuser-$admin_name}-$(random_short_token)',
   '${provider}_node_create $passwd $node_label $region $specs $distro',
+  'echo Allocated node: $node_label',
   export node_label
 ]
 
@@ -56,17 +57,25 @@ exec = [
   $SSH -p $port root@$nodeIP $DOCKER swarm init,
 
   # set label for this root swarm manager
-  'swarm_node_label_bootstrap root@$nodeIP $port iaascfg=$iaascfg',
-  'swarm_node_label_bootstrap root@$nodeIP $port shard=1',
+  'swarmNode=$(ssh_exec_local_cmd root@$nodeIP $port  swarm_node_id)',
+  'ssh_exec_local_cmd root@$nodeIP $port  swarm_node_label $swarmNode iaascfg=$iaascfg"',
+  'ssh_exec_local_cmd root@$nodeIP $port  swarm_node_label $swarmNode shard=1"',
 
-  # upload config file as docker swarm secret/config
-  swarm_update_secret_file root@$nodeIP $port calabash_config $_config_file_,
+  # move bootstrap config to specified place on remote host
+  'src=$_config_file_'
+  'dst=$(eval echo $(eval echo \$service_${service_bootstrap_service}_config_source_0))'
+  'echo "scp $src => root@$nodeIP:$dst"',
+  $SCP -P $port $src root@$nodeIP:$dst,
 
   # setup the first service
-  swarm_service_create $nodeIP $port calabash,
+  ssh_exec_local_cmd root@$nodeIP $port  swarm_service_create $service_bootstrap_service,
+  $SSH -p $port root@$nodeIP rm -f $dst,
 
   # finally, print node IP
-  "echo Bootstrap node: $nodeIP"
+  'echo Bootstrap finished, now try:',
+  'echo "`tput bold;tput setaf 7` node cli.js http://$nodeIP -j swarm:list-nodes `tput sgr0`"'
+  'echo View log from the first task:',
+  'echo "`tput bold;tput setaf 7` node cli.js http://$nodeIP --task-log 1 `tput sgr0`"'
 ]
 dep = swarm:install
 

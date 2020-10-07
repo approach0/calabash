@@ -37,7 +37,7 @@ app.use(cors())
     console.log(`Loading cfg_path=${cfg_path}`)
     cfgs = await cfg_ldr.load_cfg(cfg_path)
     cfgs._config_file_ = cfg_path
-    //console.log(cfgs)
+    console.log(cfgs)
 
     /* loading jobs */
     jobs_dir = cfgs.job_dir || program.jobsDir || jobs_dir

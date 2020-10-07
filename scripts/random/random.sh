@@ -1,8 +1,8 @@
 #!/bin/bash
-rname_short() {
+random_short_token() {
 	mktemp | awk -F'.' '{print $2}'
 }
 
-rname_uuid() {
+random_uuid() {
 	cat /proc/sys/kernel/random/uuid
 }
