@@ -50,7 +50,7 @@ To update calabash configs, you need to run (single job) `swarm:bootstrap` again
 $ node cli.js -j 'swarm:bootstrap?iaascfg=ucloud_config_1&nodeIP=<IP>' --single
 ```
 
-You can check if the calabash configs get updated by inspect configs in the fresh started calabash service:
+You can check if the calabash configs get updated by inspecting config entries in the newly started calabash service:
 ```sh
 $ node cli.js http://<IP>:<PORT> --list-config
 ```
