@@ -112,7 +112,6 @@ swarm_service_create() {
 	# set default value if any argument is not specified
 	mesh_replicas=${mesh_replicas-1}
 	mesh_sharding=${mesh_sharding-1}
-	network=${network-bridge}
 	portmap=${portmap-80:80}
 	max_per_node=${max_per_node-0}
 	restart_condition=${restart_condition-any}
@@ -138,25 +137,28 @@ swarm_service_create() {
 			servID="${servName}"
 		fi
 
-		shard_args="--name ${servID}"
+		extra_args="--name ${servID}"
 		if [ $shard -eq 1 ]; then
-			shard_args="${shard_args} --publish=${portmap}"
+			extra_args="${extra_args} --publish=${portmap}"
+		fi
+
+		if [ -n "$network"]; then
+			extra_args="${extra_args} --network=${network}"
 		fi
 
 		set -x
 		$DOCKER service rm ${servID};
 		$DOCKER service create \
-			$shard_args \
-			--network=${network} \
 			--hostname='{{.Service.Name}}-{{.Task.Slot}}' \
 			--replicas=$mesh_replicas \
 			--replicas-max-per-node=$max_per_node \
 			--restart-condition=$restart_condition \
-			$configs \
-			$constraints \
-			--constraint=node.labels.shard==${shard} \
-			$mounts \
 			--restart-max-attempts=$max_restart \
+			--constraint=node.labels.shard==${shard} \
+			$constraints \
+			$configs \
+			$mounts \
+			$extra_args \
 			--with-registry-auth \
 			${docker_image} bash -c "$(eval echo "$docker_exec")"
 		set +x
