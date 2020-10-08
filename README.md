@@ -35,9 +35,19 @@ alternatively
 node cli.js http://106.75.167.xxx --log task-123
 ```
 
+To create a service named `hello` and *follow* log output:
+```sh
+$ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=hello
+```
+
 To update a service:
 ```sh
 $ node cli.js http://<IP>:<PORT> -j swarm:service-update?service=calabash
+```
+
+To update bootstraping configs, you need to run (single job) `swarm:bootstrap` against local jobd:
+```sh
+$ node cli.js -j 'swarm:bootstrap?iaascfg=ucloud_config_1&nodeIP=<IP> --single'
 ```
 
 ### Foo
