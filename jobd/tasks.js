@@ -16,12 +16,28 @@ function flagDead(meta) {
   clearInterval(meta['checkalive'])
 }
 
-exports.add_task = function(runList, _status_task) {
+exports.add_task = function(runList, pin_id) {
   let use_id = 0
-  if (!_status_task)
-    use_id = ++g_task_id
+  if (pin_id >= 0) {
+    /* user has specified a taksID */
+    use_id = pin_id
 
-  g_tasks[use_id] = runList.map((item) => {
+  } else {
+
+    /* to allocate an unused taksID */
+    while (true) {
+      use_id = ++g_task_id
+
+      if (g_tasks[use_id])
+        /* clear the old task, if any */
+        g_tasks[use_id].forEach(item => flagDead(item)) // clear Timer
+      else
+        /* this slot is available, use it */
+        break
+    }
+  }
+
+  g_tasks[use_id] = runList.map(item => {
     return {
       jobname: item,
       pid: -1,

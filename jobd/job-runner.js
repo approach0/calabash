@@ -253,7 +253,7 @@ exports.runlist = function (run_cfg, runList, onComplete) {
 
   /* start task */
   const list_job_names = runList.join(', ')
-  const task_id = tasks.add_task(runList, run_cfg.insist)
+  const task_id = tasks.add_task(runList, run_cfg.pin_id)
 
   logAndPrintLine(
     `[ job-runner ] start task#${task_id}: ${list_job_names}.`,
@@ -391,6 +391,7 @@ exports.run = function (run_cfg, onComplete) {
   run_cfg.dryrun = run_cfg.dryrun || false
   run_cfg.insist = run_cfg.insist || false
   run_cfg.single = run_cfg.single || false
+  run_cfg.pin_id = run_cfg.pin_id || -1
 
   var runList
   if (run_cfg.single)

@@ -12,7 +12,8 @@ program
   .option('--task-log <task ID>', 'show specific task log w/o jobd wrapper')
   .option('--dryrun', 'dryrun mode')
   .option('--single', 'run w/o any dependent job')
-  .option('--insist', 'run through jobs even if some dependencies is failed')
+  .option('--insist', 'run through jobs even if some jobs failed')
+  .option('--pin-id <task ID>', 'use and return specified task ID')
   .option('-J, --list-jobs', 'list all jobs')
   .option('--list-config', 'list configuration variables')
   .option('--list-tasks <all | active | unactive>', 'list tasks')
@@ -120,7 +121,8 @@ if (program.job) {
     goal: program.job,
     dry_run: program.dryrun || false,
     single_job: program.single || false,
-    insist_job: program.insist || false
+    insist_job: program.insist || false,
+    pin_id_job: parseInt(program.pinId || '-1')
   }
 
   axios.post(url, options)

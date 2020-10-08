@@ -170,6 +170,7 @@ app
       dryrun: reqJSON['dry_run'],
       insist: reqJSON['insist_job'],
       single: reqJSON['single_job'],
+      pin_id: reqJSON['pin_id_job'],
       jobs, envs, target
     }
 
