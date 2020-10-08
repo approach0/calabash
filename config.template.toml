@@ -41,6 +41,8 @@ providers = [ucloud]
 [service]
 bootstrap_service = calabash
 max_restart = 3
+
+# See https://docs.docker.com/engine/reference/commandline/service_create
 print_arguments = [
   mesh_replicas,
   mesh_sharding,
@@ -48,7 +50,7 @@ print_arguments = [
   portmap,
   max_per_node,
   restart_condition,
-  constraints, # See https://docs.docker.com/engine/reference/commandline/service_create
+  constraints,
   docker_image,
   configs,
   mounts,
@@ -56,7 +58,7 @@ print_arguments = [
 ]
 
   [service.calabash]
-  portmap = 80:8964
+  portmap = '80:8964'
   constraints = [
     'node.role==manager'
   ]
@@ -69,21 +71,26 @@ print_arguments = [
   ]
   mounts = [
     'src=/var/run/docker.sock,dst=/var/run/docker.sock',
-    'src=/var/log,dst=/mnt/log,ro=true',
+    'src=/var/log,dst=/mnt/log,ro=false',
   ]
   docker_exec = node ./jobd/jobd.js --config ./config.toml | tee -a /mnt/log/calabash.log
 
   [service.hello]
-  portmap = 80:8080
-  docker_image = ga6840/hello-httpd
-  mesh_replicas=3
+  portmap = 'published=3389,target=8080,mode=host' # different IP different shard
+  mesh_replicas=1
   mesh_sharding=2
+
+  #portmap = 'published=3389,target=8080,mode=ingress' # round robin-ing hosts
+  #mesh_replicas=2
+  #mesh_sharding=1
+
+  docker_image = ga6840/hello-httpd
   config_bind = [
     'text:hello:/tmp/hello.sh'
   ]
   config_source = [
     '''
-    node /code/hello.js shard#\$@
+    node /code/hello.js \$(hostname) shard#\$@
     '''
   ]
   docker_exec = bash /tmp/hello.sh \$shard
