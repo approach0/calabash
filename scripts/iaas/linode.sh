@@ -1,10 +1,20 @@
 #!/bin/bash
 LINODE_CLI_IMG=$1
 LINODE_TOKEN=$2
+DOCKER_REGISTRY=$4
+DOCKER_USERNAME=$5
+DOCKER_PASSWORD=$6
 
 source $(dirname ${BASH_SOURCE[0]})/../common.env.sh
 
 LINODE_CLI="$DOCKER run $LINODE_CLI_IMG /root/wrap-run.sh $LINODE_TOKEN --suppress-warnings"
+
+# login
+if [ -n "$DOCKER_REGISTRY" ]; then
+	$DOCKER login $DOCKER_REGISTRY -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+else
+	echo 'linode no login.'
+fi
 
 linode_regions() {
 	$LINODE_CLI regions list

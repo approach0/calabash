@@ -154,6 +154,7 @@ swarm_service_create() {
 			--constraint=node.labels.shard==${shard} \
 			$mounts \
 			--restart-max-attempts=$max_restart \
+			--with-registry-auth \
 			${docker_image} bash -c "$(eval echo "$docker_exec")"
 		set +x
 	done
@@ -169,6 +170,7 @@ swarm_service_update() {
 	$DOCKER service update \
 		--force \
 		--update-order=start-first \
+		--with-registry-auth \
 		--image ${docker_image}:${tag} \
 		$servName
 	set +x
