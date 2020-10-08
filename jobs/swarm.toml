@@ -98,10 +98,11 @@ exec = [
   # join the swarm
   'joinCommand=`$DOCKER swarm join-token ${role-worker} | grep token`',
   $SSH -p $port root@$nodeIP $joinCommand,
+
   # set label for this new swarm node
   'swarmNode=$(ssh_exec_local_cmd root@$nodeIP $port  swarm_node_id)',
-  'swarm_node_label $swarmNodeID iaascfg=$iaascfg',
-  'swarm_node_label $swarmNodeID shard=${shard-1}',
+  'swarm_node_label $swarmNode iaascfg=$iaascfg',
+  'swarm_node_label $swarmNode shard=${shard-1}',
 ]
 dep = swarm:install
 
