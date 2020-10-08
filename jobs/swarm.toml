@@ -82,11 +82,11 @@ dep = swarm:install
 [expand]
 source = . $scripts/swarm/swarm.sh
 exec = [
-  require_args iaascfg nodeIP role, # pass `shard=n' for naming shard
+  require_args iaascfg nodeIP, # pass `shard=n' for naming shard, `role=manager' for role assignment
   # unpack parameters
   'read port <<< $(unpack \$iaas_${iaascfg}_ssh_port)',
   # join the swarm
-  'joinCommand=`$DOCKER swarm join-token $role | grep token`',
+  'joinCommand=`$DOCKER swarm join-token ${role-worker} | grep token`',
   $SSH -p $port root@$nodeIP $joinCommand,
   # set label for this new swarm node
   'swarmNodeID=`swarm_node_id root@$nodeIP $port`',
