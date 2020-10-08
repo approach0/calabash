@@ -80,11 +80,12 @@ if (program.showTask) {
   });
 }
 
-function printTaskLog(taskID) {
+function printTaskLog(taskID, doClear) {
   const url = `${program.args[0]}/get/task/${taskID}`
   axios.get(url, {})
   .then(function (res) {
     const task = res.data['task']['runList']
+    if (doClear) console.clear()
     task.forEach(job => {
       console.log(job['log'])
     })
@@ -132,8 +133,7 @@ if (program.job) {
     if (program.follow && "runList" in ret) {
       console.log('Following log ...')
       const timer = setInterval(function() {
-        console.clear()
-        printTaskLog(ret['task_id'])
+        printTaskLog(ret['task_id'], true)
       }, 1000)
     }
   })
