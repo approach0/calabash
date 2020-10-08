@@ -58,8 +58,8 @@ exec = [
 
   # set label for this root swarm manager
   'swarmNode=$(ssh_exec_local_cmd root@$nodeIP $port  swarm_node_id)',
-  'ssh_exec_local_cmd root@$nodeIP $port  swarm_node_label $swarmNode iaascfg=$iaascfg"',
-  'ssh_exec_local_cmd root@$nodeIP $port  swarm_node_label $swarmNode shard=1"',
+  'ssh_exec_local_cmd root@$nodeIP $port  swarm_node_label $swarmNode iaascfg=$iaascfg',
+  'ssh_exec_local_cmd root@$nodeIP $port  swarm_node_label $swarmNode shard=1',
 
   # move bootstrap config to specified place on remote host
   'src=$_config_file_'
