@@ -142,7 +142,7 @@ swarm_service_create() {
 			extra_args="${extra_args} --publish=${portmap}"
 		fi
 
-		if [ -n "$network"]; then
+		if [ -n "$network" ]; then
 			extra_args="${extra_args} --network=${network}"
 		fi
 
