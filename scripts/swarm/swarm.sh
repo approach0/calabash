@@ -23,13 +23,14 @@ is_swarm_manager() {
 }
 
 swarm_print_nodes() {
-	$DOCKER node ls -q | xargs $DOCKER node inspect -f \
-	'{{.Description.Hostname}}  {{json .CreatedAt}}  {{.Status.Addr}} [{{.Status.State}}] {{json .Spec}}'
+	$DOCKER node ls -q | xargs $DOCKER node inspect \
+		--format '{{.Description.Hostname}}  {{json .CreatedAt}}  {{.Status.Addr}} [{{.Status.State}}] {{json .Spec}}'
 }
 
 swarm_print_services() {
 	echo 'Past deployed service(s): '
-	$DOCKER node ps --format '{{.Node}}  {{.Name}}  {{.Image}}  ({{.CurrentState}} {{.Error}})'
+	$DOCKER node ls -q | xargs $DOCKER node ps --filter 'desired-state=running' \
+		--format '{{.Node}}  {{.Name}}  {{.Image}}  ({{.CurrentState}} {{.Error}})'
 	echo 'Current running service(s): '
 	$DOCKER service ls
 }
