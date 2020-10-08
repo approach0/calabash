@@ -131,7 +131,7 @@ swarm_service_create() {
 	for shard in `seq 1 $mesh_sharding`; do
 		echo "CREATE SERVICE $servName (shard#${shard}/$mesh_sharding)"
 
-		if [ $mesh_sharding -gt 1 ]; then
+		if [ $shard -gt 1 ]; then
 			servID="${servName}-shard${shard}"
 		else
 			servID="${servName}"

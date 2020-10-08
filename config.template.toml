@@ -76,9 +76,13 @@ print_arguments = [
   docker_exec = node ./jobd/jobd.js --config ./config.toml | tee -a /mnt/log/calabash.log
 
   [service.hello]
-  portmap = 'published=3389,target=8080,mode=host' # different IP different shard
-  mesh_replicas=1
+  portmap = 'published=3389,target=8080,mode=ingress' # servcie mesh with only shard#1 publishing port
+  mesh_replicas=2
   mesh_sharding=2
+
+  #portmap = 'published=3389,target=8080,mode=host' # different IP different shard
+  #mesh_replicas=1
+  #mesh_sharding=2
 
   #portmap = 'published=3389,target=8080,mode=ingress' # round robin-ing hosts
   #mesh_replicas=2
