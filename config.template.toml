@@ -2,15 +2,19 @@
 scripts = ./scripts
 job_dir = ./jobs
 admin_name = admin
+node_prefix = calabash
 
 [iaas]
-providers = [linode, ucloud]
+#providers = [linode, ucloud]
+providers = [ucloud]
 
   [iaas.linode]
   token = ___
   docker_mirror = https://docker.io
   # docker mirror alternatives: https://hub-mirror.c.163.com
   docker_image = ga6840/linode-cli:latest
+  docker_registry_user = ___
+  docker_registry_pass = ___
 
     [iaas.linode.config_1]
     region = ap-southeast
@@ -20,12 +24,12 @@ providers = [linode, ucloud]
     password = ___
 
   [iaas.ucloud]
-  pubkey = ___ 
+  pubkey = ___
   prikey = ___
   docker_mirror = https://uhub.service.ucloud.cn
   docker_image = ga6840/ucloud-cli:latest
-  username = ___
-  password = ___
+  docker_registry_user = ___
+  docker_registry_pass = ___
 
     [iaas.ucloud.config_1]
     region = cn-gd
@@ -35,26 +39,51 @@ providers = [linode, ucloud]
     password = ___
 
 [service]
+bootstrap_service = calabash
 max_restart = 3
+print_arguments = [
+  mesh_replicas,
+  mesh_sharding,
+  network,
+  portmap,
+  max_per_node,
+  restart_condition,
+  constraints, # See https://docs.docker.com/engine/reference/commandline/service_create
+  docker_image,
+  configs,
+  mounts,
+  docker_exec
+]
 
   [service.calabash]
-  mesh_replicas = 1
-  mesh_sharding = 1
-
-  network = bridge
   portmap = 80:8964
-
-  # See https://docs.docker.com/engine/reference/commandline/service_create
   constraints = [
     'node.role==manager'
   ]
-
   docker_image = ga6840/calabash
-  configs = [
-    'calabash_config:/code/calabash/config.toml'
+  config_bind = [
+    'path:calabash_config:/code/calabash/config.toml'
+  ]
+  config_source = [
+    '/tmp/bootstrap.config.toml'
   ]
   mounts = [
     'src=/var/run/docker.sock,dst=/var/run/docker.sock',
-		'src=/tmp,dst=/mnt/test,ro=true',
+    'src=/var/log,dst=/mnt/log,ro=true',
   ]
-  docker_exec = node ./jobd/jobd.js --config ./config.toml | tee -a /var/log/calabash.log
+  docker_exec = node ./jobd/jobd.js --config ./config.toml | tee -a /mnt/log/calabash.log
+
+  [service.hello]
+  portmap = 80:8080
+  docker_image = ga6840/hello-httpd
+  mesh_replicas=3
+  mesh_sharding=2
+  config_bind = [
+    'text:hello:/tmp/hello.sh'
+  ]
+  config_source = [
+    '''
+    node /code/hello.js shard#\$@
+    '''
+  ]
+  docker_exec = bash /tmp/hello.sh \$shard
