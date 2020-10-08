@@ -129,9 +129,9 @@ if (program.job) {
     const str = JSON.stringify(ret, null, 2)
     console.log(str)
 
-    if (program.follow) {
+    if (program.follow && "runList" in ret) {
       console.log('Following log ...')
-      setInterval(function() {
+      const timer = setInterval(function() {
         console.clear()
         printTaskLog(ret['task_id'])
       }, 1000)
