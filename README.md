@@ -21,9 +21,9 @@ Then bootstrap the calabash to remote node using CLI
 ```sh
 $ node cli.js -j swarm:bootstrap?iaascfg=ucloud_config_1
 ```
-and at the end it will output the bootstrap node IP address, you can now manipulate this remote calabash service, for example, expand a new node:
+and at the end it will output the bootstrap node IP address, you can now manipulate this remote calabash service, for example, expand (create and join) a new node:
 ```sh
-$ node cli.js http://<IP>:<PORT> -j 'swarm:expand?iaascfg=ucloud_config_1&role=worker&typeIP=private'
+$ node cli.js http://<IP>:<PORT> -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private'
 ```
 
 You can view the remote log by specifying a task ID, for example
@@ -33,6 +33,11 @@ node cli.js http://106.75.167.xxx --task-log 123
 alternatively
 ```sh
 node cli.js http://106.75.167.xxx --log task-123
+```
+
+To update a service:
+```sh
+$ node cli.js http://<IP>:<PORT> -j swarm:service-update?service=calabash
 ```
 
 ### Foo
