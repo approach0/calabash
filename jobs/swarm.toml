@@ -59,7 +59,7 @@ dep = swarm:allocate
 [bootstrap]
 source = . $scripts/swarm/swarm.sh
 exec = [
-  require_args iaascfg nodeIP,
+  require_args iaascfg nodeIP, # One can also use this job to update bootstraping config.toml
   # unpack parameters
   'read port <<< $(unpack \$iaas_${iaascfg}_ssh_port)',
 
