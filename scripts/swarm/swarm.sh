@@ -133,17 +133,18 @@ swarm_service_create() {
 		echo "CREATE SERVICE $servName (shard#${shard}/$mesh_sharding)"
 
 		if [ $mesh_sharding -gt 1 ]; then
-			shard_args="--name ${servName}-shard${shard}"
+			servID="${servName}-shard${shard}"
 		else
-			shard_args="--name ${servName}"
+			servID="${servName}"
 		fi
 
+		shard_args="--name ${servID}"
 		if [ $shard -eq 1 ]; then
-			shard_args="$shard_args --publish=${portmap}"
+			shard_args="${shard_args} --publish=${portmap}"
 		fi
 
 		set -x
-		$DOCKER service rm ${servName};
+		$DOCKER service rm ${servID};
 		$DOCKER service create \
 			$shard_args \
 			--network=${network} \
