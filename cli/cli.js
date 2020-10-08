@@ -7,6 +7,7 @@ program
   .usage(`<URL> [options]\n` +
   `Example: node ${__filename} --job hello:world http://localhost:8964`)
   .option('-j, --job <job ID>', 'run Job')
+  .option('-f, --follow', 'follow task log')
   .option('--log <log ID>', 'print job by ID (MASTER, job-<jobID>, or task-<taskID>)')
   .option('--task-log <task ID>', 'show specific task log w/o jobd wrapper')
   .option('--dryrun', 'dryrun mode')
@@ -79,12 +80,9 @@ if (program.showTask) {
   });
 }
 
-if (program.taskLog) {
-  const taskID = program.taskLog
+function printTaskLog(taskID) {
   const url = `${program.args[0]}/get/task/${taskID}`
-  const options = {}
-
-  axios.get(url, options)
+  axios.get(url, {})
   .then(function (res) {
     const task = res.data['task']['runList']
     task.forEach(job => {
@@ -93,6 +91,11 @@ if (program.taskLog) {
   }).catch(function (err) {
     console.error(err.toString())
   });
+}
+
+if (program.taskLog) {
+  const taskID = program.taskLog
+  printTaskLog(taskID)
 }
 
 if (program.listTasks) {
@@ -121,8 +124,18 @@ if (program.job) {
 
   axios.post(url, options)
   .then(function (res) {
-    const str = JSON.stringify(res.data, null, 2)
+    const ret = res.data
+
+    const str = JSON.stringify(ret, null, 2)
     console.log(str)
+
+    if (program.follow) {
+      console.log('Following log ...')
+      setInterval(function() {
+        console.clear()
+        printTaskLog(ret['task_id'])
+      }, 1000)
+    }
   })
   .catch(function (err) {
     console.error(err.toString())
