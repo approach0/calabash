@@ -138,7 +138,7 @@ swarm_service_create() {
 		fi
 
 		extra_args="--name ${servID}"
-		if [[ $shard -eq 1 || "${portmap}" ~= *'mode=host'* ]]; then
+		if [[ $shard -eq 1 || "${portmap}" =~ 'mode=host' ]]; then
 			extra_args="${extra_args} --publish=${portmap}"
 		fi
 
