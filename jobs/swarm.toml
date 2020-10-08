@@ -1,3 +1,13 @@
+[list-nodes]
+source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
+exec = swarm_print_nodes
+
+[list-services]
+source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
+exec = swarm_print_services
+
 [allocate]
 source = [
   . $scripts/iaas/all.sh,
@@ -89,21 +99,11 @@ exec = [
   'joinCommand=`$DOCKER swarm join-token ${role-worker} | grep token`',
   $SSH -p $port root@$nodeIP $joinCommand,
   # set label for this new swarm node
-  'swarmNodeID=`swarm_node_id root@$nodeIP $port`',
+  'swarmNode=$(ssh_exec_local_cmd root@$nodeIP $port  swarm_node_id)',
   'swarm_node_label $swarmNodeID iaascfg=$iaascfg',
   'swarm_node_label $swarmNodeID shard=${shard-1}',
 ]
 dep = swarm:install
-
-[list-nodes]
-source = . $scripts/swarm/swarm.sh
-if = is_swarm_manager
-exec = swarm_print_nodes
-
-[list-services]
-source = . $scripts/swarm/swarm.sh
-if = is_swarm_manager
-exec = swarm_print_services
 
 [service-update]
 source = . $scripts/swarm/swarm.sh
