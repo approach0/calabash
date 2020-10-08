@@ -23,7 +23,7 @@ is_swarm_manager() {
 }
 
 swarm_print_nodes() {
-	$DOCKER node ls -q | xargs $DOCKER node inspect -f '{{.Description.Hostname}}  {{json .CreatedAt}}  {{.Status.Addr}}  {{json .Spec}}'
+	$DOCKER node ls -q | xargs $DOCKER node inspect -f '{{.Description.Hostname}}  {{json .CreatedAt}}  {{.Status.Addr}} [{{.Status.State}}] {{json .Spec}}'
 }
 
 swarm_print_services() {
