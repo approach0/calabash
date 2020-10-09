@@ -118,7 +118,7 @@ swarm_service_create() {
 
 	# get "list" variables
 	constraints=$(eval echo $(for c in ${!constraints_@}; do echo -n "--constraint=\$$c "; done))
-	mounts=$(eval echo $(for m in ${!mounts_@}; do echo -n "--mount=type=bind,\$$m "; done))
+	mounts=$(eval echo $(for m in ${!mounts_@}; do echo -n "--mount=\$$m "; done))
 	configs=`swarm_service_update_configs $servName`
 
 	# print service arguments
