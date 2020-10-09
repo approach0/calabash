@@ -160,7 +160,7 @@ swarm_service_create() {
 			$mounts \
 			$extra_args \
 			--with-registry-auth \
-			${docker_image} bash -c "$(eval echo "$docker_exec")"
+			${docker_image} sh -c "$(eval echo "$docker_exec")"
 		set +x
 	done
 }
