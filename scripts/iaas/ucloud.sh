@@ -119,7 +119,7 @@ ucloud_node_create() {
 		--create-eip-bandwidth-mb $n_bwd
 
 	echo 'wait a few seconds for ucloud to establish SSH port ...'
-	sleep 8
+	sleep 16
 }
 
 ucloud_node_delete() {
