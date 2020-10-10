@@ -28,11 +28,18 @@ swarm_print_nodes() {
 }
 
 swarm_print_services() {
-	echo 'Past deployed service(s): '
 	$DOCKER node ls -q | xargs $DOCKER node ps --filter 'desired-state=running' \
 		--format '{{.Node}}  {{.Name}}  {{.Image}}  ({{.CurrentState}} {{.Error}})'
-	echo 'Current running service(s): '
-	$DOCKER service ls
+}
+
+swarm_print_service_overview() {
+	service_name=$1
+	$DOCKER service ls --filter="name=${service_name}"
+}
+
+swarm_print_service_logs() {
+	service_name=$1
+	$DOCKER service logs ${service_name} --raw --tail 200 --timestamps
 }
 
 swarm_update_secret_file() {
@@ -64,10 +71,10 @@ swarm_node_label() {
 swarm_network_ensure_has() {
 	NAME=$1
 	DRIVER=$2
-	networkID=$(docker network ls -q --filter "name=$NAME")
+	networkID=$($DOCKER network ls -q --filter "name=$NAME")
 	if [ -z "$networkID" ]; then
 		echo "creating network $NAME ($DRIVER) ..."
-		docker network create -d $DRIVER $NAME
+		$DOCKER network create -d $DRIVER $NAME
 	else
 		echo "already exists: network $NAME ($DRIVER) ..."
 	fi
