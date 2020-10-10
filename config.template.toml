@@ -53,7 +53,7 @@ print_arguments = [
   mesh_sharding,
   network,
   portmap,
-  max_per_node,
+  max_per_node, # maximum number of this type of services per node
   restart_condition,
   constraints,
   docker_image,
@@ -109,7 +109,7 @@ print_arguments = [
   mesh_sharding = 3
   max_per_node = 1
   mounts = [
-    'type=volume,src=corpus,dst=/data,volume-driver=local',
+    'type=volume,src=corpus,dst=/data',
   ]
   docker_image = ga6840/rsyncd
 
@@ -120,15 +120,66 @@ print_arguments = [
     '''
     rsync --daemon --verbose --config=/tmp/rsyncd.conf
 
+    src=\$1
     while true; do
-      src=\$1
       for dst in corpus corpus-shard{2..3}; do
         if [ "\$src" != "\$dst" ]; then
           rsync -zauv --progress /data/ rsync://\$dst/root/
         fi
       done
-      sleep 8
+      sleep 16
     done
     '''
   ]
   docker_exec = bash /tmp/entrypoint.sh \$servID
+
+  [service.crawler]
+  mesh_sharding = 3
+  max_per_node = 1
+  mounts = [
+    'type=volume,src=corpus,dst=/data',
+  ]
+  docker_image = ga6840/a0:latest
+  config_bind = [
+    'text:crawler_entrypoint:/tmp/entrypoint.sh'
+  ]
+  config_source = [
+    '''
+    shard=\$1
+    export PATH=\"\$PATH:\$(pwd)/demo/crawler\"
+    cd /data
+
+    while true; do
+      case \$shard in
+      1)
+        crawler-math.stackexchange.com.py  --begin-page     1 --end-page  1000
+        crawler-math.stackexchange.com.py  --begin-page  1001 --end-page  7000
+        crawler-math.stackexchange.com.py  --begin-page  7001 --end-page 17000
+      ;;
+
+      2)
+        crawler-math.stackexchange.com.py  --begin-page 17001 --end-page 27000
+        crawler-math.stackexchange.com.py  --begin-page 17001 --end-page 27000
+        crawler-math.stackexchange.com.py  --begin-page 27001 --end-page 37000
+      ;;
+
+      3)
+        crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 3
+        crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 4
+        crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 5
+      ;;
+
+      4)
+        crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 6
+        crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 7
+        crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 123
+        crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 163
+      ;;
+      esac
+
+      echo 'Start over ...'
+      sleep 32
+    done
+    '''
+  ]
+  docker_exec = bash /tmp/entrypoint.sh \$shard
