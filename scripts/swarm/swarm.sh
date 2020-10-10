@@ -42,6 +42,11 @@ swarm_print_service_logs() {
 	$DOCKER service logs ${service_name} --raw --tail 200 --timestamps
 }
 
+swarm_print_service_image() {
+	service_name=$1
+	$DOCKER service inspect ${service_name} -f '{{.Spec.TaskTemplate.ContainerSpec.Image}}'
+}
+
 swarm_update_secret_file() {
 	SECRET_KEY=$1
 	CONFIG_FILE=$2
