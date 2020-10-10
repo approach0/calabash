@@ -124,7 +124,6 @@ swarm_service_create() {
 	# set default value if any argument is not specified
 	mesh_replicas=${mesh_replicas-1}
 	mesh_sharding=${mesh_sharding-1}
-	portmap=${portmap-80:80}
 	max_per_node=${max_per_node-0}
 	restart_condition=${restart_condition-any}
 
@@ -151,7 +150,9 @@ swarm_service_create() {
 
 		extra_args="--name ${servID}"
 		if [[ $shard -eq 1 || "${portmap}" =~ 'mode=host' ]]; then
-			extra_args="${extra_args} --publish=${portmap}"
+			if [ -n "$portmap" ]; then
+				extra_args="${extra_args} --publish=${portmap}"
+			fi
 		fi
 
 		if [ -n "$network" ]; then
