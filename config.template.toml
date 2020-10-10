@@ -38,6 +38,11 @@ providers = [ucloud]
     ssh_port = 22
     password = ___
 
+[network]
+
+  [network.corpus]
+  driver = overlay
+
 [service]
 bootstrap_service = calabash
 max_restart = 3
@@ -62,7 +67,7 @@ print_arguments = [
   constraints = [
     'node.role==manager'
   ]
-  docker_image = ga6840/calabash
+  docker_image = ga6840/calabash:latest
   config_bind = [
     'path:calabash_config:/code/calabash/config.toml'
   ]
@@ -70,15 +75,15 @@ print_arguments = [
     '/tmp/bootstrap.config.toml'
   ]
   mounts = [
-    'src=/var/run/docker.sock,dst=/var/run/docker.sock',
-    'src=/var/log,dst=/mnt/log,ro=false',
+    'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock',
+    'type=bind,src=/var/log,dst=/mnt/log,ro=false',
   ]
   docker_exec = node ./jobd/jobd.js --config ./config.toml | tee -a /mnt/log/calabash.log
 
   [service.hello]
   portmap = 'published=3389,target=8080,mode=ingress' # servcie mesh with only shard#1 publishing port
-  mesh_replicas=2
-  mesh_sharding=2
+  mesh_replicas = 2
+  mesh_sharding = 2
 
   #portmap = 'published=3389,target=8080,mode=host' # different IP different shard
   #mesh_replicas=1
@@ -88,13 +93,42 @@ print_arguments = [
   #mesh_replicas=2
   #mesh_sharding=1
 
-  docker_image = ga6840/hello-httpd
+  docker_image = ga6840/hello-httpd:latest
   config_bind = [
-    'text:hello:/tmp/hello.sh'
+    'text:hello_entrypoint:/tmp/entrypoint.sh'
   ]
   config_source = [
     '''
     node /code/hello.js \$(hostname) shard#\$@
     '''
   ]
-  docker_exec = bash /tmp/hello.sh \$shard
+  docker_exec = sh /tmp/entrypoint.sh \$shard
+
+  [service.corpus]
+  network = corpus
+  mesh_sharding = 3
+  max_per_node = 1
+  mounts = [
+    'type=volume,src=corpus,dst=/data,volume-driver=local',
+  ]
+  docker_image = ga6840/rsyncd
+
+  config_bind = [
+    'text:corpus_entrypoint:/tmp/entrypoint.sh'
+  ]
+  config_source = [
+    '''
+    rsync --daemon --verbose --config=/tmp/rsyncd.conf
+
+    while true; do
+      src=\$1
+      for dst in corpus corpus-shard{2..3}; do
+        if [ "\$src" != "\$dst" ]; then
+          rsync -zauv --progress /data/ rsync://\$dst/root/
+        fi
+      done
+      sleep 8
+    done
+    '''
+  ]
+  docker_exec = bash /tmp/entrypoint.sh \$servID
