@@ -61,6 +61,15 @@ swarm_node_label() {
 	$DOCKER node inspect $swarmNodeID -f "{{(json .Spec.Labels)}}"
 }
 
+swarm_network_ensure_has() {
+	NAME=$1
+	DRIVER=$2
+	networkID=$(docker network ls -q --filter "name=$NAME")
+	if [ -z "$networkID" ]; then
+		docker network create -d $DRIVER $NAME
+	fi
+}
+
 swarm_service_update_configs() {
 	servName=$1
 
@@ -143,6 +152,8 @@ swarm_service_create() {
 		fi
 
 		if [ -n "$network" ]; then
+			read driver <<< $(unpack \$network_${network}_driver)
+			swarm_network_ensure_has $network $driver
 			extra_args="${extra_args} --network=${network}"
 		fi
 
