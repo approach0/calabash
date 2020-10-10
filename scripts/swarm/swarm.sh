@@ -66,7 +66,10 @@ swarm_network_ensure_has() {
 	DRIVER=$2
 	networkID=$(docker network ls -q --filter "name=$NAME")
 	if [ -z "$networkID" ]; then
+		echo "creating network $NAME ($DRIVER) ..."
 		docker network create -d $DRIVER $NAME
+	else
+		echo "already exists: network $NAME ($DRIVER) ..."
 	fi
 }
 
@@ -171,7 +174,7 @@ swarm_service_create() {
 			$mounts \
 			$extra_args \
 			--with-registry-auth \
-			--entrypoint '' \
+			--entrypoint "''" \
 			${docker_image} $(eval echo "$docker_exec")
 		set +x
 	done
