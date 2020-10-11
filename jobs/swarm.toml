@@ -22,7 +22,6 @@ exec = [
 source = . $scripts/swarm/swarm.sh
 if = is_swarm_manager
 exec = [
-  # optional `till_shard=n'
   require_args service,
   "$DOCKER service rm $($DOCKER service ls -q --filter=name=$service)"
 ]
