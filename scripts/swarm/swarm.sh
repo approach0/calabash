@@ -8,8 +8,16 @@ swarm_install() {
 	HOST_CFG=$3
 	REGISTRY=$4
 	hostname=$5
+	posthook=${@:6}
 	$SSH -p $SSH_PORT $SSH_ADDR 'bash -s' -- < \
 		$scripts/iaas/install.$HOST_CFG.sh $REGISTRY $hostname
+
+	for hook in $posthook; do
+		hook_func=${!hook}
+		echo "[hook install] $hook_func"
+		#$SSH -p $SSH_PORT $SSH_ADDR 'bash -s' -- < \
+			$scripts/iaas/hooks.$HOST_CFG.sh $hook_func
+	done
 }
 
 is_in_swarm() {

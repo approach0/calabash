@@ -49,8 +49,9 @@ exec = [
   'set +x',
   # change remote sshd port
   sshd_change_port root@$nodeIP 22 $port,
-  # install docker engine
-  'swarm_install root@$nodeIP $port $iaascfg $docker_mirror ${node_label}-host',
+  # install docker engine and environment
+  'read install_hooks <<< $(unpack \${!node_usage_${node_usage}_install_hooks_@})',
+  'swarm_install root@$nodeIP $port $iaascfg $docker_mirror $node_label $install_hooks',
   # export node IP address
   export nodeIP
 ]
@@ -59,7 +60,8 @@ dep = swarm:allocate
 [bootstrap]
 source = . $scripts/swarm/swarm.sh
 exec = [
-  require_args iaascfg nodeIP, # One can also use this job to update bootstraping config.toml
+  # Optional: `node_usage=some_usage'. One can also use this to update bootstraping configs
+  require_args iaascfg nodeIP,
   # unpack parameters
   'read port <<< $(unpack \$iaas_${iaascfg}_ssh_port)',
 
@@ -70,6 +72,12 @@ exec = [
   'swarmNode=$(ssh_exec_local_cmd root@$nodeIP $port  swarm_node_id)',
   'ssh_exec_local_cmd root@$nodeIP $port  swarm_node_label $swarmNode iaascfg=$iaascfg',
   'ssh_exec_local_cmd root@$nodeIP $port  swarm_node_label $swarmNode shard=1',
+  'read labels <<< $(unpack \${!node_usage_${node_usage}_labels_@})',
+  '''
+  for l in $labels; do
+    swarm_node_label $swarmNode ${!l};
+  done
+  '''
 
   # move bootstrap config to specified place on remote host
   'src=$_config_file_'
@@ -92,7 +100,8 @@ dep = swarm:install
 [expand]
 source = . $scripts/swarm/swarm.sh
 exec = [
-  require_args iaascfg nodeIP, # pass `shard=n' for naming shard, `role=manager' for role assignment
+  # Optional: `shard=n', `role=manager' and `node_usage=some_usage'
+  require_args iaascfg nodeIP,
   # unpack parameters
   'read port <<< $(unpack \$iaas_${iaascfg}_ssh_port)',
   # join the swarm
@@ -102,7 +111,13 @@ exec = [
   # set label for this new swarm node
   'swarmNode=$(ssh_exec_local_cmd root@$nodeIP $port  swarm_node_id)',
   'swarm_node_label $swarmNode iaascfg=$iaascfg',
-  'swarm_node_label $swarmNode shard=${shard-1}',
+  'swarm_node_label $swarmNode shard=${shard-1}'
+  'read labels <<< $(unpack \${!node_usage_${node_usage}_labels_@})',
+  '''
+  for l in $labels; do
+    swarm_node_label $swarmNode ${!l};
+  done
+  '''
 ]
 dep = swarm:install
 
