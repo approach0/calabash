@@ -203,9 +203,7 @@ swarm_service_create() {
 
 swarm_service_update() {
 	servName=$1
-	servUseName=${2-$servName}
-	tag=${3-latest}
-	configs=`swarm_service_update_configs $servUseName`
+	configs=`swarm_service_update_configs $servName`
 
 	read docker_image <<< $(unpack \$service_${servName}_docker_image)
 	set -x
@@ -213,7 +211,6 @@ swarm_service_update() {
 		--force \
 		--update-order=start-first \
 		--with-registry-auth \
-		--image ${docker_image}:${tag} \
-		$servUseName
+		$servName
 	set +x
 }
