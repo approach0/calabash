@@ -150,7 +150,6 @@ exec = [
 [service-update]
 source = . $scripts/swarm/swarm.sh
 exec = [
-  # Optional: `tag=v123' and `rename=service_real_name'
   require_args service,
-  'swarm_service_update $service ${alias-$service} $tag'
+  'swarm_service_update $service'
 ]
