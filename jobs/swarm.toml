@@ -142,13 +142,15 @@ dep = swarm:install
 [service-create]
 source = . $scripts/swarm/swarm.sh
 exec = [
+  # Optional: `rename=service_real_name'
   require_args service,
-  swarm_service_create $service
+  swarm_service_create $service $rename
 ]
 
 [service-update]
 source = . $scripts/swarm/swarm.sh
 exec = [
-  require_args service, # pass `tag=v123' for update version
-  swarm_service_update $service $tag
+  # Optional: `tag=v123' and `rename=service_real_name'
+  require_args service,
+  'swarm_service_update $service ${alias-$service} $tag'
 ]

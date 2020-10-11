@@ -132,6 +132,7 @@ swarm_service_update_configs() {
 
 swarm_service_create() {
 	servName=$1
+	servUseName=${2-$servName}
 	max_restart=${service_max_restart-3}
 
 	# extract extra arguments from environment variables
@@ -150,7 +151,7 @@ swarm_service_create() {
 	# get "list" variables
 	constraints=$(eval echo $(for c in ${!constraints_@}; do echo -n "--constraint=\$$c "; done))
 	mounts=$(eval echo $(for m in ${!mounts_@}; do echo -n "--mount=\$$m "; done))
-	configs=`swarm_service_update_configs $servName`
+	configs=`swarm_service_update_configs $servUseName`
 
 	# print service arguments
 	for argvar in ${!service_print_arguments_@}; do
@@ -160,12 +161,12 @@ swarm_service_create() {
 
 	# creating service with sharding...
 	for shard in `seq 1 $mesh_sharding`; do
-		echo "CREATE SERVICE $servName (shard#${shard}/$mesh_sharding)"
+		echo "CREATE SERVICE $servUseName (shard#${shard}/$mesh_sharding)"
 
 		if [ $shard -gt 1 ]; then
-			servID="${servName}-shard${shard}"
+			servID="${servUseName}-shard${shard}"
 		else
-			servID="${servName}"
+			servID="${servUseName}"
 		fi
 
 		extra_args="--name ${servID}"
@@ -182,7 +183,6 @@ swarm_service_create() {
 		fi
 
 		set -x
-		$DOCKER service rm ${servID};
 		$DOCKER service create \
 			--hostname='{{.Service.Name}}-{{.Task.Slot}}' \
 			--replicas=$mesh_replicas \
@@ -203,8 +203,9 @@ swarm_service_create() {
 
 swarm_service_update() {
 	servName=$1
-	tag=${2-latest}
-	configs=`swarm_service_update_configs $servName`
+	servUseName=${2-$servName}
+	tag=${3-latest}
+	configs=`swarm_service_update_configs $servUseName`
 
 	read docker_image <<< $(unpack \$service_${servName}_docker_image)
 	set -x
@@ -213,6 +214,6 @@ swarm_service_update() {
 		--update-order=start-first \
 		--with-registry-auth \
 		--image ${docker_image}:${tag} \
-		$servName
+		$servUseName
 	set +x
 }
