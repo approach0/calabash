@@ -8,6 +8,25 @@ source = . $scripts/swarm/swarm.sh
 if = is_swarm_manager
 exec = swarm_print_services
 
+[inspect-service]
+source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
+exec = [
+  require_args service,
+  swarm_print_service_logs $service,
+  swarm_print_service_image $service,
+  swarm_print_service_overview $service,
+]
+
+[rm-service]
+source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
+exec = [
+  # optional `till_shard=n'
+  require_args service,
+  "$DOCKER service rm $($DOCKER service ls -q --filter=name=$service)"
+]
+
 [allocate]
 source = [
   . $scripts/iaas/all.sh,
