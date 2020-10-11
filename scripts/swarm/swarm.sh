@@ -151,7 +151,7 @@ swarm_service_create() {
 	# get "list" variables
 	constraints=$(eval echo $(for c in ${!constraints_@}; do echo -n "--constraint=\$$c "; done))
 	mounts=$(eval echo $(for m in ${!mounts_@}; do echo -n "--mount=\$$m "; done))
-	configs=`swarm_service_update_configs $servUseName`
+	configs=`swarm_service_update_configs $servName`
 
 	# print service arguments
 	for argvar in ${!service_print_arguments_@}; do
@@ -203,14 +203,12 @@ swarm_service_create() {
 
 swarm_service_update() {
 	servName=$1
-	configs=`swarm_service_update_configs $servName`
-
-	read docker_image <<< $(unpack \$service_${servName}_docker_image)
 	set -x
 	$DOCKER service update \
 		--force \
 		--update-order=start-first \
 		--with-registry-auth \
+		--update-failure-action rollback \
 		$servName
 	set +x
 }
