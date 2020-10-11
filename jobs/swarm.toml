@@ -62,9 +62,9 @@ exec = [
   # refresh local known host list
   ssh-keygen -R $nodeIP,
   # allow ssh login from this host to new remote peer
-  'set -x',
+  'set -e',
   '$scripts/ssh/ssh-copy-id.expect root@$nodeIP $passwd',
-  'set +x',
+  'set +e',
   # change remote sshd port
   sshd_change_port root@$nodeIP 22 $port,
   # install docker engine and environment
