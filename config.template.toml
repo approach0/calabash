@@ -40,12 +40,35 @@ providers = [ucloud]
 
 [network]
 
-  [network.corpus]
+  [network.approach0]
   driver = overlay
+
+[node_usage]
+  [node_usage.host_corpus]
+  labels = [
+    'host_corpus=true'
+  ]
+
+  [node_usage.host_indexer]
+  labels = [
+    'host_indexer=true',
+  ]
+  install_hooks = [
+    'install_fuse',
+    'vdisk_producer_daemon 1K'
+  ]
+
+  [node_usage.host_searchd]
+  labels = [
+    'host_searchd=true'
+  ]
+  install_hooks = [
+    'install_fuse',
+    'vdisk_consume_daemon'
+  ]
 
 [service]
 bootstrap_service = calabash
-max_restart = 3
 
 # See https://docs.docker.com/engine/reference/commandline/service_create
 print_arguments = [
@@ -105,11 +128,14 @@ print_arguments = [
   docker_exec = sh /tmp/entrypoint.sh \$shard
 
   [service.corpus]
-  network = corpus
+  network = approach0
   mesh_sharding = 3
   max_per_node = 1
   mounts = [
-    'type=volume,src=corpus,dst=/data',
+    'type=volume,src=corpus_vol,dst=/data',
+  ]
+  constraints = [
+    'node.labels.host_corpus==true'
   ]
   docker_image = ga6840/rsyncd
 
@@ -137,7 +163,10 @@ print_arguments = [
   mesh_sharding = 3
   max_per_node = 1
   mounts = [
-    'type=volume,src=corpus,dst=/data',
+    'type=volume,src=corpus_vol,dst=/data',
+  ]
+  constraints = [
+    'node.labels.host_corpus==true'
   ]
   docker_image = ga6840/a0:latest
   config_bind = [
@@ -154,13 +183,12 @@ print_arguments = [
       1)
         crawler-math.stackexchange.com.py  --begin-page     1 --end-page  1000
         crawler-math.stackexchange.com.py  --begin-page  1001 --end-page  7000
-        crawler-math.stackexchange.com.py  --begin-page  7001 --end-page 17000
       ;;
 
       2)
+        crawler-math.stackexchange.com.py  --begin-page  7001 --end-page 17000
         crawler-math.stackexchange.com.py  --begin-page 17001 --end-page 27000
         crawler-math.stackexchange.com.py  --begin-page 17001 --end-page 27000
-        crawler-math.stackexchange.com.py  --begin-page 27001 --end-page 37000
       ;;
 
       3)
@@ -180,6 +208,93 @@ print_arguments = [
       echo 'Start over ...'
       sleep 32
     done
+    '''
+  ]
+  docker_exec = bash /tmp/entrypoint.sh \$shard
+
+  [service.indexer]
+  network = approach0
+  mesh_sharding = 2
+  max_per_node = 1
+  mounts = [
+    'type=bind,src=/var/tmp/vdisk,dst=/mnt/vdisk'
+  ]
+  constraints = [
+    'node.labels.host_indexer==true'
+  ]
+  docker_image = ga6840/a0:latest
+
+  config_bind = [
+    'text:indexer_entrypoint:/tmp/entrypoint.sh'
+  ]
+  config_source = [
+    '''
+    (flock 100; indexer.out -z -o /mnt/vdisk/mnt/; sync ) 100>/mnt/vdisk/vdisk.lock
+    '''
+  ]
+  docker_exec = bash /tmp/entrypoint.sh
+
+  [service.feeder]
+  network = approach0
+  mounts = [
+    'type=volume,src=corpus_vol,dst=/data',
+  ]
+  constraints = [
+    'node.labels.host_corpus==true'
+  ]
+  docker_image = ga6840/a0:latest
+
+  config_bind = [
+    'text:feeder_entrypoint:/tmp/entrypoint.sh'
+  ]
+  config_source = [
+    '''
+    ./indexerd/scripts/json-feeder.py --corpus-path /data \
+      --indexd-url http://indexer:8934/index \
+      --indexd-url http://indexer-shard2:8934/index \
+    '''
+  ]
+  docker_exec = bash /tmp/entrypoint.sh
+
+  [service.index_syncd]
+  network = approach0
+  mesh_sharding = 2
+  max_per_node = 1
+  mounts = [
+    'type=bind,src=/var/tmp/vdisk,dst=/mnt/vdisk'
+  ]
+  constraints = [
+    'node.labels.host_indexer==true'
+  ]
+  docker_image = ga6840/rsyncd
+  docker_exec = ''
+
+  [service.searchd]
+  network = approach0
+  mesh_sharding = 2
+  mesh_replicas = 2
+  max_per_node = 1
+  mounts = [
+    'type=bind,src=/var/tmp/vdisk,dst=/mnt/vdisk'
+  ]
+  constraints = [
+    'node.labels.host_searchd==true'
+  ]
+  docker_image = ga6840/a0:latest
+
+  config_bind = [
+    'text:search_entrypoint:/tmp/entrypoint.sh'
+  ]
+  config_source = [
+    '''
+    shard=\$1
+    if [ \$shard -eq 1 ]; then
+      rsync -zuv --progress rsync://index_syncd/root/vdisk.*.img .
+    else
+      rsync -zuv --progress rsync://index_syncd-shard\$shard/root/vdisk.*.img .
+    fi
+
+    /usr/sbin/sshd -D -e
     '''
   ]
   docker_exec = bash /tmp/entrypoint.sh \$shard

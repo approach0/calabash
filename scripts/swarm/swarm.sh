@@ -133,7 +133,6 @@ swarm_service_update_configs() {
 swarm_service_create() {
 	servName=$1
 	servUseName=${2-$servName}
-	max_restart=${service_max_restart-3}
 
 	# extract extra arguments from environment variables
 	for argvar in $(eval echo \${!service_${servName}_@}); do
@@ -189,7 +188,7 @@ swarm_service_create() {
 			--replicas=$mesh_replicas \
 			--replicas-max-per-node=$max_per_node \
 			--restart-condition=$restart_condition \
-			--restart-max-attempts=$max_restart \
+			--restart='false' \
 			--constraint=node.labels.shard==${shard} \
 			--stop-signal=$stop_signal \
 			$constraints \
