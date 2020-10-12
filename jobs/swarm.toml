@@ -93,7 +93,7 @@ exec = [
   'read labels <<< $(unpack \${!node_usage_${node_usage}_labels_@})',
   '''
   for l in $labels; do
-    ssh_exec_local_cmd  swarm_node_label $swarmNode ${!l};
+    ssh_exec_local_cmd root@$nodeIP $port  swarm_node_label $swarmNode ${!l};
   done
   '''
 
