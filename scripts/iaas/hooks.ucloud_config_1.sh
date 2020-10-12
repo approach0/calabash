@@ -5,6 +5,14 @@ install_fuse() {
 	apt-get install -y --no-install-recommends reiserfsprogs
 }
 
+mount_vdisk() {
+	mkdir -p /var/tmp/vdisk
+	cd /var/tmp/vdisk
+
+	mkdir -p ./mnt
+	mount -t reiserfs ./vdisk.img ./mnt
+}
+
 umount_vdisk() {
 	mkdir -p /var/tmp/vdisk
 	cd /var/tmp/vdisk
@@ -15,7 +23,7 @@ umount_vdisk() {
 	[ -e ./mnt ] && rmdir ./mnt
 }
 
-make_and_mount_vdisk() {
+create_vdisk() {
 	DISKSIZE=$1
 
 	mkdir -p /var/tmp/vdisk
@@ -23,9 +31,6 @@ make_and_mount_vdisk() {
 
 	dd if=/dev/zero of=vdisk.img count=${DISKSIZE} bs=1024K
 	mkfs.reiserfs -ff ./vdisk.img
-
-	mkdir -p ./mnt
-	mount -t reiserfs ./vdisk.img ./mnt
 }
 
 vdisk_producer_loop() {
@@ -48,7 +53,8 @@ vdisk_producer_loop() {
 				mv vdisk.img vdisk.$(date +'%Y%m%d-%H%M%S').img
 			fi
 
-			make_and_mount_vdisk $DISKSIZE
+			create_vdisk $DISKSIZE
+			mount_vdisk
 
 		) 100>/var/tmp/vdisk/vdisk.lock
 
@@ -61,14 +67,47 @@ vdisk_producer_daemon() {
 	# Use the following command in container:
 	# (flock 100; indexer.out -o /mnt/vdisk/mnt/; sync ) 100>/mnt/vdisk/vdisk.lock
 
-	( # ensure whenever ./mnt presents, it is mounted.
+	( # clean up, and ensure whenever ./mnt presents, it is mounted.
 		flock 100
 		umount_vdisk
-		make_and_mount_vdisk $DISKSIZE
+		create_vdisk $DISKSIZE
+		mount_vdisk
 	) 100>/var/tmp/vdisk/vdisk.lock
 
-	declare -fx umount_vdisk make_and_mount_vdisk vdisk_producer_loop
+	declare -fx umount_vdisk create_vdisk mount_vdisk vdisk_producer_loop
 	nohup bash -c "vdisk_producer_loop $DISKSIZE" &
+}
+
+vdisk_consume_loop() {
+	mkdir -p /var/tmp/vdisk
+	cd /var/tmp/vdisk
+
+	while true; do
+		echo 'Obtaining lock ...'
+		(
+			flock --wait 5 100 || exit 1
+			echo 'Lock obtained!'
+
+			if ls vdisk.*.img; then
+				umount_vdisk
+				fname=$(ls vdisk.*.img | head -1)
+				mv $fname vdisk.img
+				rm -f vdisk.*.img
+				mount_vdisk
+			fi
+
+		) 100>/var/tmp/vdisk/vdisk.lock
+
+		sleep 5
+	done
+}
+
+vdisk_consume_daemon() {
+	# Use the following command in container:
+	# (flock 100; searchd.out -i /mnt/vdisk/mnt/) 100>/mnt/vdisk/vdisk.lock
+
+	declare -fx umount_vdisk create_vdisk mount_vdisk vdisk_consume_loop
+	nohup bash -c "vdisk_consume_loop" &
 }
 
 $hookfun
