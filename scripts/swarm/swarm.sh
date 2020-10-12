@@ -132,7 +132,6 @@ swarm_service_update_configs() {
 
 swarm_service_create() {
 	servName=$1
-	servUseName=${2-$servName}
 
 	# extract extra arguments from environment variables
 	for argvar in $(eval echo \${!service_${servName}_@}); do
@@ -161,12 +160,12 @@ swarm_service_create() {
 
 	# creating service with sharding...
 	for shard in `seq 1 $mesh_sharding`; do
-		echo "CREATE SERVICE $servUseName (shard#${shard}/$mesh_sharding)"
+		echo "CREATE SERVICE $servName (shard#${shard}/$mesh_sharding)"
 
 		if [ $shard -gt 1 ]; then
-			servID="${servUseName}-shard${shard}"
+			servID="${servName}-shard${shard}"
 		else
-			servID="${servUseName}"
+			servID="${servName}"
 		fi
 
 		extra_args="--name ${servID}"
@@ -188,7 +187,6 @@ swarm_service_create() {
 			--replicas=$mesh_replicas \
 			--replicas-max-per-node=$max_per_node \
 			--restart-condition=$restart_condition \
-			--restart='false' \
 			--constraint=node.labels.shard==${shard} \
 			--stop-signal=$stop_signal \
 			$constraints \
@@ -197,7 +195,7 @@ swarm_service_create() {
 			$extra_args \
 			--with-registry-auth \
 			--entrypoint "''" \
-			${docker_image} $(eval echo "$docker_exec")
+			${docker_image} sh -c "$(eval echo "$docker_exec")"
 		set +x
 	done
 }
