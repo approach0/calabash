@@ -147,6 +147,7 @@ swarm_service_create() {
 	mesh_sharding=${mesh_sharding-1}
 	max_per_node=${max_per_node-0}
 	restart_condition=${restart_condition-any}
+	stop_signal=${stop_signal-SIGINT}
 
 	# get "list" variables
 	constraints=$(eval echo $(for c in ${!constraints_@}; do echo -n "--constraint=\$$c "; done))
@@ -190,6 +191,7 @@ swarm_service_create() {
 			--restart-condition=$restart_condition \
 			--restart-max-attempts=$max_restart \
 			--constraint=node.labels.shard==${shard} \
+			--stop-signal=$stop_signal \
 			$constraints \
 			$configs \
 			$mounts \
