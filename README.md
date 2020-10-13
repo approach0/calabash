@@ -55,5 +55,37 @@ You can check if the calabash configs get updated by inspecting config entries i
 $ node cli.js http://<IP>:<PORT> --list-config
 ```
 
-### Foo
-More to come...
+### Example
+The following steps setup necessary services of Approach Zero
+
+1. Bootstrap
+```sh
+$ node cli.js -j 'swarm:bootstrap?iaascfg=ucloud_config_1&node_usage=host_corpus'
+```
+
+2. Add additional 2 corpus nodes
+```sh
+$ node cli.js http://<IP>:<PORT> --follow -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private&node_usage=host_corpus&shard=2'
+$ node cli.js http://<IP>:<PORT> --follow -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private&node_usage=host_corpus&shard=3'
+```
+
+3. Create corpus `rsyncd` and `crawler` services
+```sh
+$ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=corpus
+$ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=crawler
+$ node cli.js http://<IP>:<PORT> --follow -j swarm:list-services
+```
+
+4. Add 2 indexer nodes
+```sh
+$ node cli.js http://<IP>:<PORT> --follow -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private&node_usage=host_indexer&shard=1'
+$ node cli.js http://<IP>:<PORT> --follow -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private&node_usage=host_indexer&shard=2'
+$ node cli.js http://<IP>:<PORT> --follow -j swarm:list-nodes
+```
+
+5. Deploy `indexer` and `index_syncd` services on indexer nodes
+```sh
+$ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=indexer
+$ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=index_syncd
+$ node cli.js http://<IP>:<PORT> --follow -j swarm:list-services
+```
