@@ -64,6 +64,7 @@ vdisk_producer_daemon() {
 	# Use the following command in container:
 	# (flock 100; indexer.out -o /mnt/vdisk/mnt/; sync ) 100>/mnt/vdisk/vdisk.lock
 
+	mkdir -p /var/tmp/vdisk
 	( # clean up, and ensure whenever ./mnt presents, it is mounted.
 		flock 100
 		umount_vdisk
@@ -71,7 +72,6 @@ vdisk_producer_daemon() {
 		mount_vdisk
 	) 100>/var/tmp/vdisk/vdisk.lock
 
-	mkdir -p /var/tmp/vdisk
 	declare -fx umount_vdisk create_vdisk mount_vdisk vdisk_producer_loop
 	nohup bash -c "vdisk_producer_loop $DISKSIZE" &> /var/tmp/vdisk/nohup.out < /dev/null &
 }

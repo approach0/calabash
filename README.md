@@ -47,6 +47,7 @@ $ node cli.js http://<IP>:<PORT> -j swarm:service-update?service=calabash
 
 To update calabash configs, you need to run (single job) `swarm:bootstrap` against local jobd:
 ```sh
+$ node cli.js http://<IP>:<PORT> -j 'swarm:rm-service?service=calabash'
 $ node cli.js -j 'swarm:bootstrap?iaascfg=ucloud_config_1&nodeIP=<IP>' --single
 ```
 
