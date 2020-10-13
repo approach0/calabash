@@ -96,3 +96,17 @@ $ node cli.js http://<IP>:<PORT> --follow -j swarm:list-services
 $ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=feeder
 ```
 (this service will stop once it has finished feeding all existing corpus files)
+
+7. Create 2x2 grids of search nodes
+```sh
+$ node cli.js http://<IP>:<PORT> --follow -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private&node_usage=host_indexer&shard=1'
+$ node cli.js http://<IP>:<PORT> --follow -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private&node_usage=host_indexer&shard=1'
+$ node cli.js http://<IP>:<PORT> --follow -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private&node_usage=host_indexer&shard=2'
+$ node cli.js http://<IP>:<PORT> --follow -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private&node_usage=host_indexer&shard=2'
+$ node cli.js http://<IP>:<PORT> --follow -j swarm:list-nodes
+```
+
+8. Deploy `searchd` service on those grids
+```sh
+$ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=searchd
+```
