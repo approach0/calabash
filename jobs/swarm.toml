@@ -26,6 +26,11 @@ exec = [
   "$DOCKER service rm $($DOCKER service ls -q --filter=name=$service)"
 ]
 
+[prune-nodes]
+source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
+exec = "$DOCKER node ls --format '{{.ID}} {{.Status}}' | grep Down | cut -d ' ' -f 1 | xargs $DOCKER node rm"
+
 [allocate]
 source = [
   . $scripts/iaas/all.sh,
@@ -67,7 +72,7 @@ exec = [
   'set +e',
   # change remote sshd port
   sshd_change_port root@$nodeIP 22 $port,
-  # install docker engine and environment
+  # install Docker engine and environment
   'read install_hooks <<< $(unpack \${!node_usage_${node_usage}_install_hooks_@})',
   'swarm_install root@$nodeIP $port $iaascfg $docker_mirror $node_label $install_hooks',
   # export node IP address
@@ -83,7 +88,7 @@ exec = [
   # unpack parameters
   'read port <<< $(unpack \$iaas_${iaascfg}_ssh_port)',
 
-  # initialize docker warm for the first time
+  # initialize Docker warm for the first time
   $SSH -p $port root@$nodeIP $DOCKER swarm init,
 
   # set label for this root swarm manager
