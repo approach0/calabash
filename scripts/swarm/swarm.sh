@@ -15,7 +15,7 @@ swarm_install() {
 	for hook in $posthook; do
 		hook_func=${!hook}
 		echo "[hook install] $hook_func"
-		#$SSH -p $SSH_PORT $SSH_ADDR 'bash -s' -- < \
+		$SSH -p $SSH_PORT $SSH_ADDR 'bash -s' -- < \
 			$scripts/iaas/hooks.$HOST_CFG.sh $hook_func
 	done
 }
