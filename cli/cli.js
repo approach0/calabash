@@ -97,7 +97,15 @@ function printTaskLog(taskID, doClear) {
 
 if (program.taskLog) {
   const taskID = program.taskLog
-  printTaskLog(taskID)
+
+  if (program.follow) {
+    console.log('Following log ...')
+    const timer = setInterval(function() {
+      printTaskLog(taskID, true)
+    }, 1000)
+  } else {
+    printTaskLog(taskID)
+  }
 }
 
 if (program.listTasks) {
