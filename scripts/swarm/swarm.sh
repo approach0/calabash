@@ -184,6 +184,7 @@ swarm_service_create() {
 		fi
 
 		set -x
+		$DOCKER service rm ${servID}
 		$DOCKER service create \
 			--hostname='{{.Service.Name}}-{{.Task.Slot}}' \
 			--replicas=$mesh_replicas \
