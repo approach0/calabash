@@ -36,8 +36,10 @@ swarm_print_nodes() {
 }
 
 swarm_print_services() {
-	$DOCKER node ls -q | xargs $DOCKER node ps --filter 'desired-state=running' \
-		--format '{{.Node}}  {{.Name}}  {{.Image}}  ({{.CurrentState}} {{.Error}})'
+	$DOCKER node ls -q | while read nodeid; do
+		echo "Node $nodeid:"
+		$DOCKER node ps $nodeid --format '{{.Node}}  {{.Name}}  {{.Image}}  ({{.CurrentState}} {{.Error}})'
+	done
 }
 
 swarm_print_service_overview() {
