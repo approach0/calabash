@@ -64,15 +64,14 @@ The following steps setup necessary services of Approach Zero
 $ node cli.js -j 'swarm:bootstrap?iaascfg=ucloud_config_1&node_usage=host_corpus'
 ```
 
-2. Add additional 2 corpus nodes
+2. Add 1 corpus nodes along with bootstrap node, for storing corpus
 ```sh
 $ node cli.js http://<IP>:<PORT> --follow -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private&node_usage=host_corpus&shard=2'
-$ node cli.js http://<IP>:<PORT> --follow -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private&node_usage=host_corpus&shard=3'
 ```
 
-3. Create corpus `rsyncd` and `crawler` services
+3. Create `corpus_syncd` and `crawler` services
 ```sh
-$ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=corpus
+$ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=corpus_syncd
 $ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=crawler
 $ node cli.js http://<IP>:<PORT> --follow -j swarm:list-services
 ```
@@ -97,16 +96,14 @@ $ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=feeder
 ```
 (this service will stop once it has finished feeding all existing corpus files)
 
-7. Create 2x2 grids of search nodes
+7. Create 2 search nodes
 ```sh
 $ node cli.js http://<IP>:<PORT> --follow -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private&node_usage=host_indexer&shard=1'
-$ node cli.js http://<IP>:<PORT> --follow -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private&node_usage=host_indexer&shard=1'
-$ node cli.js http://<IP>:<PORT> --follow -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private&node_usage=host_indexer&shard=2'
 $ node cli.js http://<IP>:<PORT> --follow -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private&node_usage=host_indexer&shard=2'
 $ node cli.js http://<IP>:<PORT> --follow -j swarm:list-nodes
 ```
 
-8. Deploy `searchd` service on those grids
+8. Deploy `searchd` service on those search nodes
 ```sh
 $ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=searchd
 ```
