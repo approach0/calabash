@@ -6,7 +6,6 @@ install_fuse() {
 }
 
 mount_vdisk() {
-	mkdir -p /var/tmp/vdisk
 	cd /var/tmp/vdisk
 
 	mkdir -p ./mnt
@@ -14,7 +13,6 @@ mount_vdisk() {
 }
 
 umount_vdisk() {
-	mkdir -p /var/tmp/vdisk
 	cd /var/tmp/vdisk
 
 	if mount | grep -q vdisk; then
@@ -26,7 +24,6 @@ umount_vdisk() {
 create_vdisk() {
 	DISKSIZE=$1
 
-	mkdir -p /var/tmp/vdisk
 	cd /var/tmp/vdisk
 
 	dd if=/dev/zero of=vdisk.img count=${DISKSIZE} bs=1024K
@@ -74,12 +71,12 @@ vdisk_producer_daemon() {
 		mount_vdisk
 	) 100>/var/tmp/vdisk/vdisk.lock
 
+	mkdir -p /var/tmp/vdisk
 	declare -fx umount_vdisk create_vdisk mount_vdisk vdisk_producer_loop
-	nohup bash -c "vdisk_producer_loop $DISKSIZE" &
+	nohup bash -c "vdisk_producer_loop $DISKSIZE" &> /var/tmp/vdisk/nohup.out < /dev/null &
 }
 
 vdisk_consume_loop() {
-	mkdir -p /var/tmp/vdisk
 	cd /var/tmp/vdisk
 
 	while true; do
@@ -106,8 +103,9 @@ vdisk_consume_daemon() {
 	# Use the following command in container:
 	# (flock 100; searchd.out -i /mnt/vdisk/mnt/) 100>/mnt/vdisk/vdisk.lock
 
+	mkdir -p /var/tmp/vdisk
 	declare -fx umount_vdisk create_vdisk mount_vdisk vdisk_consume_loop
-	nohup bash -c "vdisk_consume_loop" &
+	nohup bash -c "vdisk_consume_loop" &> /var/tmp/vdisk/nohup.out < /dev/null &
 }
 
 $hookfun
