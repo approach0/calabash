@@ -98,8 +98,8 @@ $ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=feeder
 
 7. Create 2 search nodes
 ```sh
-$ node cli.js http://<IP>:<PORT> --follow -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private&node_usage=host_indexer&shard=1'
-$ node cli.js http://<IP>:<PORT> --follow -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private&node_usage=host_indexer&shard=2'
+$ node cli.js http://<IP>:<PORT> --follow -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private&node_usage=host_searchd&shard=1'
+$ node cli.js http://<IP>:<PORT> --follow -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private&node_usage=host_searchd&shard=2'
 $ node cli.js http://<IP>:<PORT> --follow -j swarm:list-nodes
 ```
 
