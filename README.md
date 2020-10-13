@@ -90,3 +90,9 @@ $ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=indexe
 $ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=index_syncd
 $ node cli.js http://<IP>:<PORT> --follow -j swarm:list-services
 ```
+
+6. Then invoke index `feeder` to transfer corpus files to indexer
+```sh
+$ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=feeder
+```
+(this service will stop once it has finished feeding all existing corpus files)
