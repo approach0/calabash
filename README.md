@@ -1,9 +1,9 @@
 ## About
 Calabash is an automation tool for small Dev team, with the following emphasises:
 
-* Simplicity: Small codebase wrapping on top of Docker Swarm. You do not have to use K8S for setting up your online resume, right?
+* Simplicity: Small codebase wrapping on top of Docker Swarm. You do not have to use K8S for setting up your online resume and blog, right?
 * Declarative but simple schema: Calabash adapts TOML instead of YAML, with much less declarative entries to get work automated.
-* Loving shell scripts: In contrast to some Cloud Native automation tools which require you to write Go and other fully featured programming languages for DevOps, Calabash still loves shell scripts, we believe they are suitable for system admin just like the good old days. Experienced system admins can utilize their skills on shell scripting again.
+* Loving shell scripts: In contrast to some Cloud Native automation tools which require you to write Go and other fully featured programming languages for DevOps, Calabash still loves shell scripts, we believe they are suitable for system admin just like they are in the good old days. Experienced system admins can utilize their skills on shell scripting again.
 * Modern: With latest Docker Swarm and Calabash, you can deploy highly available services with sharding, load balancing etc. All too easy!
 * Built-in Web UI: It comes with a dashboard UI! What's more, Calabash is written in Node.js which is an uncommon choice in DevOps world, but because of this, the backend and UI comes together nicely with only Node.js ecosystem dependencies.
 * VPS support: You can automate your tasks on Linode, Digital Ocean as well as Cloud Infrastructures like Amazon AWS. All you need to do is to write some simple "bash script driver" using CLIs from infrastructure providers.
