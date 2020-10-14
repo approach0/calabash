@@ -106,7 +106,7 @@ swarm_service_update_configs() {
 
 		# get config sources
 		cfgsrc=`echo "$varname" | sed -e 's/_bind_/_source_/'`
-		src="${!cfgsrc}"
+		src="${!cfgsrc:Q}"
 		oneline_src=$(echo -n "$src" | sed -e '/./,$!d' | tr -s ' ' | tr '\n' '; ')
 
 		# update config files
@@ -114,11 +114,13 @@ swarm_service_update_configs() {
 			tmpfile=`mktemp`
 			cat > $tmpfile <<< "$src"
 			swarm_update_secret_file $key $tmpfile &> /dev/null
+			cat -A $tmpfile >&2 # print config file
 			rm -f $tmpfile
 
 		elif [ "$typ" == "path" ]; then
 			srcpath=$(eval echo $src)
 			swarm_update_secret_file $key $srcpath &> /dev/null
+			cat -A $srcpath >&2 # print config file
 
 		else
 			continue
@@ -138,8 +140,8 @@ swarm_service_create() {
 	# extract extra arguments from environment variables
 	for argvar in $(eval echo \${!service_${servName}_@}); do
 		shortname=`echo $argvar | grep -o -P "(?<=service_${servName}_).+"`
-		assignment="$shortname='${!argvar}'"
-		eval "$assignment"
+		local -n ref=$shortname
+		ref="${!argvar:Q}"
 	done
 
 	# set default value if any argument is not specified
