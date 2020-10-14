@@ -101,7 +101,7 @@ print_arguments = [
     'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock',
     'type=bind,src=/var/log,dst=/mnt/log,ro=false',
   ]
-  docker_exec = node ./jobd/jobd.js --config ./config.toml | tee -a /mnt/log/calabash.log
+  docker_exec = 'node ./jobd/jobd.js --config ./config.toml | tee -a /mnt/log/calabash.log'
 
   [service.hello]
   portmap = 'published=3389,target=8080,mode=ingress' # servcie mesh with only shard#1 publishing port
@@ -122,14 +122,14 @@ print_arguments = [
   ]
   config_source = [
     '''
-    node /code/hello.js \$(hostname) shard#\$@
+    node /code/hello.js $(hostname) shard#$@
     '''
   ]
-  docker_exec = sh /tmp/entrypoint.sh \$shard
+  docker_exec = sh /tmp/entrypoint.sh $shard
 
-  [service.corpus]
+  [service.corpus_syncd]
   network = approach0
-  mesh_sharding = 3
+  mesh_sharding = 2
   max_per_node = 1
   mounts = [
     'type=volume,src=corpus_vol,dst=/data',
@@ -146,11 +146,11 @@ print_arguments = [
     '''
     rsync --daemon --verbose --config=/tmp/rsyncd.conf
 
-    src=\$1
+    src=$1
     while true; do
-      for dst in corpus corpus-shard{2..3}; do
-        if [ "\$src" != "\$dst" ]; then
-          rsync -zauv --progress /data/ rsync://\$dst/root/
+      for dst in corpus_syncd corpus_syncd-shard2; do
+        if [ "$src" != "$dst" ]; then
+          rsync -zauv --progress /data/ rsync://$dst/root/
         fi
       done
       sleep 16
@@ -160,7 +160,7 @@ print_arguments = [
   docker_exec = bash /tmp/entrypoint.sh \$servID
 
   [service.crawler]
-  mesh_sharding = 3
+  mesh_sharding = 2
   max_per_node = 1
   mounts = [
     'type=volume,src=corpus_vol,dst=/data',
@@ -174,12 +174,12 @@ print_arguments = [
   ]
   config_source = [
     '''
-    shard=\$1
-    export PATH=\"\$PATH:\$(pwd)/demo/crawler\"
+    shard=$1
+    export PATH="$PATH:$(pwd)/demo/crawler"
     cd /data
 
     while true; do
-      case \$shard in
+      case $shard in
       1)
         crawler-math.stackexchange.com.py  --begin-page     1 --end-page  1000
         crawler-math.stackexchange.com.py  --begin-page  1001 --end-page  7000
@@ -205,12 +205,12 @@ print_arguments = [
       ;;
       esac
 
-      echo 'Start over ...'
+      echo "Start over ..."
       sleep 32
     done
     '''
   ]
-  docker_exec = bash /tmp/entrypoint.sh \$shard
+  docker_exec = bash /tmp/entrypoint.sh $shard
 
   [service.indexer]
   network = approach0
@@ -232,7 +232,21 @@ print_arguments = [
     (flock 100; indexer.out -z -o /mnt/vdisk/mnt/; sync ) 100>/mnt/vdisk/vdisk.lock
     '''
   ]
+  restart_condition = none
   docker_exec = bash /tmp/entrypoint.sh
+
+  [service.index_syncd]
+  network = approach0
+  mesh_sharding = 2
+  max_per_node = 1
+  mounts = [
+    'type=bind,src=/var/tmp/vdisk,dst=/data'
+  ]
+  constraints = [
+    'node.labels.host_indexer==true'
+  ]
+  docker_image = ga6840/rsyncd
+  docker_exec = 'rsync --daemon --no-detach --verbose --config=/tmp/rsyncd.conf'
 
   [service.feeder]
   network = approach0
@@ -254,26 +268,14 @@ print_arguments = [
       --indexd-url http://indexer-shard2:8934/index \
     '''
   ]
+  restart_condition = none
   docker_exec = bash /tmp/entrypoint.sh
 
-  [service.index_syncd]
-  network = approach0
-  mesh_sharding = 2
-  max_per_node = 1
-  mounts = [
-    'type=bind,src=/var/tmp/vdisk,dst=/mnt/vdisk'
-  ]
-  constraints = [
-    'node.labels.host_indexer==true'
-  ]
-  docker_image = ga6840/rsyncd
-  docker_exec = ''
-
   [service.searchd]
+  portmap = '3389:8921'
   network = approach0
   mesh_sharding = 2
   mesh_replicas = 2
-  max_per_node = 1
   mounts = [
     'type=bind,src=/var/tmp/vdisk,dst=/mnt/vdisk'
   ]
@@ -283,18 +285,54 @@ print_arguments = [
   docker_image = ga6840/a0:latest
 
   config_bind = [
-    'text:search_entrypoint:/tmp/entrypoint.sh'
+    'text:searchd_entrypoint:/tmp/entrypoint.sh'
   ]
   config_source = [
     '''
-    shard=\$1
-    if [ \$shard -eq 1 ]; then
-      rsync -zuv --progress rsync://index_syncd/root/vdisk.*.img .
+    shard=$1
+    if [ $shard -eq 1 ]; then
+      rsync -zuv --progress rsync://index_syncd/root/vdisk.*.img /mnt/vdisk/
     else
-      rsync -zuv --progress rsync://index_syncd-shard\$shard/root/vdisk.*.img .
+      rsync -zuv --progress rsync://index_syncd-shard${shard}/root/vdisk.*.img /mnt/vdisk/
     fi
 
     /usr/sbin/sshd -D -e
     '''
   ]
-  docker_exec = bash /tmp/entrypoint.sh \$shard
+  stop_signal = SIGUSR1
+  restart_condition = none
+  docker_exec = bash /tmp/entrypoint.sh $shard
+
+  [service.searchd_mpi_setup]
+  network = approach0
+  constraints = [
+    'node.labels.host_searchd==true'
+  ]
+  docker_image = ga6840/a0:latest
+  mounts = [
+    'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock'
+  ]
+  config_bind = [
+    'text:mpi_entrypoint:/tmp/entrypoint.sh'
+  ]
+  config_source = [
+    '''
+    ne=approach0
+    sd=searchd
+    re=2
+    mn=/mnt/vdisk
+
+    ex="searchd.out -i ./mnt -c 0 -C 0"
+    sn=$(docker network inspect $ne -f "{{(index .IPAM.Config 0).Subnet}}")
+    ho=$(echo "$sd $(for i in $(seq 2 $re); do echo ${sd}-shard$i; done)" | tr ' ', ',')
+    for i in $(seq 1 $re); do
+      set -x
+      ssh root@$sd mpirun --allow-run-as-root \
+        -n $re --host $ho --wdir $mn \
+        --mca oob_tcp_if_include $sn --mca btl_tcp_if_include $sn \
+        sh -c "$ex"
+      set +x
+    done
+    '''
+  ]
+  docker_exec = bash /tmp/entrypoint.sh $shard

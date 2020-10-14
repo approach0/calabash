@@ -56,7 +56,8 @@ exports.syncLoop = function (arr, doing, done) {
 /* declare non-functional env variables */
 exports.declare_envs = function (env) {
   return Object.keys(env).reduce((accum, key) => {
-    return accum + `declare -x ${key}="${env[key]}"\n`
+    const value = String(env[key]).replace(/'/g, "'\\''")
+    return accum + `declare -x ${key}='${value}'\n`
   }, '')
 }
 
@@ -107,7 +108,6 @@ exports.runcmd = function (cmd, opt, onLog, onSpawn)
     /* spawn runner process */
     let runner
     const tmpdir = os.tmpdir()
-    //console.log(opt.declare)
     try {
       const hooked_cmd =
       opt.declare +
@@ -125,7 +125,7 @@ exports.runcmd = function (cmd, opt, onLog, onSpawn)
        (opt.source ? 'set -a \n' : '') +
        cmd;
 
-      //console.log(ow_declare)
+      //console.log(opt.declare)
       //console.log(hooked_cmd)
       runner = spawnFun('/bin/bash', ['-c', hooked_cmd], {
         uid, gid,
