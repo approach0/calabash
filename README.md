@@ -109,4 +109,6 @@ $ node cli.js http://<IP>:<PORT> --follow -j swarm:list-nodes
 8. Deploy `searchd` service on those search nodes
 ```sh
 $ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=searchd
+# Wait enough time for searchd to come up ...
+$ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=searchd_mpi_setup
 ```

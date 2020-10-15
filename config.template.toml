@@ -240,7 +240,7 @@ print_arguments = [
     while true; do
       echo 'Spawning indexer ...'
       (flock 100; indexer.out -z -o /mnt/vdisk/mnt/; sync ) 100>/mnt/vdisk/vdisk.lock
-      sleep 16 # let producer daemon take its time
+      sleep 16 # Give vdisk-producer daemon enough time to create image
     done
     '''
   ]
@@ -262,7 +262,7 @@ print_arguments = [
   [service.feeder]
   network = approach0
   mounts = [
-    'type=volume,src=corpus_vol,dst=/data',
+    'type=volume,src=corpus_vol,dst=/data'
   ]
   constraints = [
     'node.labels.host_corpus==true'
@@ -281,7 +281,7 @@ print_arguments = [
     while true; do
       urls=$(for i in $(detect_shards indexer 2); do echo "--indexd-url http://${i}:8934/index"; done)
       set -x
-      ./indexerd/scripts/json-feeder.py --corpus-path /data $urls
+      ./indexerd/scripts/json-feeder.py --corpus-path /data $urls --bye
       set +x
       echo 'Waiting (long enough to get better chance that indexers are ready)'
       sleep 240
@@ -295,7 +295,6 @@ print_arguments = [
   portmap = '3389:8921'
   network = approach0
   mesh_sharding = 2
-  mesh_replicas = 2
   mounts = [
     'type=bind,src=/var/tmp/vdisk,dst=/mnt/vdisk'
   ]
@@ -333,26 +332,29 @@ print_arguments = [
     'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock'
   ]
   config_bind = [
+    'path:detect_shards:/tmp/detect-shards.sh',
     'text:mpi_entrypoint:/tmp/entrypoint.sh'
   ]
   config_source = [
+    '$scripts/swarm/detect-shards.sh',
     '''
+    source /tmp/detect-shards.sh
+
     ne=approach0
     sd=searchd
-    re=2
     mn=/mnt/vdisk
 
-    ex="searchd.out -i ./mnt -c 0 -C 0"
-    sn=$(docker network inspect $ne -f "{{(index .IPAM.Config 0).Subnet}}")
-    ho=$(echo "$sd $(for i in $(seq 2 $re); do echo ${sd}-shard$i; done)" | tr ' ', ',')
-    for i in $(seq 1 $re); do
-      set -x
-      ssh root@$sd mpirun --allow-run-as-root \
-        -n $re --host $ho --wdir $mn \
-        --mca oob_tcp_if_include $sn --mca btl_tcp_if_include $sn \
-        sh -c "$ex"
-      set +x
-    done
+    command="searchd.out -i ./mnt -c 0 -C 0"
+    hosts=$(detect_shards $sd 2 | tr ' ', ',')
+    subnet=$(docker network inspect $ne -f "{{(index .IPAM.Config 0).Subnet}}")
+
+    set -x
+    ssh root@$sd mpirun --allow-run-as-root \
+      -n $(echo $hosts | wc -w) \
+      --host $hosts --wdir $mn \
+      --mca oob_tcp_if_include $subnet --mca btl_tcp_if_include $subnet \
+      sh -c "$command"
+    set +x
     '''
   ]
-  docker_exec = bash /tmp/entrypoint.sh $shard
+  docker_exec = bash /tmp/entrypoint.sh
