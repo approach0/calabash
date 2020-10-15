@@ -140,15 +140,23 @@ print_arguments = [
   docker_image = ga6840/rsyncd
 
   config_bind = [
+    'path:detect_shards:/tmp/detect-shards.sh',
     'text:corpus_entrypoint:/tmp/entrypoint.sh'
   ]
   config_source = [
-    '''
-    rsync --daemon --verbose --config=/tmp/rsyncd.conf
+    '$scripts/swarm/detect-shards.sh',
 
+    '''
     src=$1
+
+    rsync --daemon --verbose --config=/tmp/rsyncd.conf
+    source /tmp/detect-shards.sh
+
     while true; do
-      for dst in corpus_syncd corpus_syncd-shard2; do
+      shards=`detect_shards corpus_syncd 0`
+      echo $shards
+
+      for dst in $shards; do
         if [ "$src" != "$dst" ]; then
           rsync -zauv --progress /data/ rsync://$dst/root/
         fi
@@ -157,7 +165,7 @@ print_arguments = [
     done
     '''
   ]
-  docker_exec = bash /tmp/entrypoint.sh \$servID
+  docker_exec = bash /tmp/entrypoint.sh $servID
 
   [service.crawler]
   mesh_sharding = 2
@@ -229,10 +237,13 @@ print_arguments = [
   ]
   config_source = [
     '''
-    (flock 100; indexer.out -z -o /mnt/vdisk/mnt/; sync ) 100>/mnt/vdisk/vdisk.lock
+    while true; do
+      echo 'Spawning indexer ...'
+      (flock 100; indexer.out -z -o /mnt/vdisk/mnt/; sync ) 100>/mnt/vdisk/vdisk.lock
+      sleep 16 # let producer daemon take its time
+    done
     '''
   ]
-  restart_condition = none
   docker_exec = bash /tmp/entrypoint.sh
 
   [service.index_syncd]
@@ -259,13 +270,22 @@ print_arguments = [
   docker_image = ga6840/a0:latest
 
   config_bind = [
+    'path:detect_shards:/tmp/detect-shards.sh',
     'text:feeder_entrypoint:/tmp/entrypoint.sh'
   ]
   config_source = [
+    '$scripts/swarm/detect-shards.sh',
     '''
-    ./indexerd/scripts/json-feeder.py --corpus-path /data \
-      --indexd-url http://indexer:8934/index \
-      --indexd-url http://indexer-shard2:8934/index \
+    source /tmp/detect-shards.sh
+
+    while true; do
+      urls=$(for i in $(detect_shards indexer 2); do echo "--indexd-url http://${i}:8934/index"; done)
+      set -x
+      ./indexerd/scripts/json-feeder.py --corpus-path /data $urls
+      set +x
+      echo 'Waiting (long enough to get better chance that indexers are ready)'
+      sleep 240
+    done
     '''
   ]
   restart_condition = none
