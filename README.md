@@ -45,6 +45,11 @@ To update a service:
 $ node cli.js http://<IP>:<PORT> -j swarm:service-update?service=calabash
 ```
 
+To remove a service:
+```sh
+$ node cli.js http://<IP>:<PORT> -j swarm:rm-service?service=foo
+```
+
 To update calabash configs, you need to run (single job) `swarm:bootstrap` against local jobd:
 ```sh
 $ node cli.js -j 'swarm:bootstrap?iaascfg=ucloud_config_1&nodeIP=<IP>' --single
@@ -93,10 +98,6 @@ $ node cli.js http://<IP>:<PORT> --follow -j swarm:list-services
 ```sh
 $ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=feeder
 ```
-This service will stop once it has finished feeding all existing corpus files, at that point you can stop `indexer` services to publish an vdisk image:
-```sh
-$ node cli.js http://<IP>:<PORT> --follow -j swarm:rm-service?service=indexer
-```
 
 7. Create 2 search nodes
 ```sh
@@ -108,4 +109,6 @@ $ node cli.js http://<IP>:<PORT> --follow -j swarm:list-nodes
 8. Deploy `searchd` service on those search nodes
 ```sh
 $ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=searchd
+# Wait enough time for searchd to come up ...
+$ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=searchd_mpi_setup
 ```
