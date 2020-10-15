@@ -7,7 +7,7 @@ detect_shards() {
 	list=""
 	cnt=0
 	for name in $servName $servName-shard{2..99}; do
-		ping -c 1 -W 3 $name
+		ping -c 1 -W 3 $name &> /dev/null
 		[ ! $? -eq 0 ] && break
 		list="$name $list"
 		let "cnt = cnt + 1"
