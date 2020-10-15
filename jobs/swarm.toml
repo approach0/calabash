@@ -110,7 +110,9 @@ exec = [
 
   # setup the first service
   ssh_exec_local_cmd root@$nodeIP $port  swarm_service_create $service_bootstrap_service,
+  set -e,
   $SSH -p $port root@$nodeIP rm -f $dst,
+  set +e,
 
   # finally, print node IP
   'echo Bootstrap finished, now try:',
