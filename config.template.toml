@@ -328,7 +328,7 @@ print_arguments = [
   ]
   docker_image = ga6840/a0:latest
   mounts = [
-    'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock'
+    'type=bind,src=/var/tmp/vdisk,dst=/mnt/vdisk'
   ]
   config_bind = [
     'path:detect_shards:/tmp/detect-shards.sh',
@@ -340,18 +340,18 @@ print_arguments = [
     subnet=$1
     source /tmp/detect-shards.sh
 
-    sd=searchd
-    mn=/mnt/vdisk
+    command="searchd.out -i ./mnt -L /mnt/vdisk/vdisk.lock -c 0 -C 0"
+    service=searchd
+    mountat=/mnt/vdisk
 
-    command="searchd.out -i ./mnt -c 0 -C 0"
-    hosts=`detect_shards $sd 2`
+    hosts=`detect_shards $service 2`
     np=$(echo $hosts | wc -w)
     hosts=$(echo $hosts | tr ' ', ',')
 
     set -x
-    ssh root@$sd mpirun --allow-run-as-root \
+    ssh root@$service mpirun --allow-run-as-root \
       -np $np \
-      --host $hosts --wdir $mn \
+      --host $hosts --wdir $mountat \
       --mca oob_tcp_if_include $subnet --mca btl_tcp_if_include $subnet \
       sh -c "$command"
     set +x
