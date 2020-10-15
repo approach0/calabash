@@ -319,7 +319,6 @@ print_arguments = [
     '''
   ]
   stop_signal = SIGUSR1
-  restart_condition = none
   docker_exec = bash /tmp/entrypoint.sh $shard
 
   [service.searchd_mpi_setup]
@@ -338,23 +337,25 @@ print_arguments = [
   config_source = [
     '$scripts/swarm/detect-shards.sh',
     '''
+    subnet=$1
     source /tmp/detect-shards.sh
 
-    ne=approach0
     sd=searchd
     mn=/mnt/vdisk
 
     command="searchd.out -i ./mnt -c 0 -C 0"
-    hosts=$(detect_shards $sd 2 | tr ' ', ',')
-    subnet=$(docker network inspect $ne -f "{{(index .IPAM.Config 0).Subnet}}")
+    hosts=`detect_shards $sd 2`
+    np=$(echo $hosts | wc -w)
+    hosts=$(echo $hosts | tr ' ', ',')
 
     set -x
     ssh root@$sd mpirun --allow-run-as-root \
-      -n $(echo $hosts | wc -w) \
+      -np $np \
       --host $hosts --wdir $mn \
       --mca oob_tcp_if_include $subnet --mca btl_tcp_if_include $subnet \
       sh -c "$command"
     set +x
     '''
   ]
-  docker_exec = bash /tmp/entrypoint.sh
+  restart_condition = none
+  docker_exec = 'bash /tmp/entrypoint.sh $(swarm_network_space approach0)'
