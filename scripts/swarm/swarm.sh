@@ -83,6 +83,11 @@ swarm_node_label() {
 	$DOCKER node inspect $swarmNodeID -f "{{(json .Spec.Labels)}}"
 }
 
+swarm_network_space() {
+	netname="$1"
+	docker network inspect $netname -f '{{(index .IPAM.Config 0).Subnet}}'
+}
+
 swarm_network_ensure_has() {
 	NAME=$1
 	DRIVER=$2
