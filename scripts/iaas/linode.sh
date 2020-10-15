@@ -11,9 +11,10 @@ LINODE_CLI="$DOCKER run $LINODE_CLI_IMG /root/wrap-run.sh $LINODE_TOKEN --suppre
 
 # login
 if [ -n "$DOCKER_REGISTRY" ]; then
-	$DOCKER login $DOCKER_REGISTRY -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-else
-	echo 'linode no login.'
+	key=$(basename $DOCKER_REGISTRY)
+	if ! grep $key ~/.docker/config.json; then
+		$DOCKER login $DOCKER_REGISTRY -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+	fi
 fi
 
 linode_regions() {

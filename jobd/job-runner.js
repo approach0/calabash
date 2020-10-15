@@ -126,6 +126,7 @@ exports.runcmd = function (cmd, opt, onLog, onSpawn)
        cmd;
 
       //console.log(opt.declare)
+      //console.log(ow_declare)
       //console.log(hooked_cmd)
       runner = spawnFun('/bin/bash', ['-c', hooked_cmd], {
         uid, gid,

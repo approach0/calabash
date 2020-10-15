@@ -114,13 +114,15 @@ swarm_service_update_configs() {
 			tmpfile=`mktemp`
 			cat > $tmpfile <<< "$src"
 			swarm_update_secret_file $key $tmpfile &> /dev/null
-			cat -A $tmpfile >&2 # print config file
+			echo "=== config file $key ===" >&2
+			cat $tmpfile >&2 # print config file
 			rm -f $tmpfile
 
 		elif [ "$typ" == "path" ]; then
 			srcpath=$(eval echo $src)
 			swarm_update_secret_file $key $srcpath &> /dev/null
-			cat -A $srcpath >&2 # print config file
+			echo "=== config file $key from $srcpath ===" >&2
+			cat $srcpath >&2 # print config file
 
 		else
 			continue
@@ -154,6 +156,7 @@ swarm_service_create() {
 	# get "list" variables
 	constraints=$(eval echo $(for c in ${!constraints_@}; do echo -n "--constraint=\$$c "; done))
 	mounts=$(eval echo $(for m in ${!mounts_@}; do echo -n "--mount=\$$m "; done))
+	echo '[[[ swarm_service_update_configs ]]]'
 	configs=`swarm_service_update_configs $servName`
 
 	# print service arguments
