@@ -25,7 +25,7 @@ RUN ln -sf `which python3` /usr/bin/python
 
 # clone and build this project
 RUN mkdir -p /code
-RUN git clone --depth 1 https://github.com/approach0/calabash /code/calabash
+RUN git clone --single-branch --branch deploy --depth 1 https://github.com/approach0/calabash /code/calabash
 WORKDIR /code/calabash
 RUN (cd cli && npm install)
 RUN (cd jobd && npm install)
