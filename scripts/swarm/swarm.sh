@@ -153,7 +153,7 @@ swarm_service_create() {
 	restart_condition=${restart_condition-any}
 	stop_signal=${stop_signal-SIGINT}
 
-	# get "list" variables
+	# get complex variables
 	constraints=$(eval echo $(for c in ${!constraints_@}; do echo -n "--constraint=\$$c "; done))
 	mounts=$(eval echo $(for m in ${!mounts_@}; do echo -n "--mount=\$$m "; done))
 	echo '[[[ swarm_service_update_configs ]]]'
@@ -174,6 +174,9 @@ swarm_service_create() {
 		else
 			servID="${servName}"
 		fi
+
+		# parse docker_exec to handle both variables and pipes (with some stupid hacks)
+		exe=$(eval echo $(echo $docker_exec | sed -e 's/|/__PIPE__/g') | sed -e 's/__PIPE__/|/g')
 
 		extra_args="--name ${servID}"
 		if [[ $shard -eq 1 || "${portmap}" =~ 'mode=host' ]]; then
@@ -203,7 +206,7 @@ swarm_service_create() {
 			$extra_args \
 			--with-registry-auth \
 			--entrypoint "''" \
-			${docker_image} sh -c "$(eval echo "$docker_exec")"
+			${docker_image} sh -c "$exe"
 		set +x
 	done
 }
