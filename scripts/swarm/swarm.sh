@@ -228,7 +228,7 @@ swarm_service_update() {
 		--with-registry-auth \
 		--update-failure-action rollback \
 		--with-registry-auth \
-		--image $docker_image \ # otherwise it may not update to the latest
+		--image $docker_image \
 		$servName
 	set +x
 }
