@@ -37,8 +37,9 @@ swarm_print_nodes() {
 
 swarm_print_services() {
 	$DOCKER node ls -q | while read nodeid; do
-		echo "Node $nodeid:"
-		$DOCKER node ps $nodeid --format '{{.Node}}  {{.Name}}  {{.Image}}  ({{.CurrentState}} {{.Error}})' --filter 'desired-state=running'
+		host_name=$($DOCKER node inspect --format '{{.Description.Hostname}}')
+		echo "Node $nodeid ( $host_name ):"
+		$DOCKER node ps $nodeid --format '{{.Name}}  {{.Image}}  ({{.CurrentState}} {{.Error}})' --filter 'desired-state=running'
 	done
 }
 

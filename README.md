@@ -113,7 +113,7 @@ $ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=search
 $ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=searchd_mpi_run
 ```
 
-Now, search daemon should be running and exposing port from searchd to any swarm node (either manager or worker, since we are using default ingress network for swarm).
+Now, search daemon should be running and exposing port from searchd and can be accessed from any swarm node (either from a manager or a worker, since we are using default ingress network for swarm).
 Test a query through a Approach Zero test script:
 ```sh
 # docker run ga6840/a0 ./searchd/scripts/test-query.sh http://<IP>:<SEARCHD_EXPOSED_PORT>/search
