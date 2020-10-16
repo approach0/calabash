@@ -237,11 +237,12 @@ print_arguments = [
   ]
   config_source = [
     '''
-    while true; do
-      echo 'Spawning indexer ...'
-      (flock 100; indexer.out -z -o /mnt/vdisk/mnt/; sync ) 100>/mnt/vdisk/vdisk.lock
-      sleep 16 # Give vdisk-producer daemon enough time to create image
-    done
+    # if there is no such directory (/mnt/vdisk/mnt), indexer will give up and quit
+    (flock 100; indexer.out -z -o /mnt/vdisk/mnt/; sync ) 100>/mnt/vdisk/vdisk.lock
+
+    sleep 16 # Give vdisk-producer daemon enough time to create image
+
+    # fall through here to restart service so that mounting point will be refreshed
     '''
   ]
   docker_exec = bash /tmp/entrypoint.sh
@@ -309,19 +310,38 @@ print_arguments = [
   config_source = [
     '''
     shard=$1
-    if [ $shard -eq 1 ]; then
-      rsync -zuv --progress rsync://index_syncd/root/vdisk.*.img /mnt/vdisk/
-    else
-      rsync -zuv --progress rsync://index_syncd-shard${shard}/root/vdisk.*.img /mnt/vdisk/
-    fi
+    vdisk=/mnt/vdisk
 
-    /usr/sbin/sshd -D -e
+    /usr/sbin/sshd -e
+
+    while true; do
+      echo 'checking vdisk mounting point ...'
+      if [ ! -e $vdisk/mnt/mstats.bin ]; then
+        echo 'mounting point updated, kill sshd and searchd ...'
+        kill -INT $(pidof sshd)
+        kill -USR1 $(pidof searchd.out)
+
+        echo 'updating vdisk image'
+        if [ $shard -eq 1 ]; then
+          rsync -zuv --progress rsync://index_syncd/root/vdisk.*.img $vdisk/
+        else
+          rsync -zuv --progress rsync://index_syncd-shard${shard}/root/vdisk.*.img $vdisk/
+        fi
+
+        echo 'wait long enough for index vdisk to be mounted ...'
+        sleep 16
+
+        echo 'fall through to restart the service and refresh mounting point ...'
+        break
+      fi
+      sleep 8
+    done
     '''
   ]
   stop_signal = SIGUSR1
   docker_exec = bash /tmp/entrypoint.sh $shard
 
-  [service.searchd_mpi_setup]
+  [service.searchd_mpi_run]
   network = approach0
   constraints = [
     'node.labels.host_searchd==true'
@@ -350,10 +370,10 @@ print_arguments = [
 
     set -x
     ssh root@$service mpirun --allow-run-as-root \
-      -np $np \
+      -np $np --rank-by node \
       --host $hosts --wdir $mountat \
       --mca oob_tcp_if_include $subnet --mca btl_tcp_if_include $subnet \
-      sh -c "$command"
+      $command
     set +x
     '''
   ]
