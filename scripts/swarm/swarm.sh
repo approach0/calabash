@@ -32,12 +32,12 @@ is_swarm_manager() {
 
 swarm_print_nodes() {
 	$DOCKER node ls -q | xargs $DOCKER node inspect \
-		--format '{{.Description.Hostname}}  {{json .CreatedAt}}  {{.Status.Addr}} [{{.Status.State}}] {{json .Spec}}'
+		--format '{{.ID}} {{.Description.Hostname}}  {{json .CreatedAt}}  {{.Status.Addr}} [{{.Status.State}}] {{json .Spec}}'
 }
 
 swarm_print_services() {
 	$DOCKER node ls -q | while read nodeid; do
-		host_name=$($DOCKER node inspect --format '{{.Description.Hostname}}')
+		host_name=$($DOCKER node inspect $nodeid --format '{{.Description.Hostname}}')
 		echo "Node $nodeid ( $host_name ):"
 		$DOCKER node ps $nodeid --format '{{.Name}}  {{.Image}}  ({{.CurrentState}} {{.Error}})' --filter 'desired-state=running'
 	done
