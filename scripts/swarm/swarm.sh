@@ -219,12 +219,16 @@ swarm_service_create() {
 
 swarm_service_update() {
 	servName=$1
+	read docker_image <<< $(unpack \$service_${servName}_docker_image)
+	echo "Updating swarm serivce $servName to $docker_image ..."
 	set -x
 	$DOCKER service update \
 		--force \
 		--update-order=start-first \
 		--with-registry-auth \
 		--update-failure-action rollback \
+		--with-registry-auth \
+		--image $docker_image \ # otherwise it may not update to the latest
 		$servName
 	set +x
 }
