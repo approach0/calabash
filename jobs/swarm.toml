@@ -34,7 +34,7 @@ exec = "$DOCKER node ls --format '{{.ID}} {{.Status}}' | grep Down | cut -d ' ' 
 [prune-images]
 source = . $scripts/swarm/swarm.sh
 if = is_swarm_manager
-exec = "$DOCKER rmi -f $(DOCKER images --filter 'dangling=true' -q --no-trunc)"
+exec = "$DOCKER rmi -f $($DOCKER images --filter 'dangling=true' -q --no-trunc)"
 
 [allocate]
 source = [
