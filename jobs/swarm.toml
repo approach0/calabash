@@ -31,6 +31,11 @@ source = . $scripts/swarm/swarm.sh
 if = is_swarm_manager
 exec = "$DOCKER node ls --format '{{.ID}} {{.Status}}' | grep Down | cut -d ' ' -f 1 | xargs $DOCKER node rm"
 
+[prune-images]
+source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
+exec = "$DOCKER rmi -f $($DOCKER images --filter 'dangling=true' -q --no-trunc)"
+
 [allocate]
 source = [
   . $scripts/iaas/all.sh,
