@@ -182,7 +182,11 @@ swarm_service_create() {
 		fi
 
 		# parse docker_exec to handle both variables and pipes (with some stupid hacks)
-		exe=$(eval echo $(echo $docker_exec | sed -e 's/|/__PIPE__/g') | sed -e 's/__PIPE__/|/g')
+		execute_line=$(eval echo $(echo $docker_exec | sed -e 's/|/__PIPE__/g') | sed -e 's/__PIPE__/|/g')
+		if [ -n "$execute_line" ]; then
+			# ensure we overwrite default entrypoint
+			execute_line="--entrypoint '' sh -c '$execute_line'"
+		fi
 
 		extra_args="--name ${servID}"
 		if [[ $shard -eq 1 || "${portmap}" =~ 'mode=host' ]]; then
@@ -211,8 +215,8 @@ swarm_service_create() {
 			$mounts \
 			$extra_args \
 			--with-registry-auth \
-			--entrypoint "''" \
-			${docker_image} sh -c "$exe"
+			${docker_image} \
+			$execute_line
 		set +x
 	done
 }
