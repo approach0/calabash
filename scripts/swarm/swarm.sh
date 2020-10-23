@@ -160,8 +160,10 @@ swarm_service_create() {
 	stop_signal=${stop_signal-SIGINT}
 
 	# get complex variables
+	service_labels=$(eval echo $(for l in ${!labels_@}; do echo -n "--label=\$$l "; done))
 	constraints=$(eval echo $(for c in ${!constraints_@}; do echo -n "--constraint=\$$c "; done))
 	mounts=$(eval echo $(for m in ${!mounts_@}; do echo -n "--mount=\$$m "; done))
+	environments=$(eval echo $(for e in ${!env_@}; do echo -n "--env=\$$e "; done))
 	echo '[[[ swarm_service_update_configs ]]]'
 	configs=`swarm_service_update_configs $servName`
 
@@ -182,10 +184,11 @@ swarm_service_create() {
 		fi
 
 		# parse docker_exec to handle both variables and pipes (with some stupid hacks)
+		entrypoint_overwrite=""
 		execute_line=$(eval echo $(echo $docker_exec | sed -e 's/|/__PIPE__/g') | sed -e 's/__PIPE__/|/g')
 		if [ -n "$execute_line" ]; then
 			# ensure we overwrite default entrypoint
-			execute_line="--entrypoint '' sh -c '$execute_line'"
+			entrypoint_overwrite="--entrypoint ''"
 		fi
 
 		extra_args="--name ${servID}"
@@ -210,11 +213,14 @@ swarm_service_create() {
 			--restart-condition=$restart_condition \
 			--constraint=node.labels.shard==${shard} \
 			--stop-signal=$stop_signal \
+			$service_labels \
 			$constraints \
+			$environments \
 			$configs \
 			$mounts \
 			$extra_args \
 			--with-registry-auth \
+			$entrypoint_overwrite \
 			${docker_image} \
 			$execute_line
 		set +x

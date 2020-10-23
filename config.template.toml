@@ -95,13 +95,13 @@ print_arguments = [
     'path:calabash_config:/code/calabash/config.toml'
   ]
   config_source = [
-    '/tmp/bootstrap.config.toml'
+    '/tmp/bootstrap.config.toml' # convention place for remote server to hold bootstrap config
   ]
   mounts = [
     'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock',
     'type=bind,src=/var/log,dst=/mnt/log,ro=false',
   ]
-  docker_exec = 'node ./jobd/jobd.js --config ./config.toml | tee -a /mnt/log/calabash.log'
+  docker_exec = node ./jobd/jobd.js --config ./config.toml
 
   [service.hello]
   portmap = 'published=3389,target=8080,mode=ingress' # servcie mesh with only shard#1 publishing port
@@ -379,3 +379,63 @@ print_arguments = [
   ]
   restart_condition = none
   docker_exec = 'bash /tmp/entrypoint.sh $(swarm_network_space approach0)'
+
+  [service.gateway]
+  network = approach0
+  portmap = '8080:80'
+  mounts = [
+    'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock',
+    'type=bind,src=/var/log,dst=/mnt/log,ro=false',
+  ]
+  docker_image = gateway
+
+  [service.usersdb]
+  network = approach0
+  labels = [
+    'gateway.route=usersdb',
+    'gateway.port=80'
+  ]
+  mounts = [
+    'type=volume,src=usersdb_vol,dst=/postgres/data',
+  ]
+  docker_image = uhub.service.ucloud.cn/ga6840/postgres13
+
+  [service.lattice]
+  network = approach0
+  env = [
+    'LATTICE_DATABASE_HOST=usersdb'
+  ]
+  config_bind = [
+    'text:lattice_entrypoint:/tmp/entrypoint.sh'
+  ]
+  config_source = [
+    '''
+    node db.js --init --password admin
+    node ./authd.js
+    '''
+  ]
+  labels = [
+    'gateway.route=lattice',
+    'gateway.port=19721',
+    'gateway.jwt_port=64264'
+  ]
+  docker_image = uhub.service.ucloud.cn/ga6840/lattice
+  docker_exec = bash /tmp/entrypoint.sh
+
+  [service.gateway_monitor]
+  network = approach0
+  docker_image = prom/prometheus@sha256:60190123eb28250f9e013df55b7d58e04e476011911219f5cedac3c73a8b74e6
+  config_bind = [
+    'path:prometheus_conf:/etc/prometheus/prometheus.yml'
+  ]
+  config_source = [
+    '$configs/prometheus.yml',
+  ]
+
+  [service.grafana]
+  network = approach0
+  labels = [
+    'gateway.route=grafana',
+    'gateway.port=3000'
+  ]
+  docker_image = hub-mirror.c.163.com/grafana/grafana
