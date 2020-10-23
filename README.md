@@ -118,3 +118,14 @@ Test a query through a Approach Zero test script:
 ```sh
 # docker run ga6840/a0 ./searchd/scripts/test-query.sh http://<IP>:<SEARCHD_EXPOSED_PORT>/search
 ```
+
+### Monitoring
+After start `gateway_monitor` service, visit it via browser:
+1. Login with user name and password both as `admin`
+2. Add data source `http://gateway_monitor:9090`
+
+### Tips
+To test service locally, it is useful to use a attachable overlay network to simulate production environment:
+```
+# docker network create --driver=overlay --attachable approach0
+```
