@@ -417,9 +417,11 @@ print_arguments = [
   labels = [
     'gateway.route=auth',
     'gateway.port=19721',
-    'gateway.jwt_port=64264'
+    'gateway.jwt_port=64264',
+    'gateway.protect=/forbidden'
   ]
-  docker_image = uhub.service.ucloud.cn/ga6840/lattice
+  #docker_image = uhub.service.ucloud.cn/ga6840/lattice
+  docker_image = lattice
   docker_exec = bash /tmp/entrypoint.sh
 
   [service.gateway_monitor]
