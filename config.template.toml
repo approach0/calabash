@@ -410,12 +410,12 @@ print_arguments = [
   ]
   config_source = [
     '''
-    node db.js --init --password admin
+    node db.js --init --password iamforgetful
     node ./authd.js
     '''
   ]
   labels = [
-    'gateway.route=lattice',
+    'gateway.route=auth',
     'gateway.port=19721',
     'gateway.jwt_port=64264'
   ]
@@ -438,4 +438,17 @@ print_arguments = [
     'gateway.route=grafana',
     'gateway.port=3000'
   ]
+  env = [
+    'GF_SERVER_SERVE_FROM_SUB_PATH=true',
+    'GF_SERVER_ROOT_URL=/grafana',
+    'GF_SECURITY_ADMIN_PASSWORD=iamforgetful'
+  ]
   docker_image = hub-mirror.c.163.com/grafana/grafana
+
+  [service.ui_login]
+  network = approach0
+  labels = [
+    'gateway.route=login',
+    'gateway.port=19985'
+  ]
+  docker_image = ui-login
