@@ -96,13 +96,14 @@ exports.exit_notify = function(task_id, idx, exitcode) {
   return 1
 }
 
-exports.get = function(task_id) {
+exports.get = function(task_id, pruneLog) {
   try {
     return {
       "taskid": task_id,
       "runList": g_tasks[task_id].map(item => {
         var clone = Object.assign({}, item)
         delete clone.checkalive
+        if (pruneLog) delete clone.log
         return clone
       })
     }
@@ -116,7 +117,7 @@ exports.get = function(task_id) {
 
 exports.get_list = function(filter) {
   const all_tasks = Object.keys(g_tasks).map(task_id => {
-    return exports.get(task_id)
+    return exports.get(task_id, true)
   })
 
   if (filter == 'all') {
@@ -127,7 +128,7 @@ exports.get_list = function(filter) {
       return task.runList.some(job => job.alive === true)
     })
 
-  } else if (filter == 'unactive') {
+  } else if (filter == 'inactive') {
     return all_tasks.filter(task => {
       return task.runList.every(job => job.alive === false)
     })
@@ -148,7 +149,7 @@ if (require.main === module) {
     const runList = await job_runner.getRunList(jobs, 'goodbye:talk-later')
     const task_id = await exports.add_task(runList)
 
-    console.log(JSON.stringify(await exports.get(task_id)))
+    console.log(JSON.stringify(await exports.get(task_id, true)))
     console.log()
 
     exports.spawn_notify(task_id, 1, {foo: 'foo'}, 123)
@@ -164,7 +165,7 @@ if (require.main === module) {
       console.log(JSON.stringify(await exports.get_list('all')))
       console.log()
 
-      console.log(JSON.stringify(await exports.get_list('unactive')))
+      console.log(JSON.stringify(await exports.get_list('inactive')))
       console.log()
     }, 1000)
 

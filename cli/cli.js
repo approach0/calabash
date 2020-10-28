@@ -16,7 +16,7 @@ program
   .option('--pin-id <task ID>', 'use and return specified task ID')
   .option('-J, --list-jobs', 'list all jobs')
   .option('--list-config', 'list configuration variables')
-  .option('--list-tasks <all | active | unactive>', 'list tasks')
+  .option('--list-tasks <all | active | inactive>', 'list tasks')
   .option('--show-task <task ID>', 'show specific task')
 
 program.parse(process.argv)
@@ -130,7 +130,7 @@ if (program.job) {
     dry_run: program.dryrun || false,
     single_job: program.single || false,
     insist_job: program.insist || false,
-    pin_id_job: parseInt(program.pinId || '-1')
+    pin_id_job: parseInt(program.pinId)
   }
 
   axios.post(url, options)
