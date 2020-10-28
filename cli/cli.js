@@ -130,7 +130,7 @@ if (program.job) {
     dry_run: program.dryrun || false,
     single_job: program.single || false,
     insist_job: program.insist || false,
-    pin_id_job: parseInt(program.pinId || '-1')
+    pin_id_job: parseInt(program.pinId)
   }
 
   axios.post(url, options)
