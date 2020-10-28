@@ -127,7 +127,7 @@ exports.get_list = function(filter) {
       return task.runList.some(job => job.alive === true)
     })
 
-  } else if (filter == 'unactive') {
+  } else if (filter == 'inactive') {
     return all_tasks.filter(task => {
       return task.runList.every(job => job.alive === false)
     })
@@ -164,7 +164,7 @@ if (require.main === module) {
       console.log(JSON.stringify(await exports.get_list('all')))
       console.log()
 
-      console.log(JSON.stringify(await exports.get_list('unactive')))
+      console.log(JSON.stringify(await exports.get_list('inactive')))
       console.log()
     }, 1000)
 
