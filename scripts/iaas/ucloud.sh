@@ -51,6 +51,20 @@ ucloud_node_list() {
 	fi
 }
 
+ucloud_node_list_in_json() {
+	regions=`ucloud_existing_regions`
+	acc_file=`mktemp`
+	echo '[]' > $acc_file
+	for region in $regions; do
+		tmp_file=`mktemp`
+		out_file=`mktemp`
+		ucloud_node_list_region $region --json 2>/dev/null >$tmp_file
+		jq -s '.[0] + .[1]' $acc_file $tmp_file > $out_file
+		mv $out_file $acc_file
+	done
+	cat $acc_file
+}
+
 ucloud_node_list_labels() {
 	labels=""
 	for region in `ucloud_existing_regions`; do

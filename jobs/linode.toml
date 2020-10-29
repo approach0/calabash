@@ -6,6 +6,10 @@ source = . $scripts/iaas/all.sh
 exec = linode_node_list
 dep = linode:source
 
+[list-nodes-in-json]
+exec = linode_node_list --json
+dep = linode:source
+
 [delete-node]
 exec = [
   require_args nodeid,

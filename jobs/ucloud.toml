@@ -7,6 +7,11 @@ spawn = pty
 exec = ucloud_node_list
 dep = ucloud:source
 
+[list-nodes-in-json]
+spawn = pty
+exec = ucloud_node_list_in_json
+dep = ucloud:source
+
 [delete-node]
 spawn = pty
 exec = [
