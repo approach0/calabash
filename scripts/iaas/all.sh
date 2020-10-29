@@ -14,3 +14,35 @@ for envvar in ${!iaas_providers_@}; do
 		exit 1
 	fi
 done
+
+iaas_node_list_in_json() {
+	for envvar in ${!iaas_providers_@}; do
+		provider=${!envvar}
+		if [ $provider == linode ]; then
+			${provider}_node_list_in_json | python -c "if True:
+			import json, sys
+			j = json.load(sys.stdin)
+			def mapfun(x):
+				region = x['region']
+				image = x['image'].split('/')[-1]
+				specs = x['specs']
+				specs = '-'.join([k + str(specs[k]) for k in specs.keys()])
+				return {
+					'provider': 'linode',
+					'id': x['id'],
+					'label': x['label'],
+					'status': x['status'],
+					'ip': x['ipv4'][0],
+					'description': f'{region}/{specs}/{image}',
+					'create_time': x['created']
+				}
+			print(list(map(mapfun, j)))
+			"
+		elif [ $provider == ucloud ]; then
+			echo "..."
+		else
+			echo "ERROR: provider '$provider' not implemented."
+			exit 1
+		fi
+	done
+}

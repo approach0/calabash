@@ -7,7 +7,7 @@ exec = linode_node_list
 dep = linode:source
 
 [list-nodes-in-json]
-exec = linode_node_list --json
+exec = linode_node_list_in_json
 dep = linode:source
 
 [delete-node]

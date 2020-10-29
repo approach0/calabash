@@ -22,8 +22,11 @@ linode_regions() {
 }
 
 linode_node_list() {
-	FLAGS=$1
-	$LINODE_CLI $FLAGS linodes list
+	$LINODE_CLI linodes list
+}
+
+linode_node_list_in_json() {
+	$LINODE_CLI --json linodes list
 }
 
 linode_node_list_labels() {
