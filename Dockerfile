@@ -2,7 +2,7 @@
 FROM debian:buster
 RUN sed -i s@/deb.debian.org/@/mirrors.aliyun.com/@g /etc/apt/sources.list
 RUN apt-get update
-RUN apt-get install -y curl git wget expect
+RUN apt-get install -y curl git wget expect jq
 
 # always have identities, and allow self-login
 ENV HOME=/root
