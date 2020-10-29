@@ -143,3 +143,128 @@ It is also useful to setup a mock service for testing routes locally:
 ```
 # docker service create --label=gateway.port=8080 --label=gateway.route=_root_ --network approach0 ga6840/hello-httpd node hello.js 'This is the root service!'
 ```
+
+### Example IaaS provider API
+Linode:
+```
+[
+  {
+    "id": 18719901,
+    "label": "linode18719901",
+    "group": "",
+    "status": "running",
+    "created": "2019-12-07T07:08:27",
+    "updated": "2019-12-07T07:08:55",
+    "type": "g6-nanode-1",
+    "ipv4": [
+      "45.79.224.144"
+    ],
+    "ipv6": "2600:3c01::f03c:92ff:fe28:ab95/64",
+    "image": "linode/debian9",
+    "region": "us-west",
+    "specs": {
+      "disk": 25600,
+      "memory": 1024,
+      "vcpus": 1,
+      "transfer": 1000
+    },
+    "alerts": {
+      "cpu": 90,
+      "network_in": 10,
+      "network_out": 10,
+      "transfer_quota": 80,
+      "io": 10000
+    },
+    "backups": {
+      "enabled": false,
+      "schedule": {
+        "day": null,
+        "window": null
+      },
+      "last_successful": null
+    },
+    "hypervisor": "kvm",
+    "watchdog_enabled": true,
+    "tags": []
+  },
+  {
+    "id": 18719979,
+    "label": "linode18719979",
+    "group": "",
+    "status": "running",
+    "created": "2019-12-07T07:21:19",
+    "updated": "2020-10-14T07:26:16",
+    "type": "g6-nanode-1",
+    "ipv4": [
+      "45.79.225.86"
+    ],
+    "ipv6": "2600:3c01::f03c:92ff:fe28:ab8d/64",
+    "image": "linode/debian9",
+    "region": "us-west",
+    "specs": {
+      "disk": 25600,
+      "memory": 1024,
+      "vcpus": 1,
+      "transfer": 1000
+    },
+    "alerts": {
+      "cpu": 90,
+      "network_in": 10,
+      "network_out": 10,
+      "transfer_quota": 80,
+      "io": 10000
+    },
+    "backups": {
+      "enabled": false,
+      "schedule": {
+        "day": null,
+        "window": null
+      },
+      "last_successful": null
+    },
+    "hypervisor": "kvm",
+    "watchdog_enabled": true,
+    "tags": []
+  }
+]
+```
+
+Ucloud:
+```
+[
+  {
+    "UHostName": "foobarbaz",
+    "Remark": "",
+    "ResourceID": "uhost-f0rjimam",
+    "Group": "Default",
+    "PrivateIP": "10.9.59.122",
+    "PublicIP": "",
+    "Config": "cpu:1 memory:1G disk:20G",
+    "DiskSet": "Boot:CLOUD_RSSD:20G|Udisk:CLOUD_RSSD:20G",
+    "Zone": "cn-bj2-02",
+    "Image": "uimage-1xypxg|Debian 10.0 64位",
+    "VPC": "uvnet-ytzvcyb3",
+    "Subnet": "subnet-x0k1afg4",
+    "Type": "O/",
+    "State": "Running",
+    "CreationTime": "2020-10-29"
+  },
+  {
+    "UHostName": "calabash-admin-YbmnikKGwk",
+    "Remark": "",
+    "ResourceID": "uhost-0q3rhzta",
+    "Group": "Default",
+    "PrivateIP": "10.13.43.195",
+    "PublicIP": "106.75.147.166",
+    "Config": "cpu:1 memory:1G disk:20G",
+    "DiskSet": "Boot:CLOUD_SSD:20G|Udisk:CLOUD_SSD:20G",
+    "Zone": "cn-gd-02",
+    "Image": "uimage-j0r4vh|Debian 9.9 64位",
+    "VPC": "uvnet-touf2ybp",
+    "Subnet": "subnet-b2ksux2q",
+    "Type": "N/N3/HotPlug",
+    "State": "Running",
+    "CreationTime": "2020-10-29"
+  }
+]
+```
