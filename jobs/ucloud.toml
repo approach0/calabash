@@ -4,12 +4,10 @@ source = . $scripts/iaas/all.sh
 
 [list-nodes]
 spawn = pty
-exec = ucloud_node_list
-dep = ucloud:source
-
-[list-nodes-in-json]
-spawn = pty
-exec = ucloud_node_list_in_json
+exec = [
+  'format=${format-table}',
+  '[ $format == table ] && ucloud_node_list || ucloud_node_list_in_json'
+]
 dep = ucloud:source
 
 [delete-node]

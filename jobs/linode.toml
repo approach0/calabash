@@ -3,11 +3,10 @@ verbose = false
 source = . $scripts/iaas/all.sh
 
 [list-nodes]
-exec = linode_node_list
-dep = linode:source
-
-[list-nodes-in-json]
-exec = linode_node_list --json
+exec = [
+  'format=${format-table}',
+  '[ $format == table ] && linode_node_list || linode_node_list_in_json'
+]
 dep = linode:source
 
 [delete-node]

@@ -144,7 +144,7 @@ if (require.main === module) {
 
   ;(async function () {
     const jobs = await cfg_ldr.load_jobs('./test-jobs')
-    const cfgs = await cfg_ldr.load_cfg('./config.template.toml')
+    const [cfgs, _] = await cfg_ldr.load_cfg('./config.template.toml')
 
     const runList = await job_runner.getRunList(jobs, 'goodbye:talk-later')
     const task_id = await exports.add_task(runList)

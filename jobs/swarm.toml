@@ -1,12 +1,34 @@
 [list-nodes]
 source = . $scripts/swarm/swarm.sh
 if = is_swarm_manager
-exec = swarm_print_nodes
+exec = [
+  'format=${format-table}',
+  '''
+  if [ $format == table ]; then
+    swarm_print_nodes
+  elif [ $format == json ]; then
+    curl --unix-socket /var/run/docker.sock http://localhost/nodes 2>/dev/null
+  else
+    echo "format not supported."
+  fi
+  '''
+]
 
 [list-services]
 source = . $scripts/swarm/swarm.sh
 if = is_swarm_manager
-exec = swarm_print_services
+exec = [
+  'format=${format-table}',
+  '''
+  if [ $format == table ]; then
+    swarm_print_services
+  elif [ $format == json ]; then
+    curl --unix-socket /var/run/docker.sock http://localhost/services 2>/dev/null
+  else
+    echo "format not supported."
+  fi
+  '''
+]
 
 [inspect-service]
 source = . $scripts/swarm/swarm.sh
