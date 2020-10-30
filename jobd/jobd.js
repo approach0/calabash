@@ -30,19 +30,41 @@ var app = express()
 app.use(bodyParser.json())
 app.use(cors())
 
+function parse_and_inject_env(goal, cfgs) {
+  const [target, args] = job_runner.parseTargetArgs(goal)
+  const cfgsCopy = JSON.parse(JSON.stringify(cfgs))
+  const envObj = Object.assign(cfgsCopy, args) // overwrite/merge into default configs
+  const envs = job_runner.declare_envs(envObj)
+  return [target, envs]
+}
+
 ;(async function () {
   try {
     /* loading config file */
     cfg_path = program.config || cfg_path
     console.log(`Loading cfg_path=${cfg_path}`)
-    cfgs = await cfg_ldr.load_cfg(cfg_path)
+    const [cfgs, cfgs_tree] = await cfg_ldr.load_cfg(cfg_path)
     cfgs._config_file_ = cfg_path
-    //console.log(cfgs)
 
     /* loading jobs */
     jobs_dir = cfgs.job_dir || program.jobsDir || jobs_dir
     console.log(`Loading jobs_dir=${jobs_dir}`)
     jobs = await cfg_ldr.load_jobs(jobs_dir)
+
+    /* run loop tasks */
+    Object.keys(cfgs_tree.loop_task).forEach((pin_id) => {
+      const loop_task = cfgs_tree.loop_task[pin_id]
+      console.log('[loop task]', pin_id, loop_task)
+
+      const [target, envs] = parse_and_inject_env(loop_task.goal, cfgs)
+
+      job_runner.run({
+        insist: true,
+        pin_id: pin_id,
+        reborn: loop_task.reborn,
+        jobs, envs, target
+      })
+    })
 
     /* setup HTTP server */
     const port = cfgs.jobd_port || default_port
@@ -160,11 +182,7 @@ app
 .post('/runjob', async function (req, res) {
   try {
     const reqJSON = req.body
-
-    const [target, args] = job_runner.parseTargetArgs(reqJSON['goal'])
-    const cfgsCopy = JSON.parse(JSON.stringify(cfgs))
-    const envObj = Object.assign(cfgsCopy, args) // overwrite/merge into default configs
-    const envs = job_runner.declare_envs(envObj)
+    const [target, envs] = parse_and_inject_env(reqJSON['goal'], cfgs)
 
     const run_cfg = {
       dryrun: reqJSON['dry_run'],

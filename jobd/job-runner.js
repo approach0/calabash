@@ -45,6 +45,11 @@ exports.syncLoop = function (arr, doing, done) {
 
     brk: function () {
       done(arr, arr.length - 1, loop, false)
+    },
+
+    restart: function () {
+      idx = 0
+      loop.again()
     }
   }
 
@@ -366,6 +371,12 @@ exports.runlist = function (run_cfg, runList, onComplete) {
         `[ job-runner ] finished task#${task_id} (${completed}): ${list_job_names}.`,
         [`task-${task_id}`]
       )
+
+      /* loop a status task */
+      if (run_cfg.pin_id) {
+        setTimeout(loop.restart, run_cfg.reborn)
+      }
+
       onComplete && onComplete(completed)
     }
   )
@@ -393,12 +404,15 @@ exports.run = function (run_cfg, onComplete) {
   run_cfg.insist = run_cfg.insist || false
   run_cfg.single = run_cfg.single || false
   run_cfg.pin_id = run_cfg.pin_id || -1
+  run_cfg.reborn = run_cfg.reborn || 0
 
   var runList
   if (run_cfg.single)
     runList = [run_cfg.target]
   else
     runList = exports.getRunList(run_cfg.jobs, run_cfg.target)
+
+  console.log(runList)
 
   const task_id = exports.runlist(run_cfg, runList, onComplete)
   return {task_id, runList}
@@ -407,7 +421,7 @@ exports.run = function (run_cfg, onComplete) {
 if (require.main === module) {
   ;(async function () {
     const jobs = await cfg_ldr.load_jobs('./test-jobs')
-    const cfgs = await cfg_ldr.load_cfg('./config.template.toml')
+    const [cfgs, _] = await cfg_ldr.load_cfg('./config.template.toml')
 
     const [target, args] = exports.parseTargetArgs('goodbye:talk-later?later_hours=3')
     const envObj = Object.assign(cfgs, args) // overwrite/merge into default configs

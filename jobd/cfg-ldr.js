@@ -21,7 +21,7 @@ exports.load_cfg = async function (cfg_path) {
   let cfg_obj_tree = await TOML.parseFile(cfg_path)
   let cfg_obj_plain = {}
   delayering(cfg_obj_tree, cfg_obj_plain)
-  return cfg_obj_plain
+  return [cfg_obj_plain, cfg_obj_tree]
 }
 
 exports.load_jobs = async function (jobs_dir) {
@@ -64,7 +64,7 @@ exports.load_jobs = async function (jobs_dir) {
 if (require.main === module) {
   (async function () {
     const jobs = await exports.load_jobs('./test-jobs')
-    const envs = await exports.load_cfg('./config.template.toml')
+    const [envs, _] = await exports.load_cfg('./config.template.toml')
     console.log(jobs.nodes)
     console.log(envs)
   })()
