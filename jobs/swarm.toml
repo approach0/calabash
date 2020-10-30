@@ -61,14 +61,14 @@ source = [
 spawn = pty
 user = root # for ssh-copy-id to find identity file.
 exec = [
-  require_args iaascfg node_label, # pass typeIP=private for private connection
+  require_args iaascfg node_label,
   # unpack parameters
   'provider=`echo $iaascfg | cut -d "_" -f 1`',
   'read passwd port <<< $(unpack \$iaas_${iaascfg}_{password,ssh_port})',
   'read docker_mirror <<< $(unpack \$iaas_${provider}_docker_mirror)',
   # get node ID and IP
   'nodeID=`${provider}_node_filter_by_label $node_label`',
-  'nodeIP=`${provider}_node_map_ipaddr $nodeID ${typeIP-public}`',
+  'nodeIP=`${provider}_node_map_ipaddr $nodeID`',
   # refresh local known host list
   ssh-keygen -R $nodeIP,
   # allow ssh login from this host to new remote peer

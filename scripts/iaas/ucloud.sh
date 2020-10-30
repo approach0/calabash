@@ -166,7 +166,8 @@ ucloud_node_filter_by_label() {
 
 ucloud_node_map_ipaddr() {
 	nodeID=$1
-	typeIP=$2 # public private
+	# due to Ucloud strict firewall policy, always use private IP
+	typeIP='private'
 
 	if [ "$typeIP" == "public" ]; then
 		qry=PublicIP
