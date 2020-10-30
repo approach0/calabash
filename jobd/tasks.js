@@ -31,9 +31,9 @@ exports.add_task = function(runList, pin_id) {
     use_id = g_task_id
   }
 
-  g_tasks[use_id] = runList.map(item => {
+  g_tasks[use_id] = runList.map(jobname => {
     return {
-      jobname: item,
+      jobname: jobname,
       pid: -1,
       alive: false,
       log: '',
@@ -62,14 +62,18 @@ exports.spawn_notify = function(task_id, idx, pid) {
   const task = g_tasks[task_id]
   if (task) {
     const meta = task[idx]
+    /* meta should be rewritten in case of a loop task */
     meta['pid'] = pid
     meta['alive'] = true
+    meta['log'] = ''
     meta['spawn_time'] = Date.now()
     meta['checkalive'] = setInterval(function () {
       if (!pidIsRunning(pid)) {
         flagDead(meta)
       }
     }, 500)
+    meta['exit_time'] = null
+    meta['exitcode'] = -1
 
     return 0
   }
