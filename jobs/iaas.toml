@@ -1,7 +1,7 @@
 [source]
 source = . $scripts/iaas/all.sh
 
-[list-nodes-in-json]
+[list-nodes]
 spawn = pty
 exec = iaas_node_list_in_json
 dep = iaas:source

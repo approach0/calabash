@@ -213,7 +213,7 @@ exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog) {
 
     /* test command */
     if (typeof ifcmd === 'string') {
-      onLog(`[ if ${ifcmd} ] ${cmd}`)
+      onLog(`[ if ${ifcmd} ] ${ifcmd}`)
       const [pid, exitcode] = await exports.runcmd(ifcmd, opts, onLog, onSpawn)
 
       if (exitcode != 0) {
@@ -224,7 +224,7 @@ exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog) {
       }
 
     } else if (typeof incmd === 'string') {
-      onLog(`[ if not ${incmd} ] ${cmd}`)
+      onLog(`[ if not ${incmd} ] ${incmd}`)
       const [pid, exitcode] = await exports.runcmd(incmd, opts, onLog, onSpawn)
 
       if (exitcode == 0) {
