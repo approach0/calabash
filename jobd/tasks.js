@@ -120,12 +120,10 @@ exports.get_list = function(filter) {
 
   } else if (filter == 'active') {
     return all_tasks.filter(task => {
-      return task.runList.some(job => job.alive === true)
-    })
-
-  } else if (filter == 'inactive') {
-    return all_tasks.filter(task => {
-      return task.runList.every(job => job.alive === false)
+      if (g_pins[task.taskid])
+        return true /* keep pinned jobs */
+      else
+        return task.runList.some(job => job.alive === true)
     })
 
   } else {
@@ -160,7 +158,7 @@ if (require.main === module) {
       console.log(JSON.stringify(await exports.get_list('all')))
       console.log()
 
-      console.log(JSON.stringify(await exports.get_list('inactive')))
+      console.log(JSON.stringify(await exports.get_list('active')))
       console.log()
     }, 1000)
 
