@@ -22,7 +22,7 @@ program.parse(process.argv)
 
 /* load configurations and setup HTTP server */
 var jobs = null
-var cfgs = {}
+var configs = {}
 var jobs_dir = './test-jobs'
 var cfg_path = './config.template.toml'
 
@@ -44,7 +44,8 @@ function parse_and_inject_env(goal, cfgs) {
     cfg_path = program.config || cfg_path
     console.log(`Loading cfg_path=${cfg_path}`)
     const [cfgs, cfgs_tree] = await cfg_ldr.load_cfg(cfg_path)
-    cfgs._config_file_ = cfg_path
+    configs = cfgs /* set global config */
+    configs._config_file_ = cfg_path
 
     /* loading jobs */
     jobs_dir = cfgs.job_dir || program.jobsDir || jobs_dir
@@ -52,19 +53,21 @@ function parse_and_inject_env(goal, cfgs) {
     jobs = await cfg_ldr.load_jobs(jobs_dir)
 
     /* run loop tasks */
-    Object.keys(cfgs_tree.loop_task).forEach((pin_id) => {
-      const loop_task = cfgs_tree.loop_task[pin_id]
-      console.log('[loop task]', pin_id, loop_task)
+    if (cfgs_tree.loop_task) {
+      Object.keys(cfgs_tree.loop_task).forEach((pin_id) => {
+        const loop_task = cfgs_tree.loop_task[pin_id]
+        console.log('[loop task]', pin_id, loop_task)
 
-      const [target, envs] = parse_and_inject_env(loop_task.goal, cfgs)
+        const [target, envs] = parse_and_inject_env(loop_task.goal, cfgs)
 
-      job_runner.run({
-        insist: true,
-        pin_id: pin_id,
-        reborn: loop_task.reborn,
-        jobs, envs, target
+        job_runner.run({
+          insist: true,
+          pin_id: pin_id,
+          reborn: loop_task.reborn,
+          jobs, envs, target
+        })
       })
-    })
+    }
 
     /* setup HTTP server */
     const port = cfgs.jobd_port || default_port
@@ -170,7 +173,7 @@ app
 
 .get('/get/config', async function (req, res) {
   try {
-    res.json(cfgs)
+    res.json(configs)
 
   } catch (err) {
     res.json({
@@ -182,7 +185,7 @@ app
 .post('/runjob', async function (req, res) {
   try {
     const reqJSON = req.body
-    const [target, envs] = parse_and_inject_env(reqJSON['goal'], cfgs)
+    const [target, envs] = parse_and_inject_env(reqJSON['goal'], configs)
 
     const run_cfg = {
       dryrun: reqJSON['dry_run'],
