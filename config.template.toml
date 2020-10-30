@@ -67,6 +67,19 @@ providers = [ucloud]
     'vdisk_consume_daemon'
   ]
 
+[loop]
+  [loop.1]
+  jobname = iaas:list-nodes
+  interval = 10
+
+  [loop.2]
+  jobname = swarm:list-nodes
+  interval = 5
+
+  [loop.3]
+  jobname = swarm:list-services
+  interval = 5
+
 [service]
 bootstrap_service = calabash
 
@@ -183,7 +196,7 @@ print_arguments = [
   config_source = [
     '''
     shard=$1
-    export PATH="$PATH:$(pwd)/demo/crawler"
+    export PATH="$PATH:/demo/crawler"
     cd /data
 
     while true; do
@@ -282,7 +295,7 @@ print_arguments = [
     while true; do
       urls=$(for i in $(detect_shards indexer 2); do echo "--indexd-url http://${i}:8934/index"; done)
       set -x
-      ./indexerd/scripts/json-feeder.py --corpus-path /data $urls --bye
+      json-feeder.py --corpus-path /data $urls --bye
       set +x
       echo 'Waiting (long enough to get better chance that indexers are ready)'
       sleep 240
