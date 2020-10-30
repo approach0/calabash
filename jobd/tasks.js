@@ -1,4 +1,5 @@
 const g_tasks = {}
+const g_pins = {}
 var g_task_id = 0
 
 function pidIsRunning(pid) {
@@ -18,23 +19,16 @@ function flagDead(meta) {
 
 exports.add_task = function(runList, pin_id) {
   let use_id = 0
-  if (pin_id >= 0) {
+  if (pin_id > 0) {
     /* user has specified a taksID */
     use_id = pin_id
-
+    g_pins[pin_id] = true
   } else {
-
-    /* to allocate an unused taksID */
-    while (true) {
-      use_id = ++g_task_id
-
-      if (g_tasks[use_id])
-        /* clear the old task, if any */
-        g_tasks[use_id].forEach(item => flagDead(item)) // clear Timer
-      else
-        /* this slot is available, use it */
-        break
-    }
+    /* use a new taksID */
+    do {
+      g_task_id += 1
+    } while (g_tasks[g_task_id])
+    use_id = g_task_id
   }
 
   g_tasks[use_id] = runList.map(item => {
@@ -103,7 +97,8 @@ exports.get = function(task_id, pruneLog) {
       "runList": g_tasks[task_id].map(item => {
         var clone = Object.assign({}, item)
         delete clone.checkalive
-        if (pruneLog) delete clone.log
+        if (pruneLog)
+          delete clone.log
         return clone
       })
     }
@@ -117,7 +112,7 @@ exports.get = function(task_id, pruneLog) {
 
 exports.get_list = function(filter) {
   const all_tasks = Object.keys(g_tasks).map(task_id => {
-    return exports.get(task_id, true)
+    return exports.get(task_id, g_pins[task_id] === undefined)
   })
 
   if (filter == 'all') {
