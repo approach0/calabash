@@ -373,7 +373,7 @@ exports.runlist = function (run_cfg, runList, onComplete) {
       )
 
       /* loop a status task */
-      if (run_cfg.pin_id) {
+      if (run_cfg.pin_id > 0) {
         setTimeout(loop.restart, run_cfg.reborn)
       }
 
