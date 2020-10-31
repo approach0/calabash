@@ -30,6 +30,15 @@ exec = [
   '''
 ]
 
+[list-tasks]
+source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
+exec = [
+  '''
+  curl --unix-socket /var/run/docker.sock http://localhost/tasks 2>/dev/null
+  '''
+]
+
 [inspect-service]
 source = . $scripts/swarm/swarm.sh
 if = is_swarm_manager
