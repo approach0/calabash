@@ -13,7 +13,7 @@ Calabash is designed for (and going to be used for) automating the hosting of Ap
 ### Quick start
 First, run `jobd` server
 ```
-# node ./jobd/jobd.js --config ./config.toml
+# node ./jobd/jobd.js --config ./config.toml --no-looptask
 ```
 (the job daemon uses docker so you have to run it as root)
 
