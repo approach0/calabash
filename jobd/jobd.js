@@ -17,6 +17,7 @@ program
   `Example: node ${__filename} --jobs-dir ./test-jobs --config ./config.template.toml`)
   .option('--jobs-dir <jobs directory>', 'specify jobs directory')
   .option('--config <config file path>', 'specify config file')
+  .option('--no-looptask', 'do not run loop tasks')
 
 program.parse(process.argv)
 
@@ -53,7 +54,7 @@ function parse_and_inject_env(goal, cfgs) {
     jobs = await cfg_ldr.load_jobs(jobs_dir)
 
     /* run loop tasks */
-    if (cfgs_tree.loop_task) {
+    if (program.looptask && cfgs_tree.loop_task) {
       Object.keys(cfgs_tree.loop_task).forEach((pin_id) => {
         const loop_task = cfgs_tree.loop_task[pin_id]
         console.log('[loop task]', pin_id, loop_task)
