@@ -102,22 +102,22 @@ swarm_network_ensure_has() {
 }
 
 swarm_service_update_configs() {
-	servName=$1
+	local servName=$1
 
-	config_bind=''
+	local config_bind=''
 	for varname in $(eval echo \${!service_${servName}_config_bind_@}); do
-		typ=`echo ${!varname} | cut -d ':' -f 1` # type
-		key=`echo ${!varname} | cut -d ':' -f 2` # key
-		dst=`echo ${!varname} | cut -d ':' -f 3` # destination
+		local typ=`echo ${!varname} | cut -d ':' -f 1` # type
+		local key=`echo ${!varname} | cut -d ':' -f 2` # key
+		local dst=`echo ${!varname} | cut -d ':' -f 3` # destination
 
 		# get config sources
-		cfgsrc=`echo "$varname" | sed -e 's/_bind_/_source_/'`
-		src="${!cfgsrc:Q}"
-		oneline_src=$(echo -n "$src" | sed -e '/./,$!d' | tr -s ' ' | tr '\n' '; ')
+		local cfgsrc=`echo "$varname" | sed -e 's/_bind_/_source_/'`
+		local src="${!cfgsrc:Q}"
+		local oneline_src=$(echo -n "$src" | sed -e '/./,$!d' | tr -s ' ' | tr '\n' '; ')
 
 		# update config files
 		if [ "$typ" == "text" ]; then
-			tmpfile=`mktemp`
+			local tmpfile=`mktemp`
 			cat > $tmpfile <<< "$src"
 			swarm_update_secret_file $key $tmpfile &> /dev/null
 			echo "=== config file $key ===" >&2
@@ -125,7 +125,7 @@ swarm_service_update_configs() {
 			rm -f $tmpfile
 
 		elif [ "$typ" == "path" ]; then
-			srcpath=$(eval echo $src)
+			local srcpath=$(eval echo $src)
 			swarm_update_secret_file $key $srcpath &> /dev/null
 			echo "=== config file $key from $srcpath ===" >&2
 			cat $srcpath >&2 # print config file
@@ -135,41 +135,42 @@ swarm_service_update_configs() {
 		fi
 
 		# output the secret argument string
-		ver=`swarm_config_get ${key}.latest`
-		config_bind="--secret src=${key}.${ver},target=$dst $config_bind"
+		local ver=`swarm_config_get ${key}.latest`
+		local config_bind="--secret src=${key}.${ver},target=$dst $config_bind"
 	done
 
 	echo "$config_bind"
 }
 
 swarm_service_create() {
-	servName=$1
+	local servName=$1
+	local useImage=$2
 
 	# extract extra arguments from environment variables
 	for argvar in $(eval echo \${!service_${servName}_@}); do
-		shortname=`echo $argvar | grep -o -P "(?<=service_${servName}_).+"`
+		local shortname=`echo $argvar | grep -o -P "(?<=service_${servName}_).+"`
 		local -n ref=$shortname
-		ref="${!argvar:Q}"
+		local ref="${!argvar:Q}"
 	done
 
 	# set default value if any argument is not specified
-	mesh_replicas=${mesh_replicas-1}
-	mesh_sharding=${mesh_sharding-1}
-	max_per_node=${max_per_node-0}
-	restart_condition=${restart_condition-any}
-	stop_signal=${stop_signal-SIGINT}
+	local mesh_replicas=${mesh_replicas-1}
+	local mesh_sharding=${mesh_sharding-1}
+	local max_per_node=${max_per_node-0}
+	local restart_condition=${restart_condition-any}
+	local stop_signal=${stop_signal-SIGINT}
 
 	# get complex variables
-	service_labels=$(eval echo $(for l in ${!labels_@}; do echo -n "--label=\$$l "; done))
-	constraints=$(eval echo $(for c in ${!constraints_@}; do echo -n "--constraint=\$$c "; done))
-	mounts=$(eval echo $(for m in ${!mounts_@}; do echo -n "--mount=\$$m "; done))
-	environments=$(eval echo $(for e in ${!env_@}; do echo -n "--env=\$$e "; done))
+	local service_labels=$(eval echo $(for l in ${!labels_@}; do echo -n "--label=\$$l "; done))
+	local constraints=$(eval echo $(for c in ${!constraints_@}; do echo -n "--constraint=\$$c "; done))
+	local mounts=$(eval echo $(for m in ${!mounts_@}; do echo -n "--mount=\$$m "; done))
+	local environments=$(eval echo $(for e in ${!env_@}; do echo -n "--env=\$$e "; done))
 	echo '[[[ swarm_service_update_configs ]]]'
-	configs=`swarm_service_update_configs $servName`
+	local configs=`swarm_service_update_configs $servName`
 
 	# print service arguments
 	for argvar in ${!service_print_arguments_@}; do
-		shortname="${!argvar}"
+		local shortname="${!argvar}"
 		echo "[argument '$shortname'] ${!shortname}"
 	done
 
@@ -178,20 +179,20 @@ swarm_service_create() {
 		echo "CREATE SERVICE $servName (shard#${shard}/$mesh_sharding)"
 
 		if [ $shard -gt 1 ]; then
-			servID="${servName}-shard${shard}"
+			local servID="${servName}-shard${shard}"
 		else
-			servID="${servName}"
+			local servID="${servName}"
 		fi
 
 		# parse docker_exec to handle both variables and pipes (with some stupid hacks)
-		entrypoint_overwrite=""
-		execute_line=$(eval echo $(echo $docker_exec | sed -e 's/|/__PIPE__/g') | sed -e 's/__PIPE__/|/g')
+		local entrypoint_overwrite=""
+		local execute_line=$(eval echo $(echo $docker_exec | sed -e 's/|/__PIPE__/g') | sed -e 's/__PIPE__/|/g')
 		if [ -n "$execute_line" ]; then
 			# ensure we overwrite default entrypoint
 			entrypoint_overwrite="--entrypoint ''"
 		fi
 
-		extra_args="--name ${servID}"
+		local extra_args="--name ${servID}"
 		if [[ $shard -eq 1 || "${portmap}" =~ 'mode=host' ]]; then
 			if [ -n "$portmap" ]; then
 				extra_args="${extra_args} --publish=${portmap}"
@@ -221,7 +222,7 @@ swarm_service_create() {
 			$extra_args \
 			--with-registry-auth \
 			$entrypoint_overwrite \
-			${docker_image} \
+			${useImage:-$docker_image} \
 			$execute_line
 		set +x
 	done
