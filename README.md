@@ -123,11 +123,7 @@ Test a query through a Approach Zero test script:
 After start `gateway_monitor` service, visit it via browser:
 1. Login with user name and password both as `admin`
 2. In `Configuration`, add data source of *Prometheus type* with URL `http://gateway_monitor:9090`
-3. (Optional) In `Explore`, it is a good place to test out some PromQL queries such as
-	```
-	increase(total_requests{uri!~"/metrics",uri!~"/services"}[1m])
-	```
-4. In `Create -> Import`, import a dashboard from existing JSON file (we have an example file at `configs/grafana-sample-panel.json`).
+3. In `Create -> Import`, import a dashboard from existing JSON file (we have an example file at `configs/grafana-sample-panel.json`).
 
 ### Tips
 To test service locally, it is useful to create an attachable overlay network to mock overlay network:
