@@ -149,8 +149,7 @@ swarm_service_create() {
 	# extract extra arguments from environment variables
 	for argvar in $(eval echo \${!service_${servName}_@}); do
 		local shortname=`echo $argvar | grep -o -P "(?<=service_${servName}_).+"`
-		local -n ref=$shortname
-		ref="${!argvar:Q}"
+		eval local $shortname="${!argvar:Q}"
 	done
 
 	# set default value if any argument is not specified
