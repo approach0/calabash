@@ -84,6 +84,13 @@ swarm_node_label() {
 	$DOCKER node inspect $swarmNodeID -f "{{(json .Spec.Labels)}}"
 }
 
+swarm_node_label_rm() {
+	swarmNodeID=$1
+	LABEL_KEY="$2"
+	$DOCKER node update $swarmNodeID --label-rm "$LABEL_KEY"
+	$DOCKER node inspect $swarmNodeID -f "{{(json .Spec.Labels)}}"
+}
+
 swarm_network_space() {
 	netname="$1"
 	docker network inspect $netname -f '{{(index .IPAM.Config 0).Subnet}}'
@@ -102,10 +109,10 @@ swarm_network_ensure_has() {
 }
 
 swarm_service_update_configs() {
-	local servName=$1
+	local servCode=$1
 
 	local config_bind=''
-	for varname in $(eval echo \${!service_${servName}_config_bind_@}); do
+	for varname in $(eval echo \${!service_${servCode}_config_bind_@}); do
 		local typ=`echo ${!varname} | cut -d ':' -f 1` # type
 		local key=`echo ${!varname} | cut -d ':' -f 2` # key
 		local dst=`echo ${!varname} | cut -d ':' -f 3` # destination
@@ -143,12 +150,13 @@ swarm_service_update_configs() {
 }
 
 swarm_service_create() {
-	local servName=$1
+	local servCode=$(echo $1 | cut -d ':' -f 1)
+	local servName=$(echo $1 | cut -d ':' -f 2)
 	local useImage=$2
 
 	# extract extra arguments from environment variables
-	for argvar in $(eval echo \${!service_${servName}_@}); do
-		local shortname=`echo $argvar | grep -o -P "(?<=service_${servName}_).+"`
+	for argvar in $(eval echo \${!service_${servCode}_@}); do
+		local shortname=`echo $argvar | grep -o -P "(?<=service_${servCode}_).+"`
 		eval "local $shortname=\"${!argvar:Q}\""
 	done
 
@@ -165,7 +173,7 @@ swarm_service_create() {
 	local mounts=$(eval echo $(for m in ${!mounts_@}; do echo -n "--mount=\$$m "; done))
 	local environments=$(eval echo $(for e in ${!env_@}; do echo -n "--env=\$$e "; done))
 	echo '[[[ swarm_service_update_configs ]]]'
-	local configs=`swarm_service_update_configs $servName`
+	local configs=`swarm_service_update_configs $servCode`
 
 	# print service arguments
 	for argvar in ${!service_print_arguments_@}; do
@@ -179,8 +187,10 @@ swarm_service_create() {
 
 		if [ $shard -gt 1 ]; then
 			local servID="${servName}-shard${shard}"
+			local extra_args="--name ${servID} --constraint=node.labels.shard==${shard}"
 		else
 			local servID="${servName}"
+			local extra_args="--name ${servID}"
 		fi
 
 		# parse docker_exec to handle both variables and pipes (with some stupid hacks)
@@ -191,7 +201,6 @@ swarm_service_create() {
 			entrypoint_overwrite="--entrypoint ''"
 		fi
 
-		local extra_args="--name ${servID}"
 		if [[ $shard -eq 1 || "${portmap}" =~ 'mode=host' ]]; then
 			if [ -n "$portmap" ]; then
 				extra_args="${extra_args} --publish=${portmap}"
@@ -211,7 +220,6 @@ swarm_service_create() {
 			--replicas=$mesh_replicas \
 			--replicas-max-per-node=$max_per_node \
 			--restart-condition=$restart_condition \
-			--constraint=node.labels.shard==${shard} \
 			--stop-signal=$stop_signal \
 			$service_labels \
 			$constraints \
@@ -228,8 +236,10 @@ swarm_service_create() {
 }
 
 swarm_service_update() {
-	servName=$1
-	read docker_image <<< $(unpack \$service_${servName}_docker_image)
+	local servCode=$(echo $1 | cut -d ':' -f 1)
+	local servName=$(echo $1 | cut -d ':' -f 2)
+
+	read docker_image <<< $(unpack \$service_${servCode}_docker_image)
 	echo "Updating swarm serivce $servName to $docker_image ..."
 	set -x
 	$DOCKER service update \

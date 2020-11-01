@@ -142,8 +142,6 @@ exec = [
 
   # set label for this root swarm manager
   'swarmNode=$(ssh_exec_local_cmd root@$nodeIP $port  swarm_node_id)',
-  'ssh_exec_local_cmd root@$nodeIP $port  swarm_node_label $swarmNode iaascfg=$iaascfg',
-  'ssh_exec_local_cmd root@$nodeIP $port  swarm_node_label $swarmNode shard=1',
   'read labels <<< $(unpack \${!node_usage_${node_usage}_labels_@})',
   '''
   for l in $labels; do
@@ -180,8 +178,6 @@ exec = [
 
   # set label for this new swarm node
   'swarmNode=$(ssh_exec_local_cmd root@$nodeIP $port  swarm_node_id)',
-  'swarm_node_label $swarmNode iaascfg=$iaascfg',
-  'swarm_node_label $swarmNode shard=${shard-1}'
   'read labels <<< $(unpack \${!node_usage_${node_usage}_labels_@})',
   '''
   for l in $labels; do
@@ -190,6 +186,20 @@ exec = [
   '''
 ]
 dep = swarm:install
+
+[node-label-set]
+source = . $scripts/swarm/swarm.sh
+exec = [
+  require_args swarmNode label,
+  swarm_node_label $swarmNode $label
+]
+
+[node-label-rm]
+source = . $scripts/swarm/swarm.sh
+exec = [
+  require_args swarmNode labelkey,
+  swarm_node_label_rm $swarmNode $labelkey
+]
 
 [service-create]
 source = . $scripts/swarm/swarm.sh
