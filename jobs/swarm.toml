@@ -44,9 +44,16 @@ source = . $scripts/swarm/swarm.sh
 if = is_swarm_manager
 exec = [
   require_args service,
-  swarm_print_service_logs $service,
   swarm_print_service_image $service,
   swarm_print_service_overview $service,
+]
+
+[service-logs]
+source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
+exec = [
+  require_args service,
+  swarm_print_service_logs $service
 ]
 
 [rm-service]
@@ -66,6 +73,22 @@ exec = "$DOCKER node ls --format '{{.ID}} {{.Status}}' | grep Down | cut -d ' ' 
 source = . $scripts/swarm/swarm.sh
 if = is_swarm_manager
 exec = "$DOCKER rmi -f $($DOCKER images --filter 'dangling=true' -q --no-trunc)"
+
+[node-label-set]
+source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
+exec = [
+  require_args swarmNode label,
+  swarm_node_label $swarmNode $label
+]
+
+[node-label-rm]
+source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
+exec = [
+  require_args swarmNode labelkey,
+  swarm_node_label_rm $swarmNode $labelkey
+]
 
 [allocate]
 source = [
@@ -168,7 +191,7 @@ dep = swarm:install
 [expand]
 source = . $scripts/swarm/swarm.sh
 exec = [
-  # Optional: `shard=n', `role=manager' and `node_usage=some_usage'
+  # Optional: `role=manager' and `node_usage=some_usage'
   require_args iaascfg nodeIP,
   # unpack parameters
   'read port <<< $(unpack \$iaas_${iaascfg}_ssh_port)',
@@ -187,22 +210,9 @@ exec = [
 ]
 dep = swarm:install
 
-[node-label-set]
-source = . $scripts/swarm/swarm.sh
-exec = [
-  require_args swarmNode label,
-  swarm_node_label $swarmNode $label
-]
-
-[node-label-rm]
-source = . $scripts/swarm/swarm.sh
-exec = [
-  require_args swarmNode labelkey,
-  swarm_node_label_rm $swarmNode $labelkey
-]
-
 [service-create]
 source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
 exec = [
   require_args service,
   swarm_service_create $service
@@ -210,6 +220,7 @@ exec = [
 
 [service-update]
 source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
 exec = [
   require_args service,
   'swarm_service_update $service'
