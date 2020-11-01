@@ -87,6 +87,8 @@ bootstrap_services = [
   calabash, ui_calabash
 ]
 
+bootstrap_config_path = '/tmp/bootstrap_config'
+
 # See https://docs.docker.com/engine/reference/commandline/service_create
 print_arguments = [
   mesh_replicas,
@@ -130,7 +132,7 @@ print_arguments = [
     'path:calabash_config:/code/calabash/config.toml'
   ]
   config_source = [
-    '$_config_file_',
+    '$service_bootstrap_config_path',
   ]
   mounts = [
     'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock',

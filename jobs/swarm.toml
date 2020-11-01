@@ -118,13 +118,16 @@ dep = swarm:allocate
 
 [bootstrap_localmock]
 source = . $scripts/swarm/swarm.sh
-exec = '''
+exec = [
+  cp $_config_file_ $service_bootstrap_config_path,
+  '''
   for argvar in $(eval echo \${!service_bootstrap_services_@}); do
     dockerimg=$(unpack \$service_${!argvar}_docker_image)
     use_image=$(echo $dockerimg | cut -d '/' -f 2)
     swarm_service_create ${!argvar} $use_image
   done
-'''
+  '''
+]
 
 [bootstrap]
 source = . $scripts/swarm/swarm.sh
@@ -149,6 +152,7 @@ exec = [
   ''',
 
   # setup bootstrap services
+  $SCP -P $port $_config_file_ root@$nodeIP:$service_bootstrap_config_path,
   '''
   for argvar in $(eval echo \${!service_bootstrap_services_@}); do
     ssh_exec_local_cmd root@$nodeIP $port  swarm_service_create ${!argvar}
