@@ -24,6 +24,7 @@ program.parse(process.argv)
 /* load configurations and setup HTTP server */
 var jobs = null
 var configs = {}
+var configs_tree = {}
 var jobs_dir = './test-jobs'
 var cfg_path = './config.template.toml'
 
@@ -45,7 +46,10 @@ function parse_and_inject_env(goal, cfgs) {
     cfg_path = program.config || cfg_path
     console.log(`Loading cfg_path=${cfg_path}`)
     const [cfgs, cfgs_tree] = await cfg_ldr.load_cfg(cfg_path)
-    configs = cfgs /* set global config */
+    /* set global config */
+    configs = cfgs
+    configs_tree = cfgs_tree
+    /* inject config file path */
     configs._config_file_ = cfg_path
 
     /* loading jobs */
@@ -175,6 +179,17 @@ app
 .get('/get/config', async function (req, res) {
   try {
     res.json(configs)
+
+  } catch (err) {
+    res.json({
+      'error': err.toString()
+    })
+  }
+})
+
+.get('/get/configtree', async function (req, res) {
+  try {
+    res.json(configs_tree)
 
   } catch (err) {
     res.json({
