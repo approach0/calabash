@@ -19,7 +19,7 @@ First, run `jobd` server
 
 Then bootstrap the calabash to remote node using CLI
 ```
-$ node cli.js -j swarm:bootstrap?node_usage=host_persistent&iaascfg=ucloud_config_1
+$ node cli.js -j 'swarm:bootstrap?node_usage=host_persistent&iaascfg=ucloud_config_1'
 ```
 and at the end it will output the bootstrap node IP address, you can now manipulate this remote calabash service, for example, expand (create and join) a new node:
 ```
