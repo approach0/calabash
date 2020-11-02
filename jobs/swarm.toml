@@ -142,6 +142,21 @@ dep = swarm:allocate
 [bootstrap_localmock]
 source = . $scripts/swarm/swarm.sh
 exec = [
+  # Optional: `node_usage=some_usage'.
+
+  # initialize Docker warm for the first time
+  $DOCKER swarm init,
+
+  # set label for this root swarm manager
+  'swarmNode=$(swarm_node_id)',
+  'read labels <<< $(unpack \${!node_usage_${node_usage}_labels_@})',
+  '''
+  for l in $labels; do
+    swarm_node_label $swarmNode ${!l};
+  done
+  ''',
+
+  # setup bootstrap services
   cp $_config_file_ $service_bootstrap_config_path,
   '''
   for argvar in $(eval echo \${!service_bootstrap_services_@}); do
@@ -152,11 +167,13 @@ exec = [
   '''
 ]
 
+# Use this to bootstrap service and update bootstraping configs
 [bootstrap]
 source = . $scripts/swarm/swarm.sh
 exec = [
-  # Optional: `node_usage=some_usage'. One can also use this to update bootstraping configs
+  # Optional: `node_usage=some_usage'.
   require_args iaascfg nodeIP,
+
   # unpack parameters
   'read port <<< $(unpack \$iaas_${iaascfg}_ssh_port)',
 

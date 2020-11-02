@@ -19,11 +19,16 @@ First, run `jobd` server
 
 Then bootstrap the calabash to remote node using CLI
 ```
-$ node cli.js -j swarm:bootstrap?iaascfg=ucloud_config_1
+$ node cli.js -j 'swarm:bootstrap?node_usage=host_persistent&iaascfg=ucloud_config_1'
 ```
 and at the end it will output the bootstrap node IP address, you can now manipulate this remote calabash service, for example, expand (create and join) a new node:
 ```
 $ node cli.js http://<IP>:<PORT> -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private'
+```
+
+If you want to test locally at your computer, issue
+```
+$ node cli.js -j swarm:bootstrap_localmock?node_usage=host_persistent
 ```
 
 You can view the remote log by specifying a task ID, for example
@@ -65,12 +70,12 @@ The following steps setup necessary services of Approach Zero
 
 1. Bootstrap
 ```
-$ node cli.js -j 'swarm:bootstrap?iaascfg=ucloud_config_1&node_usage=host_corpus'
+$ node cli.js -j 'swarm:bootstrap?iaascfg=ucloud_config_1&node_usage=host_persistent'
 ```
 
 2. Add 1 corpus nodes along with bootstrap node, for storing corpus
 ```
-$ node cli.js http://<IP>:<PORT> --follow -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private&node_usage=host_corpus&shard=2'
+$ node cli.js http://<IP>:<PORT> --follow -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private&node_usage=host_persistent&shard=2'
 ```
 
 3. Create `corpus_syncd` and `crawler` services
