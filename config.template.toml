@@ -286,7 +286,7 @@ print_arguments = [
 
   [service.corpus_syncd]
   network = calabash_net
-  mesh_sharding = 2
+  mesh_sharding = 3
   max_per_node = 1
   mounts = [
     'type=volume,src=corpus_vol,dst=/data',
@@ -325,7 +325,7 @@ print_arguments = [
   docker_exec = bash /tmp/entrypoint.sh $servID
 
   [service.crawler]
-  mesh_sharding = 2
+  mesh_sharding = 3
   max_per_node = 1
   mounts = [
     'type=volume,src=corpus_vol,dst=/data',
@@ -377,7 +377,7 @@ print_arguments = [
 
   [service.indexer]
   network = calabash_net
-  mesh_sharding = 2
+  mesh_sharding = 4
   max_per_node = 1
   mounts = [
     'type=bind,src=/var/tmp/vdisk,dst=/mnt/vdisk'
@@ -403,7 +403,7 @@ print_arguments = [
 
   [service.index_syncd]
   network = calabash_net
-  mesh_sharding = 2
+  mesh_sharding = 4
   max_per_node = 1
   mounts = [
     'type=bind,src=/var/tmp/vdisk,dst=/data'
@@ -449,7 +449,8 @@ print_arguments = [
   [service.searchd]
   portmap = '3389:8921'
   network = calabash_net
-  mesh_sharding = 2
+  mesh_sharding = 4
+  max_per_node = 1
   mounts = [
     'type=bind,src=/var/tmp/vdisk,dst=/mnt/vdisk'
   ]
