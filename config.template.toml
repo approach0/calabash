@@ -1,18 +1,18 @@
 [environment]
 scripts = ./scripts
+configs = ./configs
 job_dir = ./jobs
 admin_name = admin
 node_prefix = calabash
 
 [iaas]
-#providers = [linode, ucloud]
-providers = [ucloud]
+providers = [linode, ucloud]
 
   [iaas.linode]
   token = ___
   docker_mirror = https://docker.io
   # docker mirror alternatives: https://hub-mirror.c.163.com
-  docker_image = ga6840/linode-cli:latest
+  docker_image = ga6840/linode-cli
   docker_registry_user = ___
   docker_registry_pass = ___
 
@@ -20,14 +20,14 @@ providers = [ucloud]
     region = ap-southeast
     specs = 'g6-nanode-1'
     distro = linode/debian10
-    ssh_port = 8921
+    ssh_port = ___
     password = ___
 
   [iaas.ucloud]
   pubkey = ___
   prikey = ___
   docker_mirror = https://uhub.service.ucloud.cn
-  docker_image = ga6840/ucloud-cli:latest
+  docker_image = ga6840/ucloud-cli
   docker_registry_user = ___
   docker_registry_pass = ___
 
@@ -35,12 +35,12 @@ providers = [ucloud]
     region = cn-gd
     specs = 1cpu-1gb-1mb
     distro = 'Debian_9'
-    ssh_port = 22
+    ssh_port = ___
     password = ___
 
 [network]
 
-  [network.approach0]
+  [network.calabash_net]
   driver = overlay
 
 [node_usage]
@@ -74,11 +74,15 @@ providers = [ucloud]
 
   [loop_task.2]
   goal = 'swarm:list-nodes?format=json'
-  reborn = 5000
+  reborn = 5010
 
   [loop_task.3]
   goal = 'swarm:list-services?format=json'
-  reborn = 5000
+  reborn = 5020
+
+  [loop_task.4]
+  goal = 'swarm:list-tasks'
+  reborn = 5030
 
 [service]
 bootstrap_services = [
@@ -232,17 +236,17 @@ print_arguments = [
   ###################
 
   [service.hello]
-  portmap = 'published=3389,target=8080,mode=ingress' # servcie mesh with only shard#1 publishing port
-  mesh_replicas = 2
-  mesh_sharding = 2
+  #portmap = 'published=3389,target=8080,mode=ingress' # servcie mesh with only shard#1 publishing port
+  #mesh_replicas = 2
+  #mesh_sharding = 2
 
   #portmap = 'published=3389,target=8080,mode=host' # different IP different shard
   #mesh_replicas=1
   #mesh_sharding=2
 
-  #portmap = 'published=3389,target=8080,mode=ingress' # round robin-ing hosts
-  #mesh_replicas=2
-  #mesh_sharding=1
+  portmap = 'published=3389,target=8080,mode=ingress' # round robin-ing hosts
+  mesh_replicas=2
+  mesh_sharding=1
 
   docker_image = ga6840/hello-httpd
   config_bind = [
