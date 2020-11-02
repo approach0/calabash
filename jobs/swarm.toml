@@ -205,6 +205,14 @@ exec = [
 ]
 dep = swarm:install
 
+[update-calabash]
+source = . $scripts/swarm/swarm.sh
+exec = [
+  require_args nodeIP port,
+  $SCP -P $port $_config_file_ root@$nodeIP:$service_bootstrap_config_path,
+  'ssh_exec_local_cmd root@$nodeIP $port  swarm_service_create calabash',
+]
+
 [expand]
 source = . $scripts/swarm/swarm.sh
 exec = [
