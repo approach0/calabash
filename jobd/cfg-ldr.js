@@ -11,7 +11,12 @@ function delayering(obj, outobj, stack) {
         delayering(obj[property], outobj, next_stack);
       } else {
         const key = next_stack.replace(/^environment_/, "")
-        outobj[key] = obj[property]
+        let val = obj[property]
+        if (typeof val === 'string' && val.startsWith('SECRET:')) {
+          val = val.split(':').slice(1).join(':')
+          delete obj[property]
+        }
+        outobj[key] = val
       }
     }
   }
