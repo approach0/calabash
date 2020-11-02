@@ -29,4 +29,3 @@ RUN git clone --single-branch --branch deploy --depth 1 https://github.com/appro
 WORKDIR /code/calabash
 RUN (cd cli && npm install)
 RUN (cd jobd && npm install)
-RUN (cd ui && npm install)
