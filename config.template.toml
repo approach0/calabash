@@ -56,7 +56,7 @@ providers = [linode, ucloud]
   ]
   install_hooks = [
     'install_fuse',
-    'vdisk_producer_daemon 1K'
+    'vdisk_producer_daemon 6K' # 6 GiB
   ]
 
   [node_usage.host_searchd]
