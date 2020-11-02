@@ -164,7 +164,7 @@ swarm_service_create() {
 	local mesh_replicas=${mesh_replicas-1}
 	local mesh_sharding=${mesh_sharding-1}
 	local max_per_node=${max_per_node-0}
-	local restart_condition=${restart_condition-any}
+	local restart_condition=${restart_condition-on-failure}
 	local stop_signal=${stop_signal-SIGINT}
 
 	# get complex variables
