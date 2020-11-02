@@ -50,9 +50,6 @@ function parse_and_inject_env(goal, cfgs) {
     configs = cfgs
     configs_tree = cfgs_tree
 
-    console.log(configs_tree)
-    exit()
-
     /* inject config file path */
     configs._config_file_ = cfg_path
 
@@ -181,17 +178,6 @@ app
 })
 
 .get('/get/config', async function (req, res) {
-  try {
-    res.json(configs)
-
-  } catch (err) {
-    res.json({
-      'error': err.toString()
-    })
-  }
-})
-
-.get('/get/configtree', async function (req, res) {
   try {
     res.json(configs_tree)
 
