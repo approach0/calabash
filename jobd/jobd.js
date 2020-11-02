@@ -49,6 +49,10 @@ function parse_and_inject_env(goal, cfgs) {
     /* set global config */
     configs = cfgs
     configs_tree = cfgs_tree
+
+    console.log(configs_tree)
+    exit()
+
     /* inject config file path */
     configs._config_file_ = cfg_path
 
