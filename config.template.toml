@@ -44,8 +44,9 @@ providers = [linode, ucloud]
   driver = overlay
 
 [node_usage]
-  [node_usage.host_corpus]
+  [node_usage.host_persistent]
   labels = [
+    'host_persistent=true',
     'host_corpus=true'
   ]
 
@@ -108,12 +109,17 @@ print_arguments = [
   docker_exec
 ]
 
+  ###
+  # Core Services
+  ###
+
   [service.gateway]
   network = calabash_net
-  #portmap = '80:80'
-  portmap = '8080:80'
+  portmap = '80:80'
+  #portmap = '8080:80'
   constraints = [
-    'node.role==manager'
+    'node.role==manager',
+    'node.labels.host_persistent==true'
   ]
   mounts = [
     'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock',
@@ -129,7 +135,8 @@ print_arguments = [
     'gateway.port=8964'
   ]
   constraints = [
-    'node.role==manager'
+    'node.role==manager',
+    'node.labels.host_persistent==true'
   ]
   docker_image = ga6840/calabash
   config_bind = [
@@ -151,6 +158,9 @@ print_arguments = [
     'gateway.port=80',
     'gateway.protect=/'
   ]
+  constraints = [
+    'node.labels.host_persistent==true'
+  ]
   mounts = [
     'type=volume,src=usersdb_vol,dst=/postgres/data',
   ]
@@ -160,6 +170,9 @@ print_arguments = [
   network = calabash_net
   env = [
     'LATTICE_DATABASE_HOST=usersdb'
+  ]
+  constraints = [
+    'node.labels.host_persistent==true'
   ]
   config_bind = [
     'text:lattice_entrypoint:/tmp/entrypoint.sh'
@@ -186,6 +199,9 @@ print_arguments = [
     'gateway.route=backend',
     'gateway.port=19985'
   ]
+  constraints = [
+    'node.labels.host_persistent==true'
+  ]
   env = [
     'CALABASH_URL=/calabash'
   ]
@@ -202,38 +218,9 @@ print_arguments = [
   ]
   docker_exec = bash /tmp/entrypoint.sh
 
-  [service.ui_login]
-  network = calabash_net
-  labels = [
-    'gateway.route=login',
-    'gateway.port=19985'
-  ]
-  docker_image = ga6840/ui-login
-
-  [service.gateway_monitor]
-  network = calabash_net
-  docker_image = prom/prometheus@sha256:60190123eb28250f9e013df55b7d58e04e476011911219f5cedac3c73a8b74e6
-  config_bind = [
-    'path:prometheus_conf:/etc/prometheus/prometheus.yml'
-  ]
-  config_source = [
-    '$configs/prometheus.yml',
-  ]
-
-  [service.grafana]
-  network = calabash_net
-  labels = [
-    'gateway.route=grafana',
-    'gateway.port=3000'
-  ]
-  env = [
-    'GF_SERVER_SERVE_FROM_SUB_PATH=true',
-    'GF_SERVER_ROOT_URL=/grafana',
-    'GF_SECURITY_ADMIN_PASSWORD=iamforgetful'
-  ]
-  docker_image = grafana/grafana
-
-  ###################
+  ###
+  # Peripheral Services
+  ###
 
   [service.hello]
   #portmap = 'published=3389,target=8080,mode=ingress' # servcie mesh with only shard#1 publishing port
@@ -258,6 +245,46 @@ print_arguments = [
     '''
   ]
   docker_exec = sh /tmp/entrypoint.sh $shard
+
+  [service.ui_login]
+  network = calabash_net
+  constraints = [
+    'node.labels.host_persistent==true'
+  ]
+  labels = [
+    'gateway.route=login',
+    'gateway.port=19985'
+  ]
+  docker_image = ga6840/ui-login
+
+  [service.gateway_monitor]
+  network = calabash_net
+  constraints = [
+    'node.labels.host_persistent==true'
+  ]
+  docker_image = prom/prometheus@sha256:60190123eb28250f9e013df55b7d58e04e476011911219f5cedac3c73a8b74e6
+  config_bind = [
+    'path:prometheus_conf:/etc/prometheus/prometheus.yml'
+  ]
+  config_source = [
+    '$configs/prometheus.yml',
+  ]
+
+  [service.grafana]
+  network = calabash_net
+  constraints = [
+    'node.labels.host_persistent==true'
+  ]
+  labels = [
+    'gateway.route=grafana',
+    'gateway.port=3000'
+  ]
+  env = [
+    'GF_SERVER_SERVE_FROM_SUB_PATH=true',
+    'GF_SERVER_ROOT_URL=/grafana',
+    'GF_SECURITY_ADMIN_PASSWORD=iamforgetful'
+  ]
+  docker_image = grafana/grafana
 
   [service.corpus_syncd]
   network = calabash_net
