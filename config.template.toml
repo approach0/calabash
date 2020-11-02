@@ -122,8 +122,7 @@ print_arguments = [
     'node.labels.host_persistent==true'
   ]
   mounts = [
-    'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock',
-    'type=bind,src=/var/log,dst=/mnt/log,ro=false',
+    'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock'
   ]
   docker_image = ga6840/gateway
 
@@ -146,8 +145,7 @@ print_arguments = [
     '$service_bootstrap_config_path',
   ]
   mounts = [
-    'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock',
-    'type=bind,src=/var/log,dst=/mnt/log,ro=false',
+    'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock'
   ]
   docker_exec = node ./jobd/jobd.js --config ./config.toml
 
@@ -218,34 +216,6 @@ print_arguments = [
   ]
   docker_exec = bash /tmp/entrypoint.sh
 
-  ###
-  # Peripheral Services
-  ###
-
-  [service.hello]
-  #portmap = 'published=3389,target=8080,mode=ingress' # servcie mesh with only shard#1 publishing port
-  #mesh_replicas = 2
-  #mesh_sharding = 2
-
-  #portmap = 'published=3389,target=8080,mode=host' # different IP different shard
-  #mesh_replicas=1
-  #mesh_sharding=2
-
-  portmap = 'published=3389,target=8080,mode=ingress' # round robin-ing hosts
-  mesh_replicas=2
-  mesh_sharding=1
-
-  docker_image = ga6840/hello-httpd
-  config_bind = [
-    'text:hello_entrypoint:/tmp/entrypoint.sh'
-  ]
-  config_source = [
-    '''
-    node /code/hello.js $(hostname) shard#$@
-    '''
-  ]
-  docker_exec = sh /tmp/entrypoint.sh $shard
-
   [service.ui_login]
   network = calabash_net
   constraints = [
@@ -285,6 +255,34 @@ print_arguments = [
     'GF_SECURITY_ADMIN_PASSWORD=iamforgetful'
   ]
   docker_image = grafana/grafana
+
+  ###
+  # Peripheral Services
+  ###
+
+  [service.hello]
+  #portmap = 'published=3389,target=8080,mode=ingress' # servcie mesh with only shard#1 publishing port
+  #mesh_replicas = 2
+  #mesh_sharding = 2
+
+  #portmap = 'published=3389,target=8080,mode=host' # different IP different shard
+  #mesh_replicas=1
+  #mesh_sharding=2
+
+  portmap = 'published=3389,target=8080,mode=ingress' # round robin-ing hosts
+  mesh_replicas=2
+  mesh_sharding=1
+
+  docker_image = ga6840/hello-httpd
+  config_bind = [
+    'text:hello_entrypoint:/tmp/entrypoint.sh'
+  ]
+  config_source = [
+    '''
+    node /code/hello.js $(hostname) shard#$@
+    '''
+  ]
+  docker_exec = sh /tmp/entrypoint.sh $shard
 
   [service.corpus_syncd]
   network = calabash_net
