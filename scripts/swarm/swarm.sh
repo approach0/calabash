@@ -241,7 +241,7 @@ swarm_service_update() {
 	local servName=$(echo $1 | cut -d ':' -f 2)
 
 	read docker_image <<< $(unpack \$service_${servCode}_docker_image)
-	echo "Updating swarm serivce $servName to $docker_image ..."
+	echo "Updating swarm serivce $servName image: $docker_image ..."
 
 	# this service may be moved to another node, so update configs
 	echo '[[[ swarm_service_update_configs ]]]'
