@@ -337,7 +337,7 @@
       "pluginVersion": "7.3.1",
       "targets": [
         {
-          "expr": "topk(10, avg_over_time(request_geoip[1h]))",
+          "expr": "topk(10, rate(request_geoip[30m]))",
           "interval": "",
           "legendFormat": "{{ip}}",
           "refId": "A"
@@ -669,12 +669,12 @@
     "list": []
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-30m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Calabash",
   "uid": "Bfrz2ptMz",
-  "version": 6
+  "version": 2
 }
