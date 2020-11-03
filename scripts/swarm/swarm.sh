@@ -240,6 +240,7 @@ swarm_service_update() {
 	local servCode=$(echo $1 | cut -d ':' -f 1)
 	local servName=$(echo $1 | cut -d ':' -f 2)
 
+	# Must have docker image specified to update to the latest image.
 	read docker_image <<< $(unpack \$service_${servCode}_docker_image)
 	echo "Updating swarm serivce $servName image: $docker_image ..."
 
