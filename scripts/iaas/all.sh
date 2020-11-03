@@ -62,11 +62,12 @@ iaas_node_list_in_json() {
 			"  2>/dev/null >$tmp_file
 		else
 			echo "ERROR: provider '$provider' not implemented."
-			exit 1
 		fi
 		out_file=`mktemp`
 		jq -s '.[0] + .[1]' $acc_file $tmp_file > $out_file
+		rm -f $tmp_file
 		mv $out_file $acc_file
 	done
 	cat $acc_file
+	rm -f $acc_file
 }
