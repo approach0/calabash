@@ -82,15 +82,19 @@ providers = [linode, ucloud]
 
   [loop_task.2]
   goal = 'swarm:list-nodes?format=json'
-  reborn = 5010
+  reborn = 5020
 
   [loop_task.3]
   goal = 'swarm:list-services?format=json'
-  reborn = 5020
+  reborn = 5030
 
   [loop_task.4]
   goal = 'swarm:list-tasks'
-  reborn = 5030
+  reborn = 5040
+
+  [loop_task.5]
+  goal = 'swarm:docker-stats'
+  reborn = 5050
 
 [service]
 bootstrap_services = [

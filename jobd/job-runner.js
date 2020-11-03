@@ -311,6 +311,7 @@ exports.runlist = function (run_cfg, runList, onComplete) {
         const env_file_path = os.tmpdir() + `/env-pid${pid}.log`
         try {
           run_cfg.envs = await fs.readFileSync(env_file_path, 'utf-8')
+          await fs.unlinkSync(env_file_path)
         } catch (_) {
           /* for mock-up processes, we do not expect a valid pid number */
           ;
