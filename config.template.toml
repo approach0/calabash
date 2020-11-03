@@ -38,6 +38,13 @@ providers = [linode, ucloud]
     ssh_port = ___
     password = ___
 
+    [iaas.ucloud.config_2]
+    region = cn-gd
+    specs = 1cpu-2gb-1mb
+    distro = 'Debian_9'
+    ssh_port = ___
+    password = ___
+
 [network]
 
   [network.calabash_net]
@@ -88,7 +95,7 @@ providers = [linode, ucloud]
 [service]
 bootstrap_services = [
   gateway,
-  usersdb, lattice,
+  usersdb, lattice, # forcedly updating these two should happen in order
   calabash, ui_calabash
 ]
 
@@ -98,14 +105,18 @@ bootstrap_config_path = '/tmp/bootstrap_config'
 print_arguments = [
   mesh_replicas,
   mesh_sharding,
-  network,
-  portmap,
-  max_per_node, # maximum number of this type of services per node
+  max_per_node,
   restart_condition,
+  stop_signal,
+  limit_memory,
+  service_labels,
   constraints,
-  docker_image,
-  configs,
   mounts,
+  environments,
+  configs,
+  portmap,
+  network,
+  docker_image,
   docker_exec
 ]
 
@@ -197,6 +208,7 @@ print_arguments = [
     'gateway.route=backend',
     'gateway.port=19985'
   ]
+  limit_memory = 300MB
   constraints = [
     'node.labels.host_persistent==true'
   ]
@@ -232,7 +244,8 @@ print_arguments = [
   constraints = [
     'node.labels.host_persistent==true'
   ]
-  docker_image = prom/prometheus@sha256:60190123eb28250f9e013df55b7d58e04e476011911219f5cedac3c73a8b74e6
+  #docker_image = prom/prometheus@sha256:60190123eb28250f9e013df55b7d58e04e476011911219f5cedac3c73a8b74e6
+  docker_image = ga6840/prometheus
   config_bind = [
     'path:prometheus_conf:/etc/prometheus/prometheus.yml'
   ]
@@ -254,7 +267,8 @@ print_arguments = [
     'GF_SERVER_ROOT_URL=/grafana',
     'GF_SECURITY_ADMIN_PASSWORD=iamforgetful'
   ]
-  docker_image = grafana/grafana
+  #docker_image = grafana/grafana
+  docker_image = ga6840/grafana
 
   ###
   # Peripheral Services
@@ -345,26 +359,31 @@ print_arguments = [
 
     while true; do
       case $shard in
-      1)
-        crawler-math.stackexchange.com.py  --begin-page     1 --end-page  1000
-      ;;
 
-      2)
-        crawler-math.stackexchange.com.py  --begin-page  1001 --end-page  7000
-        crawler-math.stackexchange.com.py  --begin-page  7001 --end-page 17000
-        crawler-math.stackexchange.com.py  --begin-page 17001 --end-page 27000
-        crawler-math.stackexchange.com.py  --begin-page 17001 --end-page 27000
-      ;;
+        1)
+          crawler-math.stackexchange.com.py  --begin-page     1 --end-page  1000
+        ;;
 
-      3)
-        crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 3
-        crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 4
-        crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 5
-        crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 6
-        crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 7
-        crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 123
-        crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 163
-      ;;
+        2)
+          crawler-math.stackexchange.com.py  --begin-page  1001 --end-page  7000
+          crawler-math.stackexchange.com.py  --begin-page  7001 --end-page 17000
+          crawler-math.stackexchange.com.py  --begin-page 17001 --end-page 27000
+          crawler-math.stackexchange.com.py  --begin-page 17001 --end-page 27000
+        ;;
+
+        3)
+          crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 3
+          crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 4
+          crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 5
+          crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 6
+          crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 7
+          crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 123
+          crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 163
+        ;;
+
+        *)
+          echo "shard#`${shard}` is not handled!"
+        ;;
 
       esac
 

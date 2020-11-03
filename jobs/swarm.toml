@@ -106,6 +106,12 @@ exec = [
   $DOCKER demote $swarmNode
 ]
 
+[docker-stats]
+source = . $scripts/swarm/swarm.sh
+exec = [
+  $DOCKER stats --no-stream --no-trunc
+]
+
 [allocate]
 source = [
   . $scripts/iaas/all.sh,

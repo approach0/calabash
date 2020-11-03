@@ -166,6 +166,7 @@ swarm_service_create() {
 	local max_per_node=${max_per_node-0}
 	local restart_condition=${restart_condition-on-failure}
 	local stop_signal=${stop_signal-SIGINT}
+	local limit_memory=${limit_memory-200MB}
 
 	# get complex variables
 	local service_labels=$(eval echo $(for l in ${!labels_@}; do echo -n "--label=\$$l "; done))
@@ -225,6 +226,7 @@ swarm_service_create() {
 		set -x
 		$DOCKER service rm ${servID}
 		$DOCKER service create \
+			--limit-memory=$limit_memory \
 			--hostname='{{.Service.Name}}-{{.Task.Slot}}' \
 			--replicas=$mesh_replicas \
 			--replicas-max-per-node=$max_per_node \
