@@ -243,10 +243,6 @@ swarm_service_update() {
 	read docker_image <<< $(unpack \$service_${servCode}_docker_image)
 	echo "Updating swarm serivce $servName image: $docker_image ..."
 
-	# this service may be moved to another node, so update configs
-	echo '[[[ swarm_service_update_configs ]]]'
-	local configs=`swarm_service_update_configs $servCode`
-
 	# `--force' will rebalance a service across all nodes
 	# that match its requirements and constraints.
 	set -x
