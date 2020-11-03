@@ -225,6 +225,7 @@ swarm_service_create() {
 		set -x
 		$DOCKER service rm ${servID}
 		$DOCKER service create \
+			--limit-memory 200MB \
 			--hostname='{{.Service.Name}}-{{.Task.Slot}}' \
 			--replicas=$mesh_replicas \
 			--replicas-max-per-node=$max_per_node \
