@@ -90,6 +90,22 @@ exec = [
   swarm_node_label_rm $swarmNode $labelkey
 ]
 
+[node-promote]
+source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
+exec = [
+  require_args swarmNode,
+  $DOCKER promote $swarmNode
+]
+
+[node-demote]
+source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
+exec = [
+  require_args swarmNode,
+  $DOCKER demote $swarmNode
+]
+
 [allocate]
 source = [
   . $scripts/iaas/all.sh,
