@@ -248,7 +248,6 @@ swarm_service_update() {
 	set -x
 	$DOCKER service update \
 		--force \
-		$configs \
 		--update-order=start-first \
 		--update-failure-action rollback \
 		--with-registry-auth \
