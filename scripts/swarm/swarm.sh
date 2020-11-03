@@ -172,6 +172,7 @@ swarm_service_create() {
 	local constraints=$(eval echo $(for c in ${!constraints_@}; do echo -n "--constraint=\$$c "; done))
 	local mounts=$(eval echo $(for m in ${!mounts_@}; do echo -n "--mount=\$$m "; done))
 	local environments=$(eval echo $(for e in ${!env_@}; do echo -n "--env=\$$e "; done))
+
 	echo '[[[ swarm_service_update_configs ]]]'
 	local configs=`swarm_service_update_configs $servCode`
 
@@ -241,11 +242,18 @@ swarm_service_update() {
 
 	read docker_image <<< $(unpack \$service_${servCode}_docker_image)
 	echo "Updating swarm serivce $servName to $docker_image ..."
+
+	# this service may be moved to another node, so update configs
+	echo '[[[ swarm_service_update_configs ]]]'
+	local configs=`swarm_service_update_configs $servCode`
+
+	# `--force' will rebalance a service across all nodes
+	# that match its requirements and constraints.
 	set -x
 	$DOCKER service update \
 		--force \
+		$configs \
 		--update-order=start-first \
-		--with-registry-auth \
 		--update-failure-action rollback \
 		--with-registry-auth \
 		--image $docker_image \
