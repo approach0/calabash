@@ -188,11 +188,11 @@ swarm_service_create() {
 
 		if [ $shard -gt 1 ]; then
 			local servID="${servName}-shard${shard}"
-			local extra_args="--name ${servID} --constraint=node.labels.shard==${shard}"
 		else
 			local servID="${servName}"
-			local extra_args="--name ${servID}"
 		fi
+
+		local extra_args="--name ${servID} --constraint=node.labels.shard==${shard}"
 
 		# parse docker_exec to handle both variables and pipes (with some stupid hacks)
 		local entrypoint_overwrite=""
