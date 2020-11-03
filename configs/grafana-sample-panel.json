@@ -15,7 +15,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 3,
+  "id": 1,
   "links": [],
   "panels": [
     {
@@ -58,7 +58,7 @@
         "showThresholdLabels": false,
         "showThresholdMarkers": true
       },
-      "pluginVersion": "7.2.2",
+      "pluginVersion": "7.3.1",
       "targets": [
         {
           "expr": "connections",
@@ -118,7 +118,7 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "7.2.2",
+      "pluginVersion": "7.3.1",
       "targets": [
         {
           "expr": "swarm_nodes",
@@ -208,7 +208,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.2.2",
+      "pluginVersion": "7.3.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -235,15 +235,15 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "avg(avg_over_time(response_bytes[1m]))",
+          "expr": "avg(rate(response_bytes[1m]))",
           "interval": "",
           "legendFormat": "Response bytes",
           "refId": "C"
         },
         {
-          "expr": "avg(avg_over_time(request_uri[1m]))",
+          "expr": "avg(rate(request_uri[1m]))",
           "interval": "",
-          "legendFormat": "Total Visits",
+          "legendFormat": "Request URIs",
           "refId": "A"
         }
       ],
@@ -253,7 +253,7 @@
       "timeShift": null,
       "title": "Visit and Performance",
       "tooltip": {
-        "shared": true,
+        "shared": false,
         "sort": 0,
         "value_type": "individual"
       },
@@ -334,7 +334,7 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "7.2.2",
+      "pluginVersion": "7.3.1",
       "targets": [
         {
           "expr": "topk(10, avg_over_time(request_geoip[1h]))",
@@ -389,7 +389,7 @@
         },
         "showUnfilled": true
       },
-      "pluginVersion": "7.2.2",
+      "pluginVersion": "7.3.1",
       "targets": [
         {
           "expr": "topk(5, avg_over_time(response_bytes[20s])) / (1024 * 1024)",
@@ -447,7 +447,7 @@
         },
         "showUnfilled": true
       },
-      "pluginVersion": "7.2.2",
+      "pluginVersion": "7.3.1",
       "targets": [
         {
           "expr": "topk(8, avg_over_time(request_timecost[3m]))",
@@ -501,7 +501,7 @@
         "alertThreshold": false
       },
       "percentage": false,
-      "pluginVersion": "7.2.2",
+      "pluginVersion": "7.3.1",
       "pointradius": 1,
       "points": true,
       "renderer": "flot",
@@ -603,7 +603,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.2.2",
+      "pluginVersion": "7.3.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -613,7 +613,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "topk(8, max_over_time(request_uri{status!=\"200\"}[10m]))",
+          "expr": "topk(8, rate(request_uri{status!=\"200\"}[1m]))",
           "interval": "",
           "legendFormat": "{{status}} {{uri}}",
           "refId": "A"
@@ -625,7 +625,7 @@
       "timeShift": null,
       "title": "Failed URIs",
       "tooltip": {
-        "shared": true,
+        "shared": false,
         "sort": 0,
         "value_type": "individual"
       },
@@ -661,7 +661,7 @@
       }
     }
   ],
-  "refresh": "5s",
+  "refresh": "10s",
   "schemaVersion": 26,
   "style": "dark",
   "tags": [],
@@ -676,5 +676,5 @@
   "timezone": "",
   "title": "Calabash",
   "uid": "Bfrz2ptMz",
-  "version": 15
+  "version": 6
 }
