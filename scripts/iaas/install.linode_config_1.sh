@@ -22,3 +22,6 @@ echo Mosh Usage: mosh --ssh="'ssh -p 8921'" SSH_ADDR
 # change hostname
 echo "$hostname" > /etc/hostname
 hostname -F /etc/hostname
+
+# install other utility commands
+apt-get install -y -qq --no-install-recommends atop
