@@ -186,13 +186,18 @@ swarm_service_create() {
 	for shard in `seq 1 $mesh_sharding`; do
 		echo "CREATE SERVICE $servName (shard#${shard}/$mesh_sharding)"
 
+		# determine the service name
 		if [ $shard -gt 1 ]; then
 			local servID="${servName}-shard${shard}"
 		else
 			local servID="${servName}"
 		fi
 
-		local extra_args="--name ${servID} --constraint=node.labels.shard==${shard}"
+		# only add service shard constraint when its has mesh_sharding greater than one
+		local extra_args=""
+		if [ $mesh_sharding -gt 1 ]; then
+			extra_args="${extra_args} --constraint=node.labels.shard==${shard}"
+		fi
 
 		# parse docker_exec to handle both variables and pipes (with some stupid hacks)
 		local entrypoint_overwrite=""
@@ -202,18 +207,21 @@ swarm_service_create() {
 			entrypoint_overwrite="--entrypoint ''"
 		fi
 
+		# map port for the first shard (or when it's host-mode) to avoid port conflicts
 		if [[ $shard -eq 1 || "${portmap}" =~ 'mode=host' ]]; then
 			if [ -n "$portmap" ]; then
 				extra_args="${extra_args} --publish=${portmap}"
 			fi
 		fi
 
+		# bind specified network (if not existed, create one)
 		if [ -n "$network" ]; then
 			read driver <<< $(unpack \$network_${network}_driver)
 			swarm_network_ensure_has $network $driver
 			extra_args="${extra_args} --network=${network}"
 		fi
 
+		# remove old service and create a new one for this shard
 		set -x
 		$DOCKER service rm ${servID}
 		$DOCKER service create \
@@ -230,6 +238,7 @@ swarm_service_create() {
 			$extra_args \
 			--with-registry-auth \
 			$entrypoint_overwrite \
+			--name ${servID} \
 			${useImage:-$docker_image} \
 			$execute_line
 		set +x
