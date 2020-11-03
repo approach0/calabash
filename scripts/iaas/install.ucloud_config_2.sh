@@ -1,0 +1,1 @@
+install.ucloud_config_1.sh
