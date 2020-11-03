@@ -33,3 +33,6 @@ systemctl reload docker
 # change hostname
 echo "$hostname" > /etc/hostname
 hostname -F /etc/hostname
+
+# install other utility commands
+apt-get install -y -qq --no-install-recommends atop
