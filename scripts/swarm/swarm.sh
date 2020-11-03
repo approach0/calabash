@@ -245,7 +245,6 @@ swarm_service_update() {
 	$DOCKER service update \
 		--force \
 		--update-order=start-first \
-		--with-registry-auth \
 		--update-failure-action rollback \
 		--with-registry-auth \
 		--image $docker_image \
