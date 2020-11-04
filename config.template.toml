@@ -40,7 +40,7 @@ providers = [linode, ucloud]
 
     [iaas.ucloud.config_2]
     region = cn-gd
-    specs = 1cpu-2gb-1mb
+    specs = 1cpu-4gb-1mb
     distro = 'Debian_9'
     ssh_port = ___
     password = ___
@@ -118,6 +118,7 @@ print_arguments = [
   mounts,
   environments,
   configs,
+  user,
   portmap,
   network,
   docker_image,
@@ -243,9 +244,10 @@ print_arguments = [
   ]
   docker_image = ga6840/ui-login
 
-  [service.gateway_monitor]
+  [service.monitor]
   network = calabash_net
   constraints = [
+    'node.role==manager',
     'node.labels.host_persistent==true'
   ]
   config_bind = [
@@ -253,6 +255,11 @@ print_arguments = [
   ]
   config_source = [
     '$configs/prometheus.yml',
+  ]
+  ## FOR DEBUG ##
+  labels = [
+    'gateway.route=_root_',
+    'gateway.port=9090'
   ]
   #docker_image = prom/prometheus@sha256:60190123eb28250f9e013df55b7d58e04e476011911219f5cedac3c73a8b74e6
   docker_image = ga6840/prometheus
