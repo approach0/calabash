@@ -1,6 +1,23 @@
 scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+    - targets: ['localhost:9090']
+
   - job_name: 'gateway_monitor'
     scrape_interval: 5s
     metrics_path: '/metrics'
     static_configs:
     - targets: ['gateway']
+
+  - job_name: 'node_monitor'
+    dockerswarm_sd_configs:
+      - host: unix:///var/run/docker.sock
+      role: nodes
+    relabel_configs:
+      # Fetch metrics on port 9100
+      - source_labels: [__meta_dockerswarm_node_address]
+        target_label: __address__
+        replacement: $1:9100
+      # Set hostname as instance label
+      - source_labels: [__meta_dockerswarm_node_hostname]
+        target_label: instance

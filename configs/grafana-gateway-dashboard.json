@@ -337,8 +337,9 @@
       "pluginVersion": "7.3.1",
       "targets": [
         {
-          "expr": "topk(10, increase(request_geoip[1h]))",
+          "expr": "topk(10, increase(request_geoip[10m]))",
           "interval": "",
+          "intervalFactor": 1,
           "legendFormat": "{{ip}}",
           "refId": "A"
         }
@@ -676,5 +677,5 @@
   "timezone": "",
   "title": "Calabash",
   "uid": "Bfrz2ptMz",
-  "version": 4
+  "version": 3
 }
