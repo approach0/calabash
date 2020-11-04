@@ -168,11 +168,11 @@ swarm_service_create() {
 	local stop_signal=${stop_signal-SIGINT}
 	local limit_memory=${limit_memory-200MB}
 
-	# get complex variables
-	local service_labels=$(eval echo $(for l in ${!labels_@}; do echo -n "--label=\$$l "; done))
-	local constraints=$(eval echo $(for c in ${!constraints_@}; do echo -n "--constraint=\$$c "; done))
-	local mounts=$(eval echo $(for m in ${!mounts_@}; do echo -n "--mount=\$$m "; done))
-	local environments=$(eval echo $(for e in ${!env_@}; do echo -n "--env=\$$e "; done))
+	# get complex variables (join array together, each item string may contain variables)
+	local service_labels=$(double_eval $(for l in ${!labels_@}; do echo -n "--label=\$$l "; done))
+	local constraints=$(double_eval $(for c in ${!constraints_@}; do echo -n "--constraint=\$$c "; done))
+	local mounts=$(double_eval $(for m in ${!mounts_@}; do echo -n "--mount=\$$m "; done))
+	local environments=$(double_eval $(for e in ${!env_@}; do echo -n "--env=\$$e "; done))
 
 	echo '[[[ swarm_service_update_configs ]]]'
 	local configs=`swarm_service_update_configs $servCode`
