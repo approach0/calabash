@@ -254,6 +254,7 @@ print_arguments = [
     'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock',
     'type=volume,src=prometheus_vol,dst=/prometheus'
   ]
+  user = 0:0 # default user is nobody, cannot access docker.sock
   config_bind = [
     'path:prometheus_conf:/etc/prometheus/prometheus.yml'
   ]
@@ -261,10 +262,11 @@ print_arguments = [
     '$configs/prometheus.yml',
   ]
   ## FOR DEBUG ##
-  labels = [
-    'gateway.route=_root_',
-    'gateway.port=9090'
-  ]
+  #labels = [
+  #  'gateway.route=_root_',
+  #  'gateway.port=9090'
+  #]
+
   #docker_image = prom/prometheus@sha256:60190123eb28250f9e013df55b7d58e04e476011911219f5cedac3c73a8b74e6
   docker_image = ga6840/prometheus
 

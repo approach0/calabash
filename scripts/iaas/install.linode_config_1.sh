@@ -13,7 +13,7 @@ cat > '/etc/docker/daemon.json' << EOF
 {
 	"registry-mirrors": ["$REGISTRY"],
 
-	"metrics-addr" : "127.0.0.1:9323",
+	"metrics-addr" : "0.0.0.0:9323",
 	"experimental" : true
 }
 EOF
