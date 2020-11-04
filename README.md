@@ -125,9 +125,9 @@ Test a query through a Approach Zero test script:
 ```
 
 ### Monitoring
-After start `gateway_monitor` service, visit it via browser:
+After start `monitor` service, visit it via browser:
 1. Login with user name and password both as `admin`
-2. In `Configuration`, add data source of *Prometheus type* with URL `http://gateway_monitor:9090`
+2. In `Configuration`, add data source of *Prometheus type* with URL `http://monitor:9090`
 3. In `Create -> Import`, import a dashboard from existing JSON file (we have an example file at `configs/grafana-sample-panel.json`).
 
 ### Tips
