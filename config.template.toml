@@ -248,13 +248,16 @@ print_arguments = [
   constraints = [
     'node.labels.host_persistent==true'
   ]
-  #docker_image = prom/prometheus@sha256:60190123eb28250f9e013df55b7d58e04e476011911219f5cedac3c73a8b74e6
-  docker_image = ga6840/prometheus
   config_bind = [
     'path:prometheus_conf:/etc/prometheus/prometheus.yml'
   ]
   config_source = [
     '$configs/prometheus.yml',
+  ]
+  #docker_image = prom/prometheus@sha256:60190123eb28250f9e013df55b7d58e04e476011911219f5cedac3c73a8b74e6
+  docker_image = ga6840/prometheus
+  mounts = [
+    'type=volume,src=prometheus_vol,dst=/prometheus',
   ]
 
   [service.grafana]
@@ -267,10 +270,15 @@ print_arguments = [
     'gateway.port=3000'
   ]
   env = [
+    'GF_PATHS_DATA=/data',
     'GF_SERVER_SERVE_FROM_SUB_PATH=true',
     'GF_SERVER_ROOT_URL=/grafana',
     'GF_SECURITY_ADMIN_PASSWORD=iamforgetful'
   ]
+  mounts = [
+    'type=volume,src=grafana_vol,dst=/data',
+  ]
+  user = 0:0
   #docker_image = grafana/grafana
   docker_image = ga6840/grafana
 
