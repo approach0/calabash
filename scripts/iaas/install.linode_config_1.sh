@@ -23,7 +23,7 @@ echo Mosh Usage: mosh --ssh="'ssh -p 8921'" SSH_ADDR
 echo "$hostname" > /etc/hostname
 hostname -F /etc/hostname
 
-# install prometheus node exporter
+# install prometheus node exporter (listening at localhost:9100/metrics)
 apt-get install -y -qq --no-install-recommends prometheus-node-exporter
 
 # install other utility commands
