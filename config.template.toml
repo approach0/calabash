@@ -41,7 +41,7 @@ providers = [linode, ucloud]
 
     [iaas.ucloud.config_2]
     region = cn-gd
-    specs = 1cpu-4gb-1mb
+    specs = 1cpu-2gb-1mb
     distro = 'Debian_9'
     ssh_port = ___
     password = ___
