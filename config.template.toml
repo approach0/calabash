@@ -250,6 +250,10 @@ print_arguments = [
     'node.role==manager',
     'node.labels.host_persistent==true'
   ]
+  mounts = [
+    'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock',
+    'type=volume,src=prometheus_vol,dst=/prometheus'
+  ]
   config_bind = [
     'path:prometheus_conf:/etc/prometheus/prometheus.yml'
   ]
@@ -263,9 +267,6 @@ print_arguments = [
   ]
   #docker_image = prom/prometheus@sha256:60190123eb28250f9e013df55b7d58e04e476011911219f5cedac3c73a8b74e6
   docker_image = ga6840/prometheus
-  mounts = [
-    'type=volume,src=prometheus_vol,dst=/prometheus',
-  ]
 
   [service.grafana]
   network = calabash_net
