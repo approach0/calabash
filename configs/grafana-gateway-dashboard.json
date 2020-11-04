@@ -15,7 +15,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 1,
+  "id": 7,
   "links": [],
   "panels": [
     {
@@ -134,9 +134,9 @@
           "refId": "A"
         },
         {
-          "expr": "up",
+          "expr": "up{job=\"gateway_monitor\"}",
           "interval": "",
-          "legendFormat": "Up",
+          "legendFormat": "Gateway Uptime",
           "refId": "C"
         }
       ],
@@ -675,7 +675,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Calabash",
+  "title": "Calabash Gateway",
   "uid": "Bfrz2ptMz",
   "version": 3
 }
