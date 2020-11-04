@@ -34,3 +34,9 @@ apt-get install -y -qq --no-install-recommends prometheus-node-exporter
 # install other utility commands
 apt-get install -y -qq --no-install-recommends atop smem
 # smem usage: smem -pkw
+
+# add CRON jobs for regularly clean kernel page-cache and disk swap
+(crontab -l ; echo '*/5 * * * * sync; echo 1 > /proc/sys/vm/drop_caches') | sort - | uniq - | crontab -
+(crontab -l ; echo '*/6 * * * * swapoff -a; swapon -a') | sort - | uniq - | crontab -
+crontab -l
+# tail -1000 /var/log/syslog | grep CRON
