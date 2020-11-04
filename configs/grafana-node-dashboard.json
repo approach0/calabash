@@ -66,7 +66,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "node_cpu{mode=\"iowait\"}",
+          "expr": "rate({mode=\"iowait\"}[1m])",
           "interval": "",
           "legendFormat": "{{instance}}",
           "refId": "A"
@@ -663,12 +663,12 @@
     "list": []
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Hardware Resources",
   "uid": "zrk5d52Gz",
-  "version": 5
+  "version": 6
 }
