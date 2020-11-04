@@ -2,8 +2,9 @@
 scripts = ./scripts
 configs = ./configs
 job_dir = ./jobs
-admin_name = admin
 node_prefix = calabash
+admin_name = admin
+admin_pass = ___
 
 [iaas]
 providers = [linode, ucloud]
@@ -193,7 +194,8 @@ print_arguments = [
   ]
   config_source = [
     '''
-    node db.js --init --password iamforgetful
+    pass=$1
+    node db.js --init --password $pass
     node ./authd.js
     '''
   ]
@@ -205,7 +207,7 @@ print_arguments = [
   ]
   #docker_image = uhub.service.ucloud.cn/ga6840/lattice
   docker_image = ga6840/lattice
-  docker_exec = bash /tmp/entrypoint.sh
+  docker_exec = bash /tmp/entrypoint.sh $admin_pass
 
   [service.ui_calabash]
   network = calabash_net
@@ -283,7 +285,7 @@ print_arguments = [
     'GF_PATHS_DATA=/data',
     'GF_SERVER_SERVE_FROM_SUB_PATH=true',
     'GF_SERVER_ROOT_URL=/grafana',
-    'GF_SECURITY_ADMIN_PASSWORD=iamforgetful'
+    'GF_SECURITY_ADMIN_PASSWORD=$admin_pass'
   ]
   mounts = [
     'type=volume,src=grafana_vol,dst=/data',

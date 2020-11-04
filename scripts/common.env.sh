@@ -31,3 +31,7 @@ require_args() {
 unpack() {
 	eval echo $@
 }
+
+double_eval() {
+	eval echo $(eval echo $@)
+}
