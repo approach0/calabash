@@ -94,8 +94,8 @@ providers = [linode, ucloud]
   reborn = 5040
 
   [loop_task.5]
-  goal = 'swarm:docker-stats'
-  reborn = 5050
+  goal = 'swarm:maintenance'
+  reborn = 60000
 
 [service]
 bootstrap_services = [
