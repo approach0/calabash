@@ -201,11 +201,15 @@ swarm_service_create() {
 		fi
 
 		# parse docker_exec to handle both variables and pipes (with some stupid hacks)
-		local entrypoint_overwrite=""
 		local execute_line=$(eval echo $(echo $docker_exec | sed -e 's/|/__PIPE__/g') | sed -e 's/__PIPE__/|/g')
 		if [ -n "$execute_line" ]; then
 			# ensure we overwrite default entrypoint
-			entrypoint_overwrite="--entrypoint ''"
+			extra_args="${extra_args} --entrypoint ''"
+		fi
+
+		# user option
+		if [ -n "$user" ]; then
+			extra_args="${extra_args} --user $user"
 		fi
 
 		# map port for the first shard (or when it's host-mode) to avoid port conflicts
@@ -239,7 +243,6 @@ swarm_service_create() {
 			$mounts \
 			$extra_args \
 			--with-registry-auth \
-			$entrypoint_overwrite \
 			--name ${servID} \
 			${useImage:-$docker_image} \
 			$execute_line
