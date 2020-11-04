@@ -227,7 +227,7 @@ exec = [
 ]
 dep = swarm:install
 
-[remote-update-calabash]
+[update-remote-calabash]
 source = . $scripts/swarm/swarm.sh
 exec = [
   require_args nodeIP port,

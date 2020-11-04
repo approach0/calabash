@@ -22,13 +22,18 @@ install $link1
 install $link2
 install $link3
 
-# setup docker registry mirror
+# setup docker registry mirror and Prometheus interface
+# (See https://docs.docker.com/config/daemon/prometheus)
 cat > '/etc/docker/daemon.json' << EOF
 {
-	"registry-mirrors": ["$REGISTRY"]
+	"registry-mirrors": ["$REGISTRY"],
+
+	"metrics-addr" : "127.0.0.1:9323",
+	"experimental" : true
 }
 EOF
-systemctl reload docker
+systemctl restart docker
+# Now you can do `curl localhost:9323/metrics`
 
 # change hostname
 echo "$hostname" > /etc/hostname

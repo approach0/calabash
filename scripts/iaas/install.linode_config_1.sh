@@ -7,13 +7,18 @@ apt-get update
 which docker || curl -fsSL https://get.docker.com -o get-docker.sh
 which docker || sh get-docker.sh
 
-# setup docker registry mirror
+# setup docker registry mirror and Prometheus interface
+# (See https://docs.docker.com/config/daemon/prometheus)
 cat > '/etc/docker/daemon.json' << EOF
 {
-	"registry-mirrors": ["$REGISTRY"]
+	"registry-mirrors": ["$REGISTRY"],
+
+	"metrics-addr" : "127.0.0.1:9323",
+	"experimental" : true
 }
 EOF
-systemctl reload docker
+systemctl restart docker
+# Now you can do `curl 127.0.0.1:9323/metrics`
 
 # get mosh in case of login in slow connection
 apt-get install -y -qq --no-install-recommends mosh
