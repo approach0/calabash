@@ -74,6 +74,13 @@ source = . $scripts/swarm/swarm.sh
 if = is_swarm_manager
 exec = "$DOCKER rmi -f $($DOCKER images --filter 'dangling=true' -q --no-trunc)"
 
+[docker-sys-prune]
+source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
+exec = [
+  $DOCKER system prune -f
+]
+
 [node-label-set]
 source = . $scripts/swarm/swarm.sh
 if = is_swarm_manager
@@ -272,38 +279,3 @@ exec = [
   require_args service,
   'swarm_service_update $service'
 ]
-
-##
-# Maintenance jobs
-##
-[maintenance-step1--docker-sys-prune]
-source = . $scripts/swarm/swarm.sh
-if = is_swarm_manager
-exec = [
-  $DOCKER system prune -f
-]
-
-[maintenance-step2--drop-cache]
-source = . $scripts/swarm/swarm.sh
-if = is_swarm_manager
-exec = [
-  sync,
-  echo 1 > /proc/sys/vm/drop_caches
-]
-dep = swarm:maintenance-step1--docker-sys-prune
-
-[maintenance-step3--cleanup-swap]
-source = . $scripts/swarm/swarm.sh
-if = is_swarm_manager
-exec = [
-  swapoff -a,
-  swapon -a
-]
-dep = swarm:maintenance-step2--drop-cache
-
-[maintenance]
-if = is_swarm_manager
-exec = [
-  'echo "Maintenance done."'
-]
-dep = swarm:maintenance-step3--cleanup-swap
