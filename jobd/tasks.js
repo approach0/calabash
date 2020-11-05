@@ -122,7 +122,7 @@ exports.get_list = function(filter) {
 
   if (filter == 'all') {
     /* limit to recent 30 tasks at most */
-    return all_tasks.slice(30)
+    return all_tasks.slice(-30)
 
   } else if (filter == 'active') {
     return all_tasks.filter(task => {
