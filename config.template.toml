@@ -283,16 +283,12 @@ print_arguments = [
     'GF_PATHS_DATA=/data',
     'GF_SERVER_SERVE_FROM_SUB_PATH=true',
     'GF_SERVER_ROOT_URL=/grafana',
-	'GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/admin_password'
+    'GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/admin_password'
   ]
   config_bind = [
     'text:grafana_password:/run/secrets/admin_password'
   ]
-  config_source = [
-    '''
-    INJECT:admin_pass
-    '''
-  ]
+  config_source = ['INJECT:admin_pass']
   mounts = [
     'type=volume,src=grafana_vol,dst=/data',
   ]
