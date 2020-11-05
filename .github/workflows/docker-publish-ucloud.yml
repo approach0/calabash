@@ -3,7 +3,7 @@ name: Docker auto-push
 on:
   push:
     branches: [ deploy ]
-    tags: [ v* ]
+    tags: [ 'v*' ]
 
 env:
   # EDIT this env variable
