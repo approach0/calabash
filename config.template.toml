@@ -194,8 +194,7 @@ print_arguments = [
   ]
   config_source = [
     '''
-    pass=$1
-    node db.js --init --password $pass
+    node db.js --init --password INJECT:admin_pass
     node ./authd.js
     '''
   ]
@@ -207,7 +206,7 @@ print_arguments = [
   ]
   #docker_image = uhub.service.ucloud.cn/ga6840/lattice
   docker_image = ga6840/lattice
-  docker_exec = bash /tmp/entrypoint.sh $admin_pass
+  docker_exec = bash /tmp/entrypoint.sh
 
   [service.ui_calabash]
   network = calabash_net
@@ -228,7 +227,6 @@ print_arguments = [
   ]
   config_source = [
     '''
-    echo "env: $CALABASH_URL"
     npm run build
     npm run serve
     '''
@@ -285,7 +283,15 @@ print_arguments = [
     'GF_PATHS_DATA=/data',
     'GF_SERVER_SERVE_FROM_SUB_PATH=true',
     'GF_SERVER_ROOT_URL=/grafana',
-    'GF_SECURITY_ADMIN_PASSWORD=$admin_pass'
+	'GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/admin_password'
+  ]
+  config_bind = [
+    'text:grafana_password:/run/secrets/admin_password'
+  ]
+  config_source = [
+    '''
+    INJECT:admin_pass
+    '''
   ]
   mounts = [
     'type=volume,src=grafana_vol,dst=/data',

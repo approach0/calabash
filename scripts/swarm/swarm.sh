@@ -108,6 +108,19 @@ swarm_network_ensure_has() {
 	fi
 }
 
+inject_env_vars_into_file() {
+	file_path="$1"
+	python -c "if True:
+		import re, os
+		with open('${file_path}', 'r') as fh:
+			file_content = fh.read()
+			pattern = r'INJECT:([a-zA-Z_][a-zA-Z0-9_]*)'
+			file_content = re.sub(pattern, lambda x: os.environ[x[1]], file_content)
+		with open('${file_path}', 'w') as fh:
+			fh.write(file_content)
+	"
+}
+
 swarm_service_update_configs() {
 	local servCode=$1
 
@@ -127,6 +140,7 @@ swarm_service_update_configs() {
 			local tmpfile=`mktemp`
 			cat > $tmpfile <<< "$src"
 			swarm_update_secret_file $key $tmpfile &> /dev/null
+			inject_env_vars_into_file $tmpfile
 			echo "=== config file $key ===" >&2
 			cat $tmpfile >&2 # print config file
 			rm -f $tmpfile
@@ -134,6 +148,7 @@ swarm_service_update_configs() {
 		elif [ "$typ" == "path" ]; then
 			local srcpath=$(eval echo $src)
 			swarm_update_secret_file $key $srcpath &> /dev/null
+			inject_env_vars_into_file $srcpath
 			echo "=== config file $key from $srcpath ===" >&2
 			cat $srcpath >&2 # print config file
 
