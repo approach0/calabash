@@ -100,7 +100,7 @@ providers = [linode, ucloud]
 [service]
 bootstrap_services = [
   gateway,
-  usersdb, lattice, # forcedly updating these two should happen in order
+  usersdb, lattice, # lattice should not start until usersdb service is ready
   calabash, ui_calabash
 ]
 

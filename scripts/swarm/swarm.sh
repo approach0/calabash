@@ -115,7 +115,7 @@ inject_env_vars_into_file() {
 		with open('${file_path}', 'r') as fh:
 			file_content = fh.read()
 			pattern = r'INJECT:([a-zA-Z_][a-zA-Z0-9_]*)'
-			file_content = re.sub(pattern, lambda x: os.environ[x[1]], file_content)
+			file_content = re.sub(pattern, lambda x: os.environ[x.group(1)], file_content)
 		with open('${file_path}', 'w') as fh:
 			fh.write(file_content)
 	"
