@@ -120,9 +120,19 @@ exports.get_list = function(filter) {
     return exports.get(task_id, g_pins[task_id] === undefined)
   })
 
-  if (filter == 'all') {
-    /* limit to recent 30 tasks at most */
-    return all_tasks.slice(-30)
+  if (filter == 'recent') {
+    const loop_tasks = all_tasks.filter(task => g_pins[task.taskid])
+    const recent_tasks = all_tasks.slice(-10)
+
+    /* return recent tasks AND loop tasks */
+    return recent_tasks.reduce((ret_tasks, task) => {
+      if (ret_tasks.some(t => t.taskid === task.taskid)) {
+        return ret_tasks
+      } else {
+        ret_tasks.push(task)
+        return ret_tasks
+      }
+    }, loop_tasks)
 
   } else if (filter == 'active') {
     return all_tasks.filter(task => {
