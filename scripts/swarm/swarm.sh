@@ -137,21 +137,27 @@ swarm_service_update_configs() {
 
 		# update config files
 		if [ "$typ" == "text" ]; then
+			# write local variable `src' to file
 			local tmpfile=`mktemp`
 			cat > $tmpfile <<< "$src"
-			swarm_update_secret_file $key $tmpfile &> /dev/null
+			# print config file to stderr
+			echo "=== config file $key from $tmpfile ===" >&2
+			cat $tmpfile >&2
+			# inject variables and update swarm secret from file
 			inject_env_vars_into_file $tmpfile
-			echo "=== config file $key ===" >&2
-			cat $tmpfile >&2 # print config file
+			swarm_update_secret_file $key $tmpfile &> /dev/null
+			# remove temporary file
 			rm -f $tmpfile
 
 		elif [ "$typ" == "path" ]; then
+			# resolve source path string that may contain variable
 			local srcpath=$(eval echo $src)
-			swarm_update_secret_file $key $srcpath &> /dev/null
-			inject_env_vars_into_file $srcpath
+			# print config file to stderr
 			echo "=== config file $key from $srcpath ===" >&2
-			cat $srcpath >&2 # print config file
-
+			cat $srcpath >&2
+			# inject variables and update swarm secret from file
+			inject_env_vars_into_file $srcpath
+			swarm_update_secret_file $key $srcpath &> /dev/null
 		else
 			continue
 		fi
