@@ -487,7 +487,7 @@
           "refId": "C"
         },
         {
-          "expr": "sum(rate(node_disk_write_bytes_total[1m]))",
+          "expr": "sum(rate(node_disk_written_bytes_total[1m]))",
           "interval": "",
           "legendFormat": "Write Bytes",
           "refId": "A"
@@ -668,5 +668,5 @@
   "timezone": "",
   "title": "Hardware Resources",
   "uid": "zrk5d52Gz",
-  "version": 5
+  "version": 6
 }
