@@ -9,6 +9,13 @@ exec = [
 ]
 dep = linode:source
 
+[list-choices]
+exec = [
+  linode_regions,
+  linode_list_node_types
+]
+dep = linode:source
+
 [delete-node]
 exec = [
   require_args nodeid,

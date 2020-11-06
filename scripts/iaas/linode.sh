@@ -17,10 +17,6 @@ if [ -n "$DOCKER_REGISTRY" ]; then
 	fi
 fi
 
-linode_regions() {
-	$LINODE_CLI regions list
-}
-
 linode_node_list() {
 	$LINODE_CLI linodes list
 }
@@ -30,7 +26,7 @@ linode_node_list_in_json() {
 }
 
 linode_node_list_labels() {
-	linode_node_list --json | python -c "if True:
+	linode_node_list_in_json | python -c "if True:
 	import json, sys
 	j = json.load(sys.stdin)
 	a = map(lambda x: x['label'], j)
@@ -45,13 +41,15 @@ linode_node_filter_by_label() {
 		return
 	fi;
 
-	linode_node_list --json | python -c "if True:
+  set -x
+	linode_node_list_in_json | python -c "if True:
 	import json, sys
 	j = json.load(sys.stdin)
 	a = filter(lambda x: x['label'].startswith('${prefix}'), j)
 	a = map(lambda x: str(x['id']), a)
 	print(' '.join(a))
 	"
+  set +x
 }
 
 linode_node_create() {
@@ -103,7 +101,12 @@ linode_node_map_ipaddr() {
 	"
 }
 
+linode_regions() {
+	$LINODE_CLI regions list
+}
+
 linode_list_node_types() {
+  # to see what specs available
 	$LINODE_CLI linodes types
 }
 

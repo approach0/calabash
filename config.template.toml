@@ -18,8 +18,15 @@ providers = [linode, ucloud]
   docker_registry_pass = ___
 
     [iaas.linode.config_1]
-    region = ap-southeast
+    region = eu-central
     specs = 'g6-nanode-1'
+    distro = linode/debian10
+    ssh_port = ___
+    password = ___
+
+    [iaas.linode.config_2]
+    region = eu-central
+    specs = 'g6-standard-1'
     distro = linode/debian10
     ssh_port = ___
     password = ___
@@ -150,6 +157,7 @@ print_arguments = [
     'gateway.protect=/runjob',
     'gateway.port=8964'
   ]
+  limit_memory = 300MB
   constraints = [
     'node.role==manager',
     'node.labels.host_persistent==true'
