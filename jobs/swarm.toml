@@ -44,8 +44,15 @@ source = . $scripts/swarm/swarm.sh
 if = is_swarm_manager
 exec = [
   require_args service,
-  swarm_print_service_image $service,
   swarm_print_service_overview $service,
+]
+
+[inspect-image]
+source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
+exec = [
+  require_args service,
+  swarm_print_service_image $service,
 ]
 
 [service-logs]
