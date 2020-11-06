@@ -41,7 +41,6 @@ linode_node_filter_by_label() {
 		return
 	fi;
 
-  set -x
 	linode_node_list_in_json | python -c "if True:
 	import json, sys
 	j = json.load(sys.stdin)
@@ -49,7 +48,6 @@ linode_node_filter_by_label() {
 	a = map(lambda x: str(x['id']), a)
 	print(' '.join(a))
 	"
-  set +x
 }
 
 linode_node_create() {
