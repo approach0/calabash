@@ -15,7 +15,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 9,
+  "id": 1,
   "links": [],
   "panels": [
     {
@@ -161,7 +161,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "increase(node_cpu{mode=\"idle\"}[1m])",
+          "expr": "increase(node_cpu_seconds_total{mode=\"idle\"}[1m])",
           "interval": "",
           "legendFormat": "{{instance}}",
           "refId": "A"
@@ -256,16 +256,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "1 - node_memory_MemAvailable / node_memory_MemTotal",
+          "expr": "1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes",
           "interval": "",
           "legendFormat": "{{instance}}",
           "refId": "A"
-        },
-        {
-          "expr": "",
-          "interval": "",
-          "legendFormat": "",
-          "refId": "B"
         }
       ],
       "thresholds": [],
@@ -366,10 +360,16 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "1 - node_memory_SwapFree / node_memory_SwapTotal",
+          "expr": "1 - node_memory_SwapFree_bytes / node_memory_SwapTotal_bytes",
           "interval": "",
           "legendFormat": "{{instance}}",
           "refId": "B"
+        },
+        {
+          "expr": "",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
         }
       ],
       "thresholds": [],
@@ -475,25 +475,25 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(node_disk_read_time_ms[1m]))",
+          "expr": "sum(rate(node_disk_read_time_seconds_total[1m]))",
           "interval": "",
           "legendFormat": "Read Time",
           "refId": "D"
         },
         {
-          "expr": "sum(rate(node_disk_read_time_ms[1m]))",
+          "expr": "sum(rate(node_disk_write_time_seconds_total[1m]))",
           "interval": "",
           "legendFormat": "Write Time",
           "refId": "C"
         },
         {
-          "expr": "sum(rate(node_disk_bytes_written[1m]))",
+          "expr": "sum(rate(node_disk_write_bytes_total[1m]))",
           "interval": "",
           "legendFormat": "Write Bytes",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(node_disk_bytes_read[1m]))",
+          "expr": "sum(rate(node_disk_read_bytes_total[1m]))",
           "interval": "",
           "legendFormat": "Read Bytes",
           "refId": "B"
@@ -605,12 +605,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "1 - node_filesystem_avail{device=\"/dev/vda1\"} / node_filesystem_size{device=\"/dev/vda1\"}",
-          "format": "time_series",
-          "instant": false,
+          "expr": "1 - node_filesystem_avail_bytes{device=\"/dev/sda\"} / node_filesystem_size_bytes{device=\"/dev/sda\"}",
           "interval": "",
           "legendFormat": "{{instance}} {{device}} ",
-          "refId": "A"
+          "refId": "B"
         }
       ],
       "thresholds": [],
@@ -655,7 +653,7 @@
       }
     }
   ],
-  "refresh": "10s",
+  "refresh": "",
   "schemaVersion": 26,
   "style": "dark",
   "tags": [],
@@ -670,5 +668,5 @@
   "timezone": "",
   "title": "Hardware Resources",
   "uid": "zrk5d52Gz",
-  "version": 6
+  "version": 5
 }
