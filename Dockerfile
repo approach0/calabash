@@ -11,7 +11,7 @@ RUN cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 RUN chmod og-wx ~/.ssh/authorized_keys
 
 # install docker cli
-ARG clipkg=docker-ce-cli_19.03.9~3-0~debian-buster_amd64.deb
+ARG clipkg=docker-ce-cli_19.03.13~3-0~debian-buster_amd64.deb
 RUN wget http://mirrors.aliyun.com/docker-ce/linux/debian/dists/buster/pool/stable/amd64/$clipkg
 RUN dpkg -i $clipkg
 
