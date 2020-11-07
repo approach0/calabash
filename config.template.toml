@@ -12,21 +12,22 @@ providers = [linode]
 
   [iaas.linode]
   token = ___
-  docker_mirror = https://docker.io
-  # docker mirror alternatives: https://hub-mirror.c.163.com
   docker_image = approach0/linode-cli
+  # docker mirror alternatives: https://hub-mirror.c.163.com
+  docker_mirror = https://docker.io # for docker daemon system-wise config
+  docker_registry_url = https://index.docker.io/v1/ # For login
   docker_registry_user = ___
   docker_registry_pass = ___
 
     [iaas.linode.config_1]
-    region = eu-central
+    region = ap-northeast
     specs = 'g6-nanode-1'
     distro = linode/debian10
     ssh_port = ___
     password = ___
 
     [iaas.linode.config_2]
-    region = eu-central
+    region = ap-northeast
     specs = 'g6-standard-1'
     distro = linode/debian10
     ssh_port = ___
@@ -35,8 +36,9 @@ providers = [linode]
   [iaas.ucloud]
   pubkey = ___
   prikey = ___
-  docker_mirror = https://uhub.service.ucloud.cn
   docker_image = approach0/ucloud-cli
+  docker_mirror = https://uhub.service.ucloud.cn
+  docker_registry_url = https://uhub.service.ucloud.cn
   docker_registry_user = ___
   docker_registry_pass = ___
 
