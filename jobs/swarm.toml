@@ -109,7 +109,7 @@ source = . $scripts/swarm/swarm.sh
 if = is_swarm_manager
 exec = [
   require_args swarmNode,
-  $DOCKER promote $swarmNode
+  $DOCKER node promote $swarmNode
 ]
 
 [node-demote]
@@ -117,7 +117,7 @@ source = . $scripts/swarm/swarm.sh
 if = is_swarm_manager
 exec = [
   require_args swarmNode,
-  $DOCKER demote $swarmNode
+  $DOCKER node demote $swarmNode
 ]
 
 [docker-stats]
