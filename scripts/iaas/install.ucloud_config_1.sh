@@ -1,5 +1,5 @@
 #!/bin/sh
-REGISTRY=$1
+DOCKER_MIRROR=$1
 hostname=$2
 
 sed -i s@/deb.debian.org/@/mirrors.aliyun.com/@g /etc/apt/sources.list
@@ -26,7 +26,7 @@ install $link3
 # (See https://docs.docker.com/config/daemon/prometheus)
 cat > '/etc/docker/daemon.json' << EOF
 {
-	"registry-mirrors": ["$REGISTRY"],
+	"registry-mirrors": ["$DOCKER_MIRROR"],
 
 	"metrics-addr" : "0.0.0.0:9323",
 	"experimental" : true

@@ -12,10 +12,7 @@ UCLOUD_CLI="$DOCKER run -it $UCLOUD_CLI_IMG /root/wrap-run.sh $UCLOUD_CLI_PUBKEY
 
 # login
 if [ -n "$DOCKER_REGISTRY" ]; then
-	key=$(basename $DOCKER_REGISTRY)
-	if ! grep $key ~/.docker/config.json; then
-		$DOCKER login $DOCKER_REGISTRY -u $UHUB_USERNAME -p $UHUB_PASSWORD
-	fi
+	$DOCKER login $DOCKER_REGISTRY -u $UHUB_USERNAME -p $UHUB_PASSWORD
 fi
 
 ucloud_existing_regions() {

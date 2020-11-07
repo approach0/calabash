@@ -1,5 +1,5 @@
 #!/bin/sh
-REGISTRY=$1
+DOCKER_MIRROR=$1
 hostname=$2
 
 # install docker
@@ -11,7 +11,7 @@ which docker || sh get-docker.sh
 # (See https://docs.docker.com/config/daemon/prometheus)
 cat > '/etc/docker/daemon.json' << EOF
 {
-	"registry-mirrors": ["$REGISTRY"],
+	"registry-mirrors": ["$DOCKER_MIRROR"],
 
 	"metrics-addr" : "0.0.0.0:9323",
 	"experimental" : true

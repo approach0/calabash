@@ -6,11 +6,11 @@ swarm_install() {
 	SSH_ADDR=$1
 	SSH_PORT=$2
 	HOST_CFG=$3
-	REGISTRY=$4
+	DOCKER_MIRROR=$4
 	hostname=$5
 	posthook=${@:6}
 	$SSH -p $SSH_PORT $SSH_ADDR 'bash -s' -- < \
-		$scripts/iaas/install.$HOST_CFG.sh $REGISTRY $hostname
+		$scripts/iaas/install.$HOST_CFG.sh $DOCKER_MIRROR $hostname
 
 	for hook in $posthook; do
 		hook_func=${!hook}
