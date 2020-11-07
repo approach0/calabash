@@ -35,7 +35,7 @@ You can view the remote log by specifying a task ID, for example
 ```
 node cli.js http://106.75.167.xxx --task-log 123
 ```
-alternatively
+alternatively (but more comprehensively)
 ```
 node cli.js http://106.75.167.xxx --log task-123
 ```
