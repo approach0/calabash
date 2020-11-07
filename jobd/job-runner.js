@@ -189,7 +189,7 @@ exports.runjob = async function (run_cfg, jobname, onSpawn, onExit, onLog) {
   const source = parse_exec(targetProps['source'])
   const cmd = parse_exec(targetProps['exec'])
   const cwd = targetProps['cwd'] || '.'
-  const user = targetProps['user'] || 'current'
+  const user = targetProps['user'] || os.userInfo().username
   const spawn = targetProps['spawn'] || 'direct'
   const ifcmd = (targetProps['if'] === undefined) ? null : String(targetProps['if'])
   const incmd = (targetProps['if_not'] === undefined) ? null : String(targetProps['if_not'])
