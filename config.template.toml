@@ -59,6 +59,17 @@ providers = [linode]
   [network.calabash_net]
   driver = overlay
 
+[github]
+  open_PAT = 16cb9ca406810952527aae0dc2c90b797a03136f
+  workflows = [
+    approach0/ui-login,
+    approach0/ui-calabash,
+    approach0/lattice,
+    approach0/calabash,
+    approach0/gateway,
+    approach0/docker-postgres13
+  ]
+
 [node_usage]
   [node_usage.host_persistent]
   labels = [
@@ -322,6 +333,7 @@ print_arguments = [
   mesh_sharding=1
 
   docker_image = approach0/hello-httpd
+
   config_bind = [
     'text:hello_entrypoint:/tmp/entrypoint.sh'
   ]
