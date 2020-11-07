@@ -67,6 +67,9 @@ providers = [linode]
     approach0/lattice,
     approach0/calabash,
     approach0/gateway,
+    approach0/docker-rsyncd,
+    approach0/docker-linode-cli,
+    approach0/docker-ucloud-cli,
     approach0/docker-postgres13
   ]
 
@@ -332,7 +335,7 @@ print_arguments = [
   mesh_replicas=2
   mesh_sharding=1
 
-  docker_image = approach0/hello-httpd
+  docker_image = ga6840/hello-httpd
 
   config_bind = [
     'text:hello_entrypoint:/tmp/entrypoint.sh'
