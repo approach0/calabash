@@ -38,7 +38,7 @@ providers = [linode]
   prikey = ___
   docker_image = approach0/ucloud-cli
   docker_mirror = https://uhub.service.ucloud.cn
-  docker_registry_url = https://uhub.service.ucloud.cn
+  docker_registry_url = uhub.service.ucloud.cn
   docker_registry_user = ___
   docker_registry_pass = ___
 
