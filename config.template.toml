@@ -517,7 +517,6 @@ print_arguments = [
   docker_exec = bash /tmp/entrypoint.sh
 
   [service.searchd]
-  portmap = '8921:8921'
   network = calabash_net
   mesh_sharding = 4
   max_per_node = 1
