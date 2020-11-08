@@ -544,7 +544,11 @@ print_arguments = [
     /usr/sbin/sshd -e
 
     while true; do
-      echo 'checking vdisk mounting point ...'
+      echo '=== vdisk stats ==='
+      du -h $vdisk/vdisk.img
+      doc-lookup.out -p $vdisk/mnt
+
+      echo '=== checking vdisk mounting point ==='
       if [ ! -e $vdisk/mnt/mstats.bin ]; then
         echo 'mounting point updated, kill sshd and searchd ...'
         kill -INT $(pidof sshd)
