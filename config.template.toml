@@ -517,7 +517,7 @@ print_arguments = [
   docker_exec = bash /tmp/entrypoint.sh
 
   [service.searchd]
-  portmap = '3389:8921'
+  portmap = '8921:8921'
   network = calabash_net
   mesh_sharding = 4
   max_per_node = 1
@@ -526,6 +526,10 @@ print_arguments = [
   ]
   constraints = [
     'node.labels.host_searchd==true'
+  ]
+  labels = [
+    'gateway.route=a0',
+    'gateway.port=8921'
   ]
   docker_image = approach0/a0
 
