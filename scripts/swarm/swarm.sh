@@ -211,12 +211,13 @@ swarm_service_create() {
 		# determine the service name
 		if [ $shard -gt 1 ]; then
 			local servID="${servName}-shard${shard}"
+			local extra_args=""
 		else
 			local servID="${servName}"
+			local extra_args="${service_labels}"
 		fi
 
 		# only add service shard constraint when its has mesh_sharding greater than one
-		local extra_args=""
 		if [ $mesh_sharding -gt 1 ]; then
 			extra_args="${extra_args} --constraint=node.labels.shard==${shard}"
 		fi
@@ -257,7 +258,6 @@ swarm_service_create() {
 			--replicas-max-per-node=$max_per_node \
 			--restart-condition=$restart_condition \
 			--stop-signal=$stop_signal \
-			$service_labels \
 			$constraints \
 			$environments \
 			$configs \
