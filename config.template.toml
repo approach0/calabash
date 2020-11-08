@@ -573,9 +573,6 @@ print_arguments = [
     'node.labels.host_searchd==true'
   ]
   docker_image = approach0/a0
-  mounts = [
-    'type=bind,src=/var/tmp/vdisk,dst=/mnt/vdisk'
-  ]
   config_bind = [
     'path:detect_shards:/tmp/detect-shards.sh',
     'text:mpi_entrypoint:/tmp/entrypoint.sh'
