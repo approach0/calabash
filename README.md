@@ -1,7 +1,7 @@
 ## About
 Calabash is an automation tool for small Dev team, with the following emphasises:
 
-* Simplicity: Small codebase wrapping on top of Docker Swarm. You do not have to use K8S for setting up your online resume and blog, right?
+* Simplicity: Small codebase wrapping on top of Docker Swarm. You do not have to use K8S for setting up your online resume or personal blog, right?
 * Declarative but simple schema: Calabash adapts TOML instead of YAML, with much less declarative entries to get work automated.
 * Loving shell scripts: In contrast to some Cloud Native automation tools which require you to write Go and other fully featured programming languages for DevOps, Calabash still loves shell scripts, we believe they are suitable for system admin just like they are in the good old days. Experienced system admins can utilize their skills in shell scripting again.
 * Modern: With latest Docker Swarm and Calabash, you can deploy highly available services with sharding, load balancing etc. All too easy!
@@ -35,7 +35,7 @@ You can view the remote log by specifying a task ID, for example
 ```
 node cli.js http://106.75.167.xxx --task-log 123
 ```
-alternatively
+alternatively (but more comprehensively)
 ```
 node cli.js http://106.75.167.xxx --log task-123
 ```
