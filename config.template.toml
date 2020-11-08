@@ -563,6 +563,7 @@ print_arguments = [
     done
     '''
   ]
+  restart_condition = any # restart service even if exec program quits with code 0.
   stop_signal = SIGUSR1
   docker_exec = bash /tmp/entrypoint.sh $shard
 
