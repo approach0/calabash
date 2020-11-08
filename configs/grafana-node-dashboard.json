@@ -797,7 +797,7 @@
         {
           "expr": "rate(node_network_transmit_packets_total{device=\"eth0\"}[1m])",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "{{instance}}",
           "refId": "A"
         }
       ],
@@ -851,12 +851,12 @@
     "list": []
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Hardware Resources",
   "uid": "zrk5d52Gz",
-  "version": 4
+  "version": 5
 }
