@@ -469,6 +469,7 @@ print_arguments = [
     # fall through here to restart service so that mounting point will be refreshed
     '''
   ]
+  restart_condition = any # restart service even if exec program quits with code 0.
   docker_exec = bash /tmp/entrypoint.sh
 
   [service.index_syncd]
@@ -513,7 +514,6 @@ print_arguments = [
     done
     '''
   ]
-  restart_condition = none
   docker_exec = bash /tmp/entrypoint.sh
 
   [service.searchd]
