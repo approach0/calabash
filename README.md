@@ -122,6 +122,7 @@ Now, search daemon should be running and exposing port from searchd and can be a
 Test a query through a Approach Zero test script:
 ```
 # docker run approach0/a0 test-query.sh http://<IP>:<SEARCHD_EXPOSED_PORT>/search /code/a0/demo/test-query.json
+# docker run approach0/a0 test-query.sh http://<IP>/a0/search /code/a0/demo/test-query.json
 ```
 
 ### Monitoring
