@@ -188,6 +188,31 @@ app
   }
 })
 
+.delete('/del/task/:taskid', async function (req, res) {
+  try {
+    const taskid = req.params.taskid
+    tasks.del_task(taskid)
+    res.json({'res': 'successful', taskid})
+
+  } catch (err) {
+    res.json({
+      'error': err.toString()
+    })
+  }
+})
+
+.delete('/del/inactive_tasks', async function (req, res) {
+  try {
+    const total = tasks.cleanup_tasks()
+    res.json({'res': 'successful', total})
+
+  } catch (err) {
+    res.json({
+      'error': err.toString()
+    })
+  }
+})
+
 .post('/runjob', async function (req, res) {
   try {
     const reqJSON = req.body

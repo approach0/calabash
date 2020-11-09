@@ -14,7 +14,7 @@ function pidIsRunning(pid) {
 function flagDead(meta) {
   meta['alive'] = false
   meta['exit_time'] = Date.now()
-  clearInterval(meta['checkalive'])
+  meta['checkalive'] && clearInterval(meta['checkalive'])
 }
 
 exports.add_task = function(runList, pin_id) {
@@ -45,6 +45,50 @@ exports.add_task = function(runList, pin_id) {
   })
 
   return use_id
+}
+
+exports.del_task = function(task_id) {
+  if (g_pins[task_id]) {
+    throw new Error(`Cannot delete looptask #${task_id}.`)
+  }
+
+  const task = g_tasks[task_id]
+  if (task) {
+    g_tasks[task_id].forEach(meta => {
+      try {
+        const pid = meta.pid
+        const alive = meta.alive
+        meta.log = ''
+        flagDead(meta)
+        if (alive) {
+          console.log(`Killing process #${pid}`)
+          process.kill(pid)
+        }
+      } catch (_) { /* ignore */ }
+    })
+
+    setTimeout(function() {
+      g_tasks[task_id] = null
+      delete g_tasks[task_id]
+    }, 0)
+  } else {
+    throw new Error(`No such task: #${task_id}.`)
+  }
+}
+
+exports.cleanup_tasks = function() {
+  const inactive_tasks = exports.get_list('inactive')
+  let cnt = 0
+  inactive_tasks.forEach(task => {
+    try {
+      exports.del_task(task.taskid)
+      cnt += 1
+    } catch (err) {
+      console.error(err)
+    }
+  })
+
+  return cnt
 }
 
 exports.log_notify = function(task_id, idx, lines) {
@@ -140,6 +184,14 @@ exports.get_list = function(filter) {
         return true /* keep pinned jobs */
       else
         return task.runList.some(job => job.alive === true)
+    })
+
+  } else if (filter == 'inactive') {
+    return all_tasks.filter(task => {
+      if (g_pins[task.taskid])
+        return false /* leave pinned jobs */
+      else
+        return task.runList.every(job => job.alive === false)
     })
 
   } else {

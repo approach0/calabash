@@ -18,6 +18,8 @@ program
   .option('--list-config', 'list configuration variables')
   .option('--list-tasks <all | active | inactive>', 'list tasks')
   .option('--show-task <task ID>', 'show specific task')
+  .option('--delete-task <task ID>', 'delete specific task')
+  .option('--cleanup-tasks', 'clean up inactive tasks')
 
 program.parse(process.argv)
 
@@ -114,6 +116,35 @@ if (program.listTasks) {
   const options = {}
 
   axios.get(url, options)
+  .then(function (res) {
+    const str = JSON.stringify(res.data, null, 2)
+    console.log(str)
+  })
+  .catch(function (err) {
+    console.error(err.toString())
+  })
+}
+
+if (program.deleteTask) {
+  const taskID = program.deleteTask || -1
+  const url = `${program.args[0]}/del/task/${taskID}`
+  const options = {}
+
+  axios.delete(url, options)
+  .then(function (res) {
+    const str = JSON.stringify(res.data, null, 2)
+    console.log(str)
+  })
+  .catch(function (err) {
+    console.error(err.toString())
+  })
+}
+
+if (program.cleanupTasks) {
+  const url = `${program.args[0]}/del/inactive_tasks`
+  const options = {}
+
+  axios.delete(url, options)
   .then(function (res) {
     const str = JSON.stringify(res.data, null, 2)
     console.log(str)

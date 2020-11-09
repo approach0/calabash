@@ -303,6 +303,13 @@ exports.runlist = function (run_cfg, runList, onComplete) {
         const onelinecmd = fixedWidth(onelineCmdLen, cmd.replace(/\n/g, "; "))
         onLog(`[ exitcode = ${_exitcode} ] ${onelinecmd}`)
 
+        /* task being killed */
+        if (_exitcode === null) {
+          onLog(`[ task ${task_id} ] killed.`)
+          loop.brk()
+          return
+        }
+
         /* update task meta info */
         const exitcode = (flag === 'treat_as_success') ? 0 : _exitcode
         tasks.exit_notify(task_id, idx, exitcode)
