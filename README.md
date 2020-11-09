@@ -134,16 +134,16 @@ After start `monitor` service, visit it via browser:
 ### Tips
 To test service locally, it is useful to create an attachable overlay network to mock overlay network:
 ```
-# docker network create --driver=overlay --attachable approach0
+# docker network create --driver=overlay --attachable calabash_net
 ```
 Now you are able to attach the overlay network with non-swarm `docker run` processes:
 ```
-# docker run -it --network approach0 -p 8090:3000 -e GF_SERVER_SERVE_FROM_SUB_PATH=true -e GF_SERVER_ROOT_URL=/grafana hub-mirror.c.163.com/grafana/grafana
+# docker run -it --network calabash_net -p 8090:3000 -e GF_SERVER_SERVE_FROM_SUB_PATH=true -e GF_SERVER_ROOT_URL=/grafana hub-mirror.c.163.com/grafana/grafana
 ```
 
 It is also useful to setup a mock service for testing routes locally:
 ```
-# docker service create --label=gateway.port=8080 --label=gateway.route=_root_ --network approach0 ga6840/hello-httpd node hello.js 'This is the root service!'
+# docker service create --label=gateway.port=8080 --label=gateway.route=_root_ --network calabash_net ga6840/hello-httpd node hello.js 'This is the root service!'
 ```
 
 ### Example IaaS provider API
