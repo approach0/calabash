@@ -143,6 +143,7 @@ Now you are able to attach the overlay network with non-swarm `docker run` proce
 
 It is also useful to setup a mock service for testing routes locally:
 ```
+# docker run -it --publish 8080:80 --network calabash_net --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock gateway
 # docker service create --label=gateway.port=8080 --label=gateway.route=_root_ --network calabash_net ga6840/hello-httpd node hello.js 'This is the root service!'
 ```
 
