@@ -333,7 +333,7 @@ print_arguments = [
   #mesh_replicas=1
   #mesh_sharding=2
 
-  portmap = 'published=3389,target=8080,mode=ingress' # round robin-ing hosts
+  #portmap = 'published=3389,target=8080,mode=ingress' # round robin-ing hosts
   mesh_replicas=2
   mesh_sharding=1
 

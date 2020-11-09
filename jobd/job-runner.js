@@ -342,8 +342,7 @@ exports.runlist = function (run_cfg, runList, onComplete) {
 
       onLog(`[ start job ] ${jobname} of task#${task_id}`)
 
-      /* handle dryrun and reference */
-      let ref = props['ref']
+      /* handle dryrun */
       if (run_cfg.dryrun) {
         const targetProps = run_cfg.jobs.getNodeData(jobname)
         const cmd = parse_exec(targetProps['exec'])
@@ -352,15 +351,6 @@ exports.runlist = function (run_cfg, runList, onComplete) {
         onExit(cmd, -1, 0)
         return
 
-      } else if (ref) {
-        let subList = exports.getRunList(run_cfg.jobs, ref)
-        exports.runlist(run_cfg, subList, (completed) => {
-          if (completed && !run_cfg.insist)
-            loop.next()
-          else
-            loop.brk()
-        })
-        return
       }
 
       exports.runjob(run_cfg, jobname, onSpawn, onExit, onLog)
