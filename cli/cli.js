@@ -35,7 +35,7 @@ if (program.log) {
   })
   .catch(function (err) {
     console.error(err.toString())
-  });
+  })
 }
 
 if (program.listJobs) {
@@ -49,7 +49,7 @@ if (program.listJobs) {
   })
   .catch(function (err) {
     console.error(err.toString())
-  });
+  })
 }
 
 if (program.listConfig) {
@@ -63,7 +63,7 @@ if (program.listConfig) {
   })
   .catch(function (err) {
     console.error(err.toString())
-  });
+  })
 }
 
 if (program.showTask) {
@@ -78,7 +78,7 @@ if (program.showTask) {
   })
   .catch(function (err) {
     console.error(err.toString())
-  });
+  })
 }
 
 function printTaskLog(taskID, doClear) {
@@ -92,7 +92,7 @@ function printTaskLog(taskID, doClear) {
     })
   }).catch(function (err) {
     console.error(err.toString())
-  });
+  })
 }
 
 if (program.taskLog) {
@@ -120,7 +120,7 @@ if (program.listTasks) {
   })
   .catch(function (err) {
     console.error(err.toString())
-  });
+  })
 }
 
 if (program.job) {
@@ -149,5 +149,5 @@ if (program.job) {
   })
   .catch(function (err) {
     console.error(err.toString())
-  });
+  })
 }
