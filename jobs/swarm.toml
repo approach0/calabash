@@ -151,7 +151,8 @@ source = [
 spawn = pty
 user = root # for ssh-copy-id to find identity file.
 exec = [
-  require_args iaascfg node_label, # pass typeIP=private for private connection
+  # pass typeIP=private for private connection
+  require_args iaascfg node_label node_usage,
   # unpack parameters
   'provider=`echo $iaascfg | cut -d "_" -f 1`',
   'read passwd port <<< $(unpack \$iaas_${iaascfg}_{password,ssh_port})',
@@ -181,7 +182,7 @@ source = [
   . $scripts/swarm/swarm.sh
 ]
 exec = [
-  # Optional: `node_usage=some_usage'.
+  require_args node_usage,
 
   # initialize Docker warm for the first time
   $DOCKER swarm init,
@@ -213,8 +214,7 @@ source = [
   . $scripts/swarm/swarm.sh
 ]
 exec = [
-  # Optional: `node_usage=some_usage'.
-  require_args iaascfg nodeIP,
+  require_args iaascfg nodeIP node_usage,
 
   # unpack parameters
   'read port <<< $(unpack \$iaas_${iaascfg}_ssh_port)',
@@ -261,8 +261,7 @@ exec = [
 [expand]
 source = . $scripts/swarm/swarm.sh
 exec = [
-  # Optional: `role=manager' and `node_usage=some_usage'
-  require_args iaascfg nodeIP,
+  require_args iaascfg nodeIP node_usage,
   # unpack parameters
   'read port <<< $(unpack \$iaas_${iaascfg}_ssh_port)',
   # join the swarm

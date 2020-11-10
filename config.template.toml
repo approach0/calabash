@@ -351,7 +351,7 @@ print_arguments = [
 
   [service.corpus_syncd]
   network = calabash_net
-  mesh_sharding = 3
+  mesh_sharding = 4
   max_per_node = 1
   mounts = [
     'type=volume,src=corpus_vol,dst=/data',
@@ -390,7 +390,7 @@ print_arguments = [
   docker_exec = bash /tmp/entrypoint.sh $servID
 
   [service.crawler]
-  mesh_sharding = 3
+  mesh_sharding = 4
   max_per_node = 1
   mounts = [
     'type=volume,src=corpus_vol,dst=/data',
