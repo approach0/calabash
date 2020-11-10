@@ -163,14 +163,14 @@ exec = [
   # refresh local known host list
   ssh-keygen -R $nodeIP,
   # allow ssh login from this host to new remote peer
-  'set -e',
   '$scripts/ssh/ssh-copy-id.expect root@$nodeIP $passwd',
-  'set +e',
   # change remote sshd port
   sshd_change_port root@$nodeIP 22 $port,
   # install Docker engine and environment
   'read install_hooks <<< $(unpack \${!node_usage_${node_usage}_install_hooks_@})',
+  'set -x',
   'swarm_install root@$nodeIP $port $iaascfg $docker_mirror $node_label $install_hooks',
+  'set +x',
   # export node IP address
   export nodeIP
 ]
