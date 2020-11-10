@@ -76,7 +76,7 @@ providers = [linode]
   ]
 
 [node_usage]
-  [node_usage.host_persistent]
+  [node_usage.persistent]
   labels = [
     'host_persistent=true',
     'host_corpus=true',
@@ -87,7 +87,7 @@ providers = [linode]
     'vdisk_producer_daemon 6K' # 6 GiB
   ]
 
-  [node_usage.host_searchd]
+  [node_usage.searchd]
   labels = [
     'host_searchd=true'
   ]
