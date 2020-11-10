@@ -79,12 +79,8 @@ providers = [linode]
   [node_usage.host_persistent]
   labels = [
     'host_persistent=true',
-    'host_corpus=true'
-  ]
-
-  [node_usage.host_indexer]
-  labels = [
-    'host_indexer=true',
+    'host_corpus=true',
+    'host_indexer=true'
   ]
   install_hooks = [
     'install_fuse',
