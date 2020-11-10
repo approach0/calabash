@@ -140,7 +140,7 @@ print_arguments = [
   environments,
   configs,
   user,
-  portmap,
+  publish_ports,
   network,
   docker_image,
   docker_exec
@@ -152,8 +152,7 @@ print_arguments = [
 
   [service.gateway]
   network = calabash_net
-  portmap = '80:80'
-  #portmap = '8080:80'
+  publish = ['80:80', '443:443']
   constraints = [
     'node.role==manager',
     'node.labels.host_persistent==true'
@@ -162,6 +161,8 @@ print_arguments = [
     'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock'
   ]
   docker_image = approach0/gateway
+  #docker_exec = ./entrypoint.sh $hostname
+  docker_exec = ./entrypoint.sh
 
   [service.calabash]
   network = calabash_net
@@ -321,15 +322,18 @@ print_arguments = [
   ###
 
   [service.hello]
-  #portmap = 'published=3389,target=8080,mode=ingress' # servcie mesh with only shard#1 publishing port
-  #mesh_replicas = 2
-  #mesh_sharding = 2
+  ## servcie mesh with only shard#1 publishing port
+  # publish = ['published=3389,target=8080,mode=ingress']
+  # mesh_replicas = 2
+  # mesh_sharding = 2
 
-  #portmap = 'published=3389,target=8080,mode=host' # different IP different shard
-  #mesh_replicas=1
-  #mesh_sharding=2
+  ## different IP different shard
+  # publish = ['published=3389,target=8080,mode=host']
+  # mesh_replicas=1
+  # mesh_sharding=2
 
-  #portmap = 'published=3389,target=8080,mode=ingress' # round robin-ing hosts
+  ## round robin-ing hosts
+  # publish = ['published=3389,target=8080,mode=ingress']
   mesh_replicas=2
   mesh_sharding=1
 

@@ -192,6 +192,7 @@ swarm_service_create() {
 	# get complex variables (join array together, each item string may contain variables)
 	local service_labels=$(double_eval $(for l in ${!labels_@}; do echo -n "--label=\$$l "; done))
 	local constraints=$(double_eval $(for c in ${!constraints_@}; do echo -n "--constraint=\$$c "; done))
+	local publish_ports=$(double_eval $(for p in ${!publish_@}; do echo -n "--publish=\$$p "; done))
 	local mounts=$(double_eval $(for m in ${!mounts_@}; do echo -n "--mount=\$$m "; done))
 	local environments=$(double_eval $(for e in ${!env_@}; do echo -n "--env=\$$e "; done))
 
@@ -235,10 +236,8 @@ swarm_service_create() {
 		fi
 
 		# map port for the first shard (or when it's host-mode) to avoid port conflicts
-		if [[ $shard -eq 1 || "${portmap}" =~ 'mode=host' ]]; then
-			if [ -n "$portmap" ]; then
-				extra_args="${extra_args} --publish=${portmap}"
-			fi
+		if [[ $shard -eq 1 && ! -z "$publish_ports" ]]; then
+			extra_args="${extra_args} ${publish_ports}"
 		fi
 
 		# bind specified network (if not existed, create one)
