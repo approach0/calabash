@@ -246,15 +246,15 @@ exec = [
 ]
 dep = swarm:install
 
-[update-remote-calabash]
+[fast-update-remote]
 source = [
   . $scripts/iaas/all.sh,
   . $scripts/swarm/swarm.sh
 ]
 exec = [
-  require_args nodeIP port,
+  require_args nodeIP port service,
   $SCP -P $port $_config_file_ root@$nodeIP:$service_bootstrap_config_path,
-  'ssh_exec_local_cmd root@$nodeIP $port  swarm_service_create calabash',
+  'ssh_exec_local_cmd root@$nodeIP $port  swarm_service_create $service',
 ]
 
 [expand]
