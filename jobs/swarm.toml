@@ -63,12 +63,20 @@ exec = [
   swarm_print_service_logs $service
 ]
 
+[rm-services]
+source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
+exec = [
+  require_args service_prefix,
+  "$DOCKER service rm $($DOCKER service ls -q --filter=name=$service_prefix)"
+]
+
 [rm-service]
 source = . $scripts/swarm/swarm.sh
 if = is_swarm_manager
 exec = [
   require_args service,
-  "$DOCKER service rm $($DOCKER service ls -q --filter=name=$service)"
+  "$DOCKER service rm $service"
 ]
 
 [prune-nodes]
