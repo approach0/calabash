@@ -5,6 +5,7 @@ job_dir = ./jobs
 node_prefix = calabash
 admin_name = admin
 admin_pass = ___
+domain_name = xitizu.com
 
 [iaas]
 providers = [linode]
@@ -177,7 +178,7 @@ print_arguments = [
   docker_image = approach0/gateway
 
   publish = ['80:80', '443:443']
-  docker_exec = ./entrypoint.sh xitizu.com
+  docker_exec = ./entrypoint.sh $domain_name
 
   [service.calabash]
   network = calabash_net
