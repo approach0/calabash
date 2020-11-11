@@ -119,7 +119,7 @@ providers = [linode]
 
 [service]
 bootstrap_services = [
-  gateway,
+  gateway_bootstrap,
   usersdb, lattice, # lattice should not start until usersdb service is ready
   calabash, ui_calabash
 ]
@@ -150,9 +150,8 @@ print_arguments = [
   # Core Services
   ###
 
-  [service.gateway]
+  [service.gateway_bootstrap]
   network = calabash_net
-  publish = ['80:80', '443:443']
   constraints = [
     'node.role==manager',
     'node.labels.host_persistent==true'
@@ -161,8 +160,24 @@ print_arguments = [
     'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock'
   ]
   docker_image = approach0/gateway
-  #docker_exec = ./entrypoint.sh $hostname
+
+  publish = ['8080:443']
   docker_exec = ./entrypoint.sh
+
+  [service.gateway]
+  network = calabash_net
+  constraints = [
+    'node.role==manager',
+    'node.labels.dns_pin==true',
+    'node.labels.host_persistent==true'
+  ]
+  mounts = [
+    'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock'
+  ]
+  docker_image = approach0/gateway
+
+  publish = ['80:80', '443:443']
+  docker_exec = ./entrypoint.sh xitizu.com
 
   [service.calabash]
   network = calabash_net
