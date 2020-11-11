@@ -246,15 +246,21 @@ exec = [
 ]
 dep = swarm:install
 
-[fast-update-remote]
+[bootstrap-update]
 source = [
   . $scripts/iaas/all.sh,
   . $scripts/swarm/swarm.sh
 ]
 exec = [
-  require_args nodeIP port service,
+  require_args nodeIP port services,
+  ssh-keygen -R $nodeIP,
   $SCP -P $port $_config_file_ root@$nodeIP:$service_bootstrap_config_path,
-  'ssh_exec_local_cmd root@$nodeIP $port  swarm_service_create $service',
+  '''
+  for srv in $(echo $services | tr ',' ' '); do
+    echo "=== Updating service $srv ===";
+    ssh_exec_local_cmd root@$nodeIP $port  swarm_service_create $srv
+  done
+  '''
 ]
 
 [expand]
