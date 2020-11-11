@@ -153,6 +153,7 @@ print_arguments = [
 
   [service.gateway_bootstrap]
   network = calabash_net
+  publish = ['published=8080,target=443,mode=host']
   constraints = [
     'node.role==manager',
     'node.labels.host_persistent==true'
@@ -161,9 +162,6 @@ print_arguments = [
     'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock'
   ]
   docker_image = approach0/gateway
-
-  publish = ['8080:443']
-  docker_exec = ./entrypoint.sh
 
   [service.gateway]
   network = calabash_net
@@ -176,8 +174,10 @@ print_arguments = [
     'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock'
   ]
   docker_image = approach0/gateway
-
-  publish = ['80:80', '443:443']
+  publish = [
+    'published=80,target=80,mode=host'
+    'published=443,target=443,mode=host',
+  ]
   docker_exec = ./entrypoint.sh $domain_name
 
   [service.calabash]
