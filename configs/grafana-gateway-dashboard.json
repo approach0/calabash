@@ -15,7 +15,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 7,
+  "id": 2,
   "links": [],
   "panels": [
     {
@@ -337,7 +337,7 @@
       "pluginVersion": "7.3.1",
       "targets": [
         {
-          "expr": "topk(10, increase(request_geoip[10m]))",
+          "expr": "topk(5, increase(request_geoip[10m]))",
           "interval": "",
           "intervalFactor": 1,
           "legendFormat": "{{ip}}",
