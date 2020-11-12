@@ -463,46 +463,6 @@ print_arguments = [
   ]
   docker_exec = bash /tmp/entrypoint.sh $shard
 
-  [service.indexer]
-  network = calabash_net
-  mesh_sharding = 4
-  max_per_node = 1
-  mounts = [
-    'type=bind,src=/var/tmp/vdisk,dst=/mnt/vdisk'
-  ]
-  constraints = [
-    'node.labels.host_indexer==true'
-  ]
-  docker_image = approach0/a0
-  config_bind = [
-    'text:indexer_entrypoint:/tmp/entrypoint.sh'
-  ]
-  config_source = [
-    '''
-    # if there is no such directory (/mnt/vdisk/mnt), indexer will give up and quit
-    (flock 100; indexer.out -z -o /mnt/vdisk/mnt/; sync ) 100>/mnt/vdisk/vdisk.lock
-
-    sleep 16 # Give vdisk-producer daemon enough time to create image
-
-    # fall through here to restart service so that mounting point will be refreshed
-    '''
-  ]
-  restart_condition = any # restart service even if exec program quits with code 0.
-  docker_exec = bash /tmp/entrypoint.sh
-
-  [service.index_syncd]
-  network = calabash_net
-  mesh_sharding = 4
-  max_per_node = 1
-  mounts = [
-    'type=bind,src=/var/tmp/vdisk,dst=/data'
-  ]
-  constraints = [
-    'node.labels.host_indexer==true'
-  ]
-  docker_image = approach0/rsyncd
-  docker_exec = 'rsync --daemon --no-detach --verbose --config=/tmp/rsyncd.conf'
-
   [service.feeder]
   network = calabash_net
   mounts = [
@@ -534,6 +494,46 @@ print_arguments = [
   ]
   docker_exec = bash /tmp/entrypoint.sh
 
+  [service.indexer]
+  network = calabash_net
+  mesh_sharding = 4
+  max_per_node = 1
+  mounts = [
+    'type=bind,src=/var/tmp/vdisk,dst=/mnt/vdisk'
+  ]
+  constraints = [
+    'node.labels.host_indexer==true'
+  ]
+  docker_image = approach0/a0
+  config_bind = [
+    'text:indexer_entrypoint:/tmp/entrypoint.sh'
+  ]
+  config_source = [
+    '''
+    # if there is no such directory (/mnt/vdisk/mnt), indexer will give up and quit
+    (flock 100; indexer.out -z -o /mnt/vdisk/mnt/; sync ) 100>/mnt/vdisk/vdisk.lock
+
+    sleep 16 # Give vdisk-producer daemon enough time to create image
+
+    # fall through here to restart service so that mounting point will be refreshed
+    '''
+  ]
+  restart_condition = any # restart service even if exec program exits with code 0.
+  docker_exec = bash /tmp/entrypoint.sh
+
+  [service.index_syncd]
+  network = calabash_net
+  mesh_sharding = 4
+  max_per_node = 1
+  mounts = [
+    'type=bind,src=/var/tmp/vdisk,dst=/data'
+  ]
+  constraints = [
+    'node.labels.host_indexer==true'
+  ]
+  docker_image = approach0/rsyncd
+  docker_exec = 'rsync --daemon --no-detach --verbose --config=/tmp/rsyncd.conf'
+
   [service.searchd]
   network = calabash_net
   mesh_sharding = 4
@@ -558,37 +558,30 @@ print_arguments = [
     shard=$1
     vdisk=/mnt/vdisk
 
-    /usr/sbin/sshd -e
+    echo 'updating vdisk image ...'
+    if [ $shard -eq 1 ]; then
+      rsync -zuv --progress rsync://index_syncd/root/vdisk.*.img $vdisk/
+    else
+      rsync -zuv --progress rsync://index_syncd-shard${shard}/root/vdisk.*.img $vdisk/
+    fi
 
-    while true; do
-      echo '=== vdisk stats ==='
-      du -h $vdisk/vdisk.img
+    echo 'removing vdisk lockfile ...'
+    rm -f $vdisk/vdisk.lock
+
+    echo 'wait long enough for new vdisk to be mounted ...'
+    sleep 16
+
+    echo 'inspect vdisk folder ...'
+    ls -l $vdisk/
+    du -h $vdisk/vdisk.img
+    if [ ! -e $vdisk/mnt/mstats.bin ]; then
       doc-lookup.out -p $vdisk/mnt
+    fi
 
-      echo '=== checking vdisk mounting point ==='
-      if [ ! -e $vdisk/mnt/mstats.bin ]; then
-        echo 'mounting point updated, kill sshd and searchd ...'
-        kill -INT $(pidof sshd)
-        kill -USR1 $(pidof searchd.out)
-
-        echo 'updating vdisk image'
-        if [ $shard -eq 1 ]; then
-          rsync -zuv --progress rsync://index_syncd/root/vdisk.*.img $vdisk/
-        else
-          rsync -zuv --progress rsync://index_syncd-shard${shard}/root/vdisk.*.img $vdisk/
-        fi
-
-        echo 'wait long enough for index vdisk to be mounted ...'
-        sleep 16
-
-        echo 'fall through to restart the service and refresh mounting point ...'
-        break
-      fi
-      sleep 8
-    done
+    echo 'ready to accept SSH connection ...'
+    /usr/sbin/sshd -e -D
     '''
   ]
-  restart_condition = any # restart service even if exec program quits with code 0.
   stop_signal = SIGUSR1
   docker_exec = bash /tmp/entrypoint.sh $shard
 
@@ -611,8 +604,8 @@ print_arguments = [
     service=${2-searchd}
     source /tmp/detect-shards.sh
 
-    command="searchd.out -i ./mnt -L /mnt/vdisk/vdisk.lock -c 0 -C 0"
     mountat=/mnt/vdisk
+    command="searchd.out -i ./mnt -L /mnt/vdisk/vdisk.lock -c 0 -C 0"
 
     hosts=`detect_shards $service`
     np=$(echo $hosts | wc -w)
@@ -627,5 +620,5 @@ print_arguments = [
     set +x
     '''
   ]
-  restart_condition = none
+  restart_condition = any
   docker_exec = 'bash /tmp/entrypoint.sh $(swarm_network_space calabash_net) $target_serv'
