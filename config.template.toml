@@ -594,8 +594,9 @@ print_arguments = [
 
   [service.searchd_mpirun]
   network = calabash_net
+  max_per_node = 1 # for multiple searchd replicas
   constraints = [
-    'node.labels.shard==1', # near to searchd (shard 1)
+    'node.labels.shard==1', # let it be around to searchd (shard 1)
     'node.labels.host_searchd==true'
   ]
   docker_image = approach0/a0
@@ -627,4 +628,4 @@ print_arguments = [
     '''
   ]
   restart_condition = none
-  docker_exec = 'bash /tmp/entrypoint.sh $(swarm_network_space calabash_net) $mpirun_serv'
+  docker_exec = 'bash /tmp/entrypoint.sh $(swarm_network_space calabash_net) $target_serv'
