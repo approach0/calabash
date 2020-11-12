@@ -523,7 +523,7 @@ print_arguments = [
     source /tmp/detect-shards.sh
 
     while true; do
-      urls=$(for i in $(detect_shards indexer 2); do echo "--indexd-url http://${i}:8934/index"; done)
+      urls=$(for i in $(detect_shards indexer); do echo "--indexd-url http://${i}:8934/index"; done)
       set -x
       json-feeder.py --corpus-path /data $urls --bye
       set +x
@@ -592,9 +592,10 @@ print_arguments = [
   stop_signal = SIGUSR1
   docker_exec = bash /tmp/entrypoint.sh $shard
 
-  [service.searchd_mpi_run]
+  [service.searchd_mpirun]
   network = calabash_net
   constraints = [
+    'node.labels.shard==1', # near to searchd (shard 1)
     'node.labels.host_searchd==true'
   ]
   docker_image = approach0/a0
@@ -606,13 +607,13 @@ print_arguments = [
     '$scripts/swarm/detect-shards.sh',
     '''
     subnet=$1
+    service=${2-searchd}
     source /tmp/detect-shards.sh
 
     command="searchd.out -i ./mnt -L /mnt/vdisk/vdisk.lock -c 0 -C 0"
-    service=searchd
     mountat=/mnt/vdisk
 
-    hosts=`detect_shards $service 2`
+    hosts=`detect_shards $service`
     np=$(echo $hosts | wc -w)
     hosts=$(echo $hosts | tr ' ', ',')
 
@@ -626,4 +627,4 @@ print_arguments = [
     '''
   ]
   restart_condition = none
-  docker_exec = 'bash /tmp/entrypoint.sh $(swarm_network_space calabash_net)'
+  docker_exec = 'bash /tmp/entrypoint.sh $(swarm_network_space calabash_net) $mpirun_serv'

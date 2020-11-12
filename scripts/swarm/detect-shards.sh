@@ -2,7 +2,7 @@
 
 detect_shards() {
 	servName=$1
-	minShard=${2-3}
+	minShard=${2-4}
 
 	list=""
 	cnt=0
