@@ -573,7 +573,7 @@ print_arguments = [
 
     if [[ $delta_time -lt 600 && -e $vdisk/mnt/mstats.bin ]]; then
 
-      echo '[ Index is up to date ]'
+      echo '[ Index is up to date and mounted, setup SSH daemon ]'
       /usr/sbin/sshd -e -D
 
     else
