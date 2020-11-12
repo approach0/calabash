@@ -564,6 +564,7 @@ print_arguments = [
     if [ -e $vdisk/mnt/mstats.bin ]; then
       doc-lookup.out -p $vdisk/mnt
     fi
+    tail -50 $vdisk/history_images.log
 
     last_timestamp=$(cat $vdisk/timestamp.txt 2>/dev/null || echo 0)
     curr_timestamp=$(date +%s)
@@ -577,13 +578,13 @@ print_arguments = [
       /usr/sbin/sshd -e -D
 
     else
-      echo '[ Index missing or out of date ]'
-
+      echo '[ Index missing or out of date, sync index image... ]'
       if [ $shard -eq 1 ]; then
-        rsync -zuv --progress rsync://index_syncd/root/vdisk.*.img $vdisk/
+        rsync -zuv rsync://index_syncd/root/vdisk.*.img $vdisk/
       else
-        rsync -zuv --progress rsync://index_syncd-shard${shard}/root/vdisk.*.img $vdisk/
+        rsync -zuv rsync://index_syncd-shard${shard}/root/vdisk.*.img $vdisk/
       fi
+      (date; ls $vdisk/vdisk.*.img) >> $vdisk/history_images.log
 
       echo '[ Wait long enough for new vdisk to be mounted ]'
       sleep 16
