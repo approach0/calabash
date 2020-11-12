@@ -249,9 +249,7 @@ swarm_service_create() {
 
 		# remove old service and create a new one for this shard
 		set -x
-		if [ -z "$keep_old" ]; then
-			$DOCKER service rm ${servID}
-		fi
+		$DOCKER service rm ${servID}
 		$DOCKER service create \
 			--limit-memory=$limit_memory \
 			--hostname='{{.Service.Name}}-{{.Task.Slot}}' \
