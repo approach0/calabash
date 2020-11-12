@@ -558,28 +558,39 @@ print_arguments = [
     shard=$1
     vdisk=/mnt/vdisk
 
-    echo 'updating vdisk image ...'
-    if [ $shard -eq 1 ]; then
-      rsync -zuv --progress rsync://index_syncd/root/vdisk.*.img $vdisk/
-    else
-      rsync -zuv --progress rsync://index_syncd-shard${shard}/root/vdisk.*.img $vdisk/
-    fi
-
-    echo 'removing vdisk lockfile ...'
-    rm -f $vdisk/vdisk.lock
-
-    echo 'wait long enough for new vdisk to be mounted ...'
-    sleep 32
-
-    echo 'inspect vdisk folder ...'
+    echo '[ Inspect vdisk folder ]'
     ls -l $vdisk/ $vdisk/mnt
     du -h $vdisk/vdisk.img
     if [ -e $vdisk/mnt/mstats.bin ]; then
       doc-lookup.out -p $vdisk/mnt
     fi
 
-    echo 'ready to accept SSH connection ...'
-    /usr/sbin/sshd -e -D
+    last_timestamp=$(cat $vdisk/timestamp.txt 2>/dev/null || echo 0)
+    curr_timestamp=$(date +%s)
+    echo $curr_timestamp > $vdisk/timestamp.txt
+    delta_time=$(($curr_timestamp - $last_timestamp))
+    echo "[ Detal time: $delta_time seconds ]"
+
+    if [ $delta_time -lt 120 && -e $vdisk/mnt/mstats.bin ]; then
+
+      echo '[ Index is up to date ]'
+      /usr/sbin/sshd -e -D
+
+    else
+      echo '[ Index missing or outdated ]'
+
+      if [ $shard -eq 1 ]; then
+        rsync -zuv --progress rsync://index_syncd/root/vdisk.*.img $vdisk/
+      else
+        rsync -zuv --progress rsync://index_syncd-shard${shard}/root/vdisk.*.img $vdisk/
+      fi
+
+      echo '[ Wait long enough for new vdisk to be mounted ]'
+      sleep 16
+
+      echo '[ Fall through and restart ]'
+      exit 1
+    fi
     '''
   ]
   stop_signal = SIGUSR1
