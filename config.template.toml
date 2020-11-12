@@ -569,7 +569,7 @@ print_arguments = [
     rm -f $vdisk/vdisk.lock
 
     echo 'wait long enough for new vdisk to be mounted ...'
-    sleep 16
+    sleep 32
 
     echo 'inspect vdisk folder ...'
     ls -l $vdisk/ $vdisk/mnt
@@ -612,7 +612,7 @@ print_arguments = [
     hosts=$(echo $hosts | tr ' ', ',')
 
     set -x
-    ssh root@$service mpirun --allow-run-as-root \
+    ssh root@$service mpirun --allow-run-as-root --tag-output \
       -np $np --rank-by node \
       --host $hosts --wdir $mountat \
       --mca oob_tcp_if_include $subnet --mca btl_tcp_if_include $subnet \
