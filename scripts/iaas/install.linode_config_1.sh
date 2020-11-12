@@ -32,7 +32,7 @@ hostname -F /etc/hostname
 apt-get install -y -qq --no-install-recommends prometheus-node-exporter
 
 # install other utility commands
-apt-get install -y -qq --no-install-recommends atop smem
+apt-get install -y -qq --no-install-recommends atop smem ncdu
 # smem usage: smem -pkw
 
 # add CRON jobs for regularly clean kernel page-cache and disk swap
