@@ -574,7 +574,7 @@ print_arguments = [
     echo 'inspect vdisk folder ...'
     ls -l $vdisk/ $vdisk/mnt
     du -h $vdisk/vdisk.img
-    if [ ! -e $vdisk/mnt/mstats.bin ]; then
+    if [ -e $vdisk/mnt/mstats.bin ]; then
       doc-lookup.out -p $vdisk/mnt
     fi
 
