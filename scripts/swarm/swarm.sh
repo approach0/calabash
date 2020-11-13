@@ -110,7 +110,7 @@ swarm_network_ensure_has() {
 
 inject_env_vars_into_file() {
 	file_path="$1"
-	if [ "$file_path" == $bootstrap_config_path ]; then
+	if [ "$file_path" == $service_bootstrap_config_path ]; then
 		echo "For security reason, never INJECT $file_path" >&2
 		return
 	fi
@@ -146,7 +146,7 @@ swarm_service_update_configs() {
 			cat > $tmpfile <<< "$src"
 			# print config file to stderr
 			echo "=== config file $key from $tmpfile ===" >&2
-			cat $tmpfile >&2
+			cat $tmpfile | grep -v 'SECRET:' >&2
 			# inject variables and update swarm secret from file
 			inject_env_vars_into_file $tmpfile
 			swarm_update_secret_file $key $tmpfile &> /dev/null
@@ -158,7 +158,7 @@ swarm_service_update_configs() {
 			local srcpath=$(eval echo $src)
 			# print config file to stderr
 			echo "=== config file $key from $srcpath ===" >&2
-			cat $srcpath >&2
+			cat $srcpath | grep -v 'SECRET:' >&2
 			# inject variables and update swarm secret from file
 			inject_env_vars_into_file $srcpath
 			swarm_update_secret_file $key $srcpath &> /dev/null
