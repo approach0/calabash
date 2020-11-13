@@ -110,8 +110,7 @@ swarm_network_ensure_has() {
 
 inject_env_vars_into_file() {
 	file_path="$1"
-	file_name="$(basename "$1")"
-	if [ "$file_name" == bootstrap.toml ]; then
+	if [ "$file_path" == $bootstrap_config_path ]; then
 		echo "For security reason, never INJECT $file_path" >&2
 		return
 	fi
