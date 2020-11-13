@@ -634,7 +634,7 @@ print_arguments = [
     source /tmp/detect-shards.sh
 
     mountat=/mnt/vdisk
-    command="searchd.out -i ./mnt -L /mnt/vdisk/vdisk.lock -c 0 -C 0"
+    command="searchd.out -i ./mnt -L /mnt/vdisk/vdisk.lock -c 100 -C 500"
 
     hosts=`detect_shards $service`
     np=$(echo $hosts | wc -w)
