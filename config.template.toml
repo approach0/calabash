@@ -6,6 +6,7 @@ node_prefix = calabash
 admin_name = admin
 admin_pass = ___
 domain_name = xitizu.com
+webhook_key = ___
 
 [iaas]
 providers = [linode]
@@ -651,3 +652,23 @@ print_arguments = [
   ]
   restart_condition = any
   docker_exec = 'bash /tmp/entrypoint.sh $(swarm_network_space calabash_net) $target_serv'
+
+  [service.docs]
+  docker_image = approach0/docs
+  constraints = [
+    'node.labels.host_persistent==true'
+  ]
+  labels = [
+    'gateway.route=docs',
+    'gateway.port=8080'
+  ]
+  config_bind = [
+    'text:docs_entrypoint:/tmp/entrypoint.sh'
+  ]
+  config_source = [
+    '''
+    export WEBHOOKSECRET=INJECT:webhook_key
+	node main.js serve
+    '''
+  ]
+  docker_exec = sh /tmp/entrypoint.sh
