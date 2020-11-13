@@ -6,7 +6,6 @@ node_prefix = calabash
 admin_name = admin
 admin_pass = ___
 domain_name = xitizu.com
-webhook_key = ___
 
 [iaas]
 providers = [linode]
@@ -64,7 +63,8 @@ providers = [linode]
   driver = overlay
 
 [github]
-  open_PAT = 16cb9ca406810952527aae0dc2c90b797a03136f
+  open_PAT = 16cb9ca406810952527aae0dc2c90b797a03136f # used by calabash UI
+  webhook_key = ___
   workflows = [
     approach0/ui-login,
     approach0/ui-calabash,
@@ -666,8 +666,8 @@ print_arguments = [
   ]
   config_source = [
     '''
-    export WEBHOOKSECRET=INJECT:webhook_key
-	node main.js serve
+    export WEBHOOKSECRET=INJECT:github_webhook_key
+    node main.js serve
     '''
   ]
   docker_exec = sh /tmp/entrypoint.sh
