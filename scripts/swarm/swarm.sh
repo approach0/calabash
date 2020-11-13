@@ -110,6 +110,11 @@ swarm_network_ensure_has() {
 
 inject_env_vars_into_file() {
 	file_path="$1"
+	file_name="$(basename "$1")"
+	if [ "$file_name" == bootstrap.toml ]; then
+		echo "For security reason, never INJECT $file_path" >&2
+		return
+	fi
 	python -c "if True:
 		import re, os
 		with open('${file_path}', 'r') as fh:

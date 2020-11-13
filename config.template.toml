@@ -193,7 +193,7 @@ print_arguments = [
   ]
   docker_image = approach0/calabash
   config_bind = [
-    'path:calabash_config:/code/calabash/config.toml'
+    'path:calabash_config:/code/calabash/bootstrap.toml'
   ]
   config_source = [
     '$service_bootstrap_config_path',
@@ -201,7 +201,7 @@ print_arguments = [
   mounts = [
     'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock'
   ]
-  docker_exec = node ./jobd/jobd.js --config ./config.toml
+  docker_exec = node ./jobd/jobd.js --config ./bootstrap.toml
 
   [service.usersdb]
   network = calabash_net
