@@ -532,7 +532,24 @@ print_arguments = [
     'node.labels.host_indexer==true'
   ]
   docker_image = approach0/rsyncd
-  docker_exec = 'rsync --daemon --no-detach --verbose --config=/tmp/rsyncd.conf'
+  config_bind = [
+    'text:index_syncd_entrypoint:/tmp/entrypoint.sh'
+  ]
+  config_source = [
+    '''
+    shard=$1
+
+    rsync --daemon --verbose --config=/tmp/rsyncd.conf
+
+    while true; do
+      echo "index-shard#${shard} /data"
+      date
+      ls -l --block-size=M /data
+      sleep 5
+    done
+    '''
+  ]
+  docker_exec = bash /tmp/entrypoint.sh $shard
 
   [service.searchd]
   network = calabash_net
