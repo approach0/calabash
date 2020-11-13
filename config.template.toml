@@ -71,9 +71,7 @@ providers = [linode]
     approach0/lattice,
     approach0/calabash,
     approach0/gateway,
-    approach0/docker-rsyncd,
-    approach0/docker-linode-cli,
-    approach0/docker-ucloud-cli,
+    approach0/docs,
     approach0/docker-postgres13
   ]
 
