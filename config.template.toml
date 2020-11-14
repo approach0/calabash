@@ -5,6 +5,7 @@ job_dir = ./jobs
 node_prefix = calabash
 admin_name = admin
 admin_pass = ___
+rsync_pass = ___
 domain_name = xitizu.com
 
 [iaas]
@@ -363,6 +364,7 @@ print_arguments = [
 
   [service.corpus_syncd]
   network = calabash_net
+  publish = ['published=873,target=873,mode=host']
   mesh_sharding = 4
   max_per_node = 1
   mounts = [
@@ -375,27 +377,35 @@ print_arguments = [
 
   config_bind = [
     'path:detect_shards:/tmp/detect-shards.sh',
+    'text:corpus_syncd_pass:/tmp/rsyncd.secret',
     'text:corpus_entrypoint:/tmp/entrypoint.sh'
   ]
   config_source = [
     '$scripts/swarm/detect-shards.sh',
-
+    'rsyncclient:INJECT:rsync_pass',
     '''
-    src=$1
-
-    rsync --daemon --verbose --config=/tmp/rsyncd.conf
     source /tmp/detect-shards.sh
+    servID=$1
+
+    echo 'Run rsync daemon ...'
+    rsync --daemon --verbose --config=/tmp/rsyncd.conf
 
     while true; do
       shards=`detect_shards corpus_syncd 0`
-      echo $shards
 
+      echo "Synchronize /data among $shards"
       for dst in $shards; do
-        if [ "$src" != "$dst" ]; then
-          rsync -zauv --progress /data/ rsync://$dst/root/
+        if [ "$servID" != "$dst" ]; then
+          export RSYNC_PASSWORD=INJECT:rsync_pass
+          rsync -zauv --progress /data/ rsync://rsyncclient@$dst/data/
         fi
       done
-      sleep 16
+
+      echo 'Inspecting /data directory ...'
+      touch /data/servID-$servID.touch
+      ls /data
+
+      sleep 32
     done
     '''
   ]
@@ -529,9 +539,11 @@ print_arguments = [
   ]
   docker_image = approach0/rsyncd
   config_bind = [
+    'text:corpus_syncd_pass:/tmp/rsyncd.secret',
     'text:index_syncd_entrypoint:/tmp/entrypoint.sh'
   ]
   config_source = [
+    'rsyncclient:INJECT:rsync_pass',
     '''
     shard=$1
 
@@ -592,10 +604,11 @@ print_arguments = [
 
     else
       echo '[ Index missing or out of date, sync index image... ]'
+      export RSYNC_PASSWORD=INJECT:rsync_pass
       if [ $shard -eq 1 ]; then
-        rsync -zuv rsync://index_syncd/root/vdisk.*.img $vdisk/
+        rsync -zuv rsync://rsyncclient@index_syncd/data/vdisk.*.img $vdisk/
       else
-        rsync -zuv rsync://index_syncd-shard${shard}/root/vdisk.*.img $vdisk/
+        rsync -zuv rsync://rsyncclient@index_syncd-shard${shard}/data/vdisk.*.img $vdisk/
       fi
       (date; ls $vdisk/vdisk.*.img) >> $vdisk/history_images.log
 
