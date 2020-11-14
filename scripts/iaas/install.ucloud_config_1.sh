@@ -49,7 +49,6 @@ apt-get install -y -qq --no-install-recommends atop smem ncdu
 # add CRON jobs for regularly clean kernel page-cache and disk swap
 (crontab -l ; echo '*/30 * * * * sync; echo 1 > /proc/sys/vm/drop_caches') | sort - | uniq - | crontab -
 (crontab -l ; echo '*/32 * * * * swapoff -a; swapon -a') | sort - | uniq - | crontab -
-(crontab -l ; echo '*/34 * * * * swapoff -a; swapon -a') | sort - | uniq - | crontab -
 (crontab -l ; echo '*/36 * * * * docker system prune --force') | sort - | uniq - | crontab -
 (crontab -l ; echo '*/38 * * * * docker image prune -a --force') | sort - | uniq - | crontab -
 
