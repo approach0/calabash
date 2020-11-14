@@ -89,6 +89,8 @@ $ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=crawle
 $ node cli.js http://<IP>:<PORT> --follow -j swarm:list-services
 ```
 
+Alternatively, if you want to create a service with specified sharding, run something like `swarm:service-create?service=corpus_syncd&service_corpus_syncd_mesh_sharding=3`.
+
 4. Add 2 indexer nodes
 ```
 $ node cli.js http://<IP>:<PORT> --follow -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private&node_usage=persistent&shard=1'

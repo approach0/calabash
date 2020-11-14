@@ -22,7 +22,7 @@ providers = [linode]
   docker_registry_pass = ___
 
     [iaas.linode.config_1]
-    region = us-west
+    region = eu-central # ap-northeast
     specs = 'g6-nanode-1'
     distro = linode/debian10
     ssh_port = ___
@@ -377,7 +377,7 @@ print_arguments = [
 
   config_bind = [
     'path:detect_shards:/tmp/detect-shards.sh',
-    'text:corpus_syncd_pass:/tmp/rsyncd.secret',
+    'text:corpus_syncd_pass:/tmp/rsyncd.secret,mode=0600',
     'text:corpus_entrypoint:/tmp/entrypoint.sh'
   ]
   config_source = [
@@ -539,7 +539,7 @@ print_arguments = [
   ]
   docker_image = approach0/rsyncd
   config_bind = [
-    'text:corpus_syncd_pass:/tmp/rsyncd.secret',
+    'text:index_syncd_pass:/tmp/rsyncd.secret,mode=0600',
     'text:index_syncd_entrypoint:/tmp/entrypoint.sh'
   ]
   config_source = [
