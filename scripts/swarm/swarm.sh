@@ -253,7 +253,7 @@ swarm_service_create() {
 
 		# remove old service and create a new one for this shard
 		set -x
-		$DOCKER service rm ${servID}
+		$DOCKER service rm ${servID} && sleep 5
 		$DOCKER service create \
 			--limit-memory=$limit_memory \
 			--hostname='{{.Service.Name}}-{{.Task.Slot}}' \
