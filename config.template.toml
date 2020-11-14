@@ -72,6 +72,7 @@ providers = [linode]
     approach0/calabash,
     approach0/gateway,
     approach0/docs,
+    approach0/guide,
     approach0/docker-postgres13
   ]
 
@@ -655,6 +656,27 @@ print_arguments = [
   ]
   labels = [
     'gateway.route=docs',
+    'gateway.port=8080'
+  ]
+  config_bind = [
+    'text:docs_entrypoint:/tmp/entrypoint.sh'
+  ]
+  config_source = [
+    '''
+    export WEBHOOKSECRET=INJECT:github_webhook_key
+    node main.js serve
+    '''
+  ]
+  docker_exec = sh /tmp/entrypoint.sh
+
+  [service.guide]
+  network = calabash_net
+  docker_image = approach0/guide
+  constraints = [
+    'node.labels.host_persistent==true'
+  ]
+  labels = [
+    'gateway.route=guide',
     'gateway.port=8080'
   ]
   config_bind = [
