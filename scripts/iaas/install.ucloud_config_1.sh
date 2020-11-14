@@ -46,7 +46,7 @@ apt-get install -y -qq --no-install-recommends prometheus-node-exporter
 apt-get install -y -qq --no-install-recommends atop smem ncdu
 # smem usage: smem -pkw
 
-# add CRON jobs for regularly clean kernel page-cache and disk swap
+# add CRON jobs for regularly memory/disk cleanup
 (crontab -l ; echo '*/30 * * * * sync; echo 1 > /proc/sys/vm/drop_caches') | sort - | uniq - | crontab -
 (crontab -l ; echo '*/32 * * * * swapoff -a; swapon -a') | sort - | uniq - | crontab -
 (crontab -l ; echo '*/36 * * * * docker system prune --force') | sort - | uniq - | crontab -
