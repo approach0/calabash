@@ -84,18 +84,6 @@ source = . $scripts/swarm/swarm.sh
 if = is_swarm_manager
 exec = "$DOCKER node ls --format '{{.ID}} {{.Status}}' | grep Down | cut -d ' ' -f 1 | xargs $DOCKER node rm"
 
-[prune-images]
-source = . $scripts/swarm/swarm.sh
-if = is_swarm_manager
-exec = "$DOCKER rmi -f $($DOCKER images --filter 'dangling=true' -q --no-trunc)"
-
-[docker-sys-prune]
-source = . $scripts/swarm/swarm.sh
-if = is_swarm_manager
-exec = [
-  $DOCKER system prune -f
-]
-
 [node-label-set]
 source = . $scripts/swarm/swarm.sh
 if = is_swarm_manager

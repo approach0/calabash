@@ -113,10 +113,6 @@ providers = [linode]
   goal = 'swarm:list-tasks'
   reborn = 5040
 
-  [loop_task.5]
-  goal = 'swarm:docker-sys-prune'
-  reborn = 60000
-
 [service]
 bootstrap_services = [
   gateway_bootstrap,
