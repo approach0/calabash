@@ -403,7 +403,10 @@ print_arguments = [
 
       echo 'Inspecting /data directory ...'
       touch /data/servID-$servID.touch
-      ls /data
+      du -sh /data/*
+      set -x
+      find /data/ -name '*.json' | wc -l
+      set +x
 
       sleep 32
     done
