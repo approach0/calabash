@@ -116,6 +116,22 @@ exec = [
   $DOCKER node demote $swarmNode
 ]
 
+[service-label-set]
+source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
+exec = [
+  require_args service label,
+  swarm_service_label $service $label
+]
+
+[service-label-rm]
+source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
+exec = [
+  require_args service labelkey,
+  swarm_service_label_rm $service $labelkey
+]
+
 [docker-stats]
 source = . $scripts/swarm/swarm.sh
 exec = [

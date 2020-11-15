@@ -91,6 +91,26 @@ swarm_node_label_rm() {
 	$DOCKER node inspect $swarmNodeID -f "{{(json .Spec.Labels)}}"
 }
 
+swarm_service_label() {
+	servName=$1
+	LABELS="$2"
+	set -x
+	$DOCKER service update \
+		--label-add "$LABELS" \
+		$servName
+	set +x
+}
+
+swarm_service_label_rm() {
+	servName=$1
+	LABEL_KEY="$2"
+	set -x
+	$DOCKER service update \
+		--label-rm "$LABEL_KEY" \
+		$servName
+	set +x
+}
+
 swarm_network_space() {
 	netname="$1"
 	docker network inspect $netname -f '{{(index .IPAM.Config 0).Subnet}}'
