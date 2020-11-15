@@ -572,8 +572,9 @@ print_arguments = [
   constraints = [
     'node.labels.host_searchd==true'
   ]
+  publish = ['published=8921,target=8921,mode=host']
   labels = [
-    'gateway.route=a0',
+    #'gateway.route=a0', # not exposing until tested
     'gateway.port=8921'
   ]
   docker_image = approach0/a0
