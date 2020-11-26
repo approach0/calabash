@@ -697,12 +697,50 @@ print_arguments = [
     'gateway.port=8080'
   ]
   config_bind = [
-    'text:docs_entrypoint:/tmp/entrypoint.sh'
+    'text:guide_entrypoint:/tmp/entrypoint.sh'
   ]
   config_source = [
     '''
     export WEBHOOKSECRET=INJECT:github_webhook_key
     node main.js serve
+    '''
+  ]
+  docker_exec = sh /tmp/entrypoint.sh
+
+  [service.relay]
+  network = calabash_net
+  docker_image = approach0/a0-relay
+  constraints = [
+    'node.labels.host_searchd==true'
+  ]
+  labels = [
+    'gateway.route=search-relay',
+    'gateway.port=8080'
+  ]
+  env = [
+    'A0_SEARCHD=searchd',
+    'A0_QRYLOGD=stats'
+  ]
+  docker_exec = sh /tmp/entrypoint.sh
+
+  [service.stats]
+  network = calabash_net
+  docker_image = approach0/a0-stats
+  constraints = [
+    'node.labels.host_persistent==true'
+  ]
+  labels = [
+    'gateway.route=stats',
+    'gateway.port=3207'
+  ]
+  config_bind = [
+    'text:stats_entrypoint:/tmp/entrypoint.sh'
+  ]
+  config_source = [
+    '''
+	export IP_XOR_SECRET=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 20)
+	export PG_HOST=usersdb
+    node statsd.js
     '''
   ]
   docker_exec = sh /tmp/entrypoint.sh
