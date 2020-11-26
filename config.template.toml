@@ -74,7 +74,9 @@ providers = [linode]
     approach0/gateway,
     approach0/docs,
     approach0/guide,
-    approach0/docker-postgres13
+    approach0/a0-relay,
+    approach0/a0-stats,
+    #approach0/docker-postgres13
   ]
 
 [node_usage]
