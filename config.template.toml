@@ -218,6 +218,22 @@ print_arguments = [
   ]
   docker_image = approach0/postgres13
 
+  [service.usersdb_syncd]
+  publish = ['published=8873,target=873,mode=host']
+  mounts = [
+    'type=volume,src=corpus_vol,dst=/data',
+  ]
+  constraints = [
+    'node.labels.host_usersdb==true'
+  ]
+  config_bind = [
+    'text:corpus_syncd_pass:/tmp/rsyncd.secret,mode=0600'
+  ]
+  config_source = [
+    'rsyncclient:INJECT:rsync_pass',
+  ]
+  docker_image = approach0/rsyncd
+
   [service.lattice]
   network = calabash_net
   env = [
