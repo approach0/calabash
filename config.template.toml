@@ -217,7 +217,7 @@ print_arguments = [
     'gateway.protect=/'
   ]
   constraints = [
-    'node.role==manager',
+    'node.role==manager', # to keep at one place for easy backup
     'node.labels.host_persistent==true'
   ]
   mounts = [
@@ -231,7 +231,7 @@ print_arguments = [
     'type=volume,src=corpus_vol,dst=/data',
   ]
   constraints = [
-    'node.role==manager',
+    'node.role==manager', # to keep at one place for easy backup
     'node.labels.host_persistent==true'
   ]
   config_bind = [
