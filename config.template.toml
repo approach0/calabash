@@ -453,7 +453,8 @@ print_arguments = [
   docker_exec = sh /tmp/entrypoint.sh
 
   [service.ui_search]
-  mesh_replicas = 2
+  network = calabash_net
+  mesh_replicas = 3
   docker_image = approach0/ui-approach0
   constraints = [
     'node.labels.host_persistent==true'
