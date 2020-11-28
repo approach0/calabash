@@ -662,12 +662,6 @@ print_arguments = [
     'node.labels.host_searchd==true'
   ]
   publish = ['published=8921,target=8921,mode=host']
-  labels = [
-    #'gateway.route=a0', # not exposing until tested
-    'gateway.port=8921'
-  ]
-  docker_image = approach0/a0
-
   config_bind = [
     'text:searchd_entrypoint:/tmp/entrypoint.sh'
   ]
@@ -714,6 +708,7 @@ print_arguments = [
     '''
   ]
   stop_signal = SIGUSR1
+  docker_image = approach0/a0
   docker_exec = bash /tmp/entrypoint.sh $shard
 
   [service.searchd_mpirun]
