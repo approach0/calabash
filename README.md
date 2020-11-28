@@ -127,8 +127,7 @@ $ node cli.js http://<IP>:<PORT> --follow -j swarm:service-create?service=search
 Now, search daemon should be running and exposing port from searchd and can be accessed from any swarm node (either from a manager or a worker, since we are using default ingress network for swarm).
 Test a query through a Approach Zero test script:
 ```
-# docker run approach0/a0 test-query.sh http://<IP>:<SEARCHD_EXPOSED_PORT>/search /demo/test-query.json
-# docker run approach0/a0 test-query.sh http://<IP>/a0/search /demo/test-query.json
+# docker run approach0/a0 test-query.sh http://<IP>:<SEARCHD_EXPOSED_PORT>/search /tmp/test-query.json
 ```
 
 ### Monitoring
