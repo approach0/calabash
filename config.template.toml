@@ -228,7 +228,7 @@ print_arguments = [
   [service.usersdb_syncd]
   publish = ['published=8873,target=873,mode=host']
   mounts = [
-    'type=volume,src=corpus_vol,dst=/data',
+    'type=volume,src=usersdb_vol,dst=/data',
   ]
   constraints = [
     'node.role==manager', # to keep at one place for easy backup
