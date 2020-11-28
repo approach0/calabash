@@ -452,6 +452,20 @@ print_arguments = [
   ]
   docker_exec = sh /tmp/entrypoint.sh
 
+  [service.ui_search]
+  mesh_replicas = 2
+  docker_image = approach0/ui-approach0
+  constraints = [
+    'node.labels.host_persistent==true'
+  ]
+  labels = [
+    'gateway.route=search',
+    'gateway.port=19985'
+  ]
+  env = [
+    'A0_RELAY_URL=/search-relay/'
+  ]
+
   [service.corpus_syncd]
   network = calabash_net
   publish = ['published=873,target=873,mode=host']
