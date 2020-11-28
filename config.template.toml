@@ -733,10 +733,13 @@ print_arguments = [
     '''
     subnet=$1
     service=${2-searchd}
+    word_cache=${3-0}
+    math_cache=${4-0}
+
     source /tmp/detect-shards.sh
 
     mountat=/mnt/vdisk
-    command="searchd.out -i ./mnt -L /mnt/vdisk/vdisk.lock -c 100 -C 500"
+    command="searchd.out -i ./mnt -L /mnt/vdisk/vdisk.lock -c $word_cache -C $math_cache"
 
     hosts=`detect_shards $service`
     np=$(echo $hosts | wc -w)
@@ -752,7 +755,8 @@ print_arguments = [
     '''
   ]
   restart_condition = any
-  docker_exec = 'bash /tmp/entrypoint.sh $(swarm_network_space calabash_net) $target_serv'
+  # suggested full index parameters: word_cache=100, math_cache=500
+  docker_exec = 'bash /tmp/entrypoint.sh $(swarm_network_space calabash_net) $target_serv $word_cache $math_cache'
 
   [service.relay_blue]
   network = calabash_net
