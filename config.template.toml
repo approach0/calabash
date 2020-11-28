@@ -78,6 +78,7 @@ providers = [linode]
     approach0/a0-crawlers,
     approach0/a0-relay,
     approach0/a0-stats,
+    approach0/ui-approach0,
     #approach0/docker-postgres13
   ]
 
