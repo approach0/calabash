@@ -314,3 +314,11 @@ swarm_service_update() {
 		$servName
 	set +x
 }
+
+swarm_service_scale() {
+	local servName="$1"
+	local replicas="$2"
+	set -x
+	$DOCKER service scale $servName=$replicas
+	set +x
+}

@@ -455,10 +455,10 @@ print_arguments = [
 
   [service.ui_search]
   network = calabash_net
-  mesh_replicas = 3
+  mesh_replicas = 1 # let's scale up later
   docker_image = approach0/ui-approach0
   constraints = [
-    'node.labels.host_persistent==true'
+    'node.labels.host_searchd==true'
   ]
   labels = [
     'gateway.route=search',

@@ -259,10 +259,7 @@ exec = [
 dep = swarm:install
 
 [bootstrap-update]
-source = [
-  . $scripts/iaas/all.sh,
-  . $scripts/swarm/swarm.sh
-]
+source = . $scripts/swarm/swarm.sh
 exec = [
   require_args nodeIP port services,
   ssh-keygen -R $nodeIP,
@@ -297,10 +294,7 @@ exec = [
 dep = swarm:install
 
 [service-create]
-source = [
-  . $scripts/iaas/all.sh,
-  . $scripts/swarm/swarm.sh
-]
+source = . $scripts/swarm/swarm.sh
 if = is_swarm_manager
 exec = [
   require_args service,
@@ -308,12 +302,17 @@ exec = [
 ]
 
 [service-update]
-source = [
-  . $scripts/iaas/all.sh,
-  . $scripts/swarm/swarm.sh
-]
+source = . $scripts/swarm/swarm.sh
 if = is_swarm_manager
 exec = [
   require_args service,
   'swarm_service_update $service'
+]
+
+[service-scale]
+source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
+exec = [
+  require_args service replicas,
+  'swarm_service_scale $service $replicas'
 ]
