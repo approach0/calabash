@@ -485,6 +485,7 @@ print_arguments = [
     'text:corpus_entrypoint:/tmp/entrypoint.sh'
   ]
   config_source = [
+    'rsyncclient:INJECT:rsync_pass',
     '''
     rsync --daemon --verbose --config=/tmp/rsyncd.conf
 
@@ -516,7 +517,6 @@ print_arguments = [
     'text:crawler_entrypoint:/tmp/entrypoint.sh'
   ]
   config_source = [
-    'rsyncclient:INJECT:rsync_pass',
     '''
     while true; do
       echo "Copying harvest data to corpus ..."
