@@ -85,12 +85,13 @@ providers = [linode]
 [node_usage]
   [node_usage.persistent]
   labels = [
+    'host_corpus=true',
     'host_persistent=true'
   ]
 
   [node_usage.indexer]
   labels = [
-    'host_corpus=true',
+    'host_crawler=true',
     'host_indexer=true'
   ]
   install_hooks = [
@@ -100,6 +101,7 @@ providers = [linode]
 
   [node_usage.searchd]
   labels = [
+    'host_crawler=true',
     'host_searchd=true'
   ]
   install_hooks = [
@@ -471,8 +473,6 @@ print_arguments = [
   [service.corpus_syncd]
   network = calabash_net
   publish = ['published=873,target=873,mode=host']
-  mesh_sharding = 4
-  max_per_node = 1
   mounts = [
     'type=volume,src=corpus_vol,dst=/data',
   ]
@@ -481,33 +481,15 @@ print_arguments = [
   ]
   docker_image = approach0/rsyncd
   config_bind = [
-    'path:detect_shards:/tmp/detect-shards.sh',
     'text:corpus_syncd_pass:/tmp/rsyncd.secret,mode=0600',
     'text:corpus_entrypoint:/tmp/entrypoint.sh'
   ]
   config_source = [
-    '$scripts/swarm/detect-shards.sh',
-    'rsyncclient:INJECT:rsync_pass',
     '''
-    source /tmp/detect-shards.sh
-    servID=$1
-
-    echo 'Run rsync daemon ...'
     rsync --daemon --verbose --config=/tmp/rsyncd.conf
 
     while true; do
-      shards=`detect_shards corpus_syncd 0`
-
-      echo "Synchronize /data among $shards"
-      for dst in $shards; do
-        if [ "$servID" != "$dst" ]; then
-          export RSYNC_PASSWORD=INJECT:rsync_pass
-          rsync -zauv --progress /data/ rsync://rsyncclient@$dst/data/
-        fi
-      done
-
-      echo 'Inspecting /data directory ...'
-      touch /data/servID-$servID.touch
+      echo '=== Corpus Directory ==='
       du -sh /data/*
       set -x
       find /data/ -name '*.json' | wc -l
@@ -517,63 +499,61 @@ print_arguments = [
     done
     '''
   ]
-  docker_exec = bash /tmp/entrypoint.sh $servID
+  docker_exec = bash /tmp/entrypoint.sh
 
-  [service.crawler]
-  mesh_sharding = 4
+  [service.crawler_sync]
+  network = calabash_net
   max_per_node = 1
+  mesh_sharding = 8
   mounts = [
-    'type=volume,src=corpus_vol,dst=/data',
+    'type=volume,src=crawler_vol,dst=/data',
   ]
   constraints = [
-    'node.labels.host_corpus==true'
+    'node.labels.host_crawler==true'
   ]
-  docker_image = approach0/a0-crawlers
+  docker_image = approach0/rsyncd
   config_bind = [
     'text:crawler_entrypoint:/tmp/entrypoint.sh'
   ]
   config_source = [
+    'rsyncclient:INJECT:rsync_pass',
     '''
-    shard=$1
-    export PATH="$PATH:/code"
-    cd /data
-
     while true; do
-      case $shard in
+      echo "Copying harvest data to corpus ..."
+      export RSYNC_PASSWORD=INJECT:rsync_pass
+      rsync -zauv --progress /data/ rsync://rsyncclient@corpus_syncd/data/
 
-        1)
-          crawler-math.stackexchange.com.py  --begin-page     1 --end-page  1000
-          crawler-math.stackexchange.com.py  --begin-page  1001 --end-page  7000
-        ;;
+      echo 'Inspecting harvest data ...'
+      set -x
+      find /data/ -name '*.json' | wc -l
+      set +x
 
-        2)
-          crawler-math.stackexchange.com.py  --begin-page  7001 --end-page 17000
-          crawler-math.stackexchange.com.py  --begin-page 17001 --end-page 27000
-        ;;
+      echo 'Deleting old data ...'
+      set -x
+      find /data/ -name '*.json' -mtime +3 -exec rm -f {} \;
+      set +x
 
-        3)
-          crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 3
-          crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 4
-          crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 5
-        ;;
-
-        4)
-          crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 6
-          crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 7
-          crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 123
-          crawler-artofproblemsolving.com.py  -n 0 -o 3650 -c 163
-        ;;
-
-        *)
-          echo "shard#`${shard}` is not handled!"
-        ;;
-
-      esac
-
-      echo "Start over ..."
       sleep 32
     done
     '''
+  ]
+  docker_exec = bash /tmp/entrypoint.sh
+
+  [service.crawler]
+  mesh_sharding = 8
+  max_per_node = 2
+  mounts = [
+    'type=volume,src=crawler_vol,dst=/data',
+  ]
+  constraints = [
+    'node.labels.host_crawler==true'
+  ]
+  docker_image = approach0/a0-crawlers
+  config_bind = [
+    'path:crawler_entrypoint:/tmp/entrypoint.sh'
+  ]
+  config_source = [
+    '$configs/entrypoint-crawler.sh'
   ]
   docker_exec = bash /tmp/entrypoint.sh $shard
 
