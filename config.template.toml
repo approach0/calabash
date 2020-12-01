@@ -782,7 +782,7 @@ print_arguments = [
   constraints = [
     'node.labels.host_searchd==true'
   ]
-  docker_image = t-k-/docker-ss
+  docker_image = approach0/docker-ss
   config_bind = [
     'text:ss_entrypoint:/tmp/entrypoint.sh'
   ]
