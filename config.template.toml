@@ -391,6 +391,17 @@ print_arguments = [
   ]
   docker_exec = sh /tmp/entrypoint.sh $shard
 
+  [service.ui_404]
+  network = calabash_net
+  constraints = [
+    'node.labels.host_persistent==true'
+  ]
+  labels = [
+    'gateway.route=_root_',
+    'gateway.port=8080'
+  ]
+  docker_image = 'approach0/ui-404'
+
   [service.docs]
   network = calabash_net
   docker_image = approach0/docs
@@ -774,6 +785,7 @@ print_arguments = [
   docker_exec = bash /tmp/entrypoint2.sh $relay_target
 
   [service.ss]
+  mesh_sharding = 4
   max_per_node = 1
   publish = ['published=80,target=80,mode=host']
   mounts = [
