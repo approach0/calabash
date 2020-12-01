@@ -29,7 +29,7 @@ providers = [linode]
     password = ___
 
     [iaas.linode.config_2]
-    region = us-west
+    region = eu-central # us-west
     specs = 'g6-standard-1'
     distro = linode/debian10
     ssh_port = ___
