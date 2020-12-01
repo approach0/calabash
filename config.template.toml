@@ -749,7 +749,7 @@ print_arguments = [
   # suggested full index parameters: word_cache=100, math_cache=500
   docker_exec = 'bash /tmp/entrypoint.sh $(swarm_network_space calabash_net) $target_serv $word_cache $math_cache'
 
-  [service.relay_blue]
+  [service.relay]
   network = calabash_net
   max_per_node = 1 # for multiple searchd replicas
   docker_image = approach0/a0-relay
@@ -761,24 +761,36 @@ print_arguments = [
     'gateway.route=search-relay',
     'gateway.port=8080'
   ]
-  env = [
-    'A0_SEARCHD=blue',
-    'A0_QRYLOGD=stats'
+  config_bind = [
+    'text:relay_entrypoint:/tmp/entrypoint2.sh'
   ]
+  config_source = [
+    '''
+    export A0_SEARCHD=${1-searchd}
+    export A0_QRYLOGD=stats
+    /tmp/entrypoint.sh
+    '''
+  ]
+  docker_exec = bash /tmp/entrypoint2.sh $relay_target
 
-  [service.relay_green]
-  network = calabash_net
-  max_per_node = 1 # for multiple searchd replicas
-  docker_image = approach0/a0-relay
+  [service.ss]
+  max_per_node = 1
+  publish = ['published=80,target=80,mode=host']
+  mounts = [
+    'type=volume,src=corpus_vol,dst=/data',
+  ]
   constraints = [
-    'node.labels.shard==1', # let it be around to searchd (shard 1)
     'node.labels.host_searchd==true'
   ]
-  labels = [
-    'gateway.route=search-relay',
-    'gateway.port=8080'
+  docker_image = t-k-/docker-ss
+  config_bind = [
+    'text:ss_entrypoint:/tmp/entrypoint.sh'
   ]
-  env = [
-    'A0_SEARCHD=green',
-    'A0_QRYLOGD=stats'
+  config_source = [
+    '''
+    SS_PASS=INJECT:admin_pass,
+    sed -i -e "s/iamforgetful/$SS_PASS/g" /root/ss.json
+    /usr/local/bin/ss-server -c /root/ss.json
+    '''
   ]
+  docker_exec = bash /tmp/entrypoint.sh
