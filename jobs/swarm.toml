@@ -193,7 +193,7 @@ source = [
   . $scripts/swarm/swarm.sh
 ]
 exec = [
-  require_args node_usage,
+  require_args node_usage services,
 
   # initialize Docker warm for the first time
   $DOCKER swarm init,
@@ -210,10 +210,10 @@ exec = [
   # setup bootstrap services
   cp $_config_file_ $service_bootstrap_config_path,
   '''
-  for argvar in $(eval echo \${!service_bootstrap_services_@}); do
-    dockerimg=$(unpack \$service_${!argvar}_docker_image)
+  for srv in $(echo $services | tr ',' ' '); do
+    dockerimg=$(unpack \$service_${srv}_docker_image)
     use_image=$(echo $dockerimg | cut -d '/' -f 2)
-    swarm_service_create ${!argvar} $use_image
+    swarm_service_create $srv $use_image
   done
   '''
 ]
