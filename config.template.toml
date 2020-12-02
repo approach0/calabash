@@ -541,7 +541,7 @@ print_arguments = [
 
       echo 'Deleting old data ...'
       set -x
-      find /data/ -name '*.json' -mtime +3 -exec rm -f {} \;
+      find /data/ -name '*.json' -mtime +1 -exec rm -f {} \;
       set +x
 
       sleep 32
