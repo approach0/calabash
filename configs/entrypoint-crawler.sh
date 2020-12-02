@@ -1,9 +1,9 @@
-shard=$1
+slot=$TASK_SLOT
 export PATH="$PATH:/code"
 cd /data
 
 while true; do
-	case $shard in
+	case $slot in
 
 		1)
 			crawler-math.stackexchange.com.py --begin-page 1 --end-page 3000
@@ -70,7 +70,7 @@ while true; do
 		;;
 
 		*)
-			echo "shard#`${shard}` is not handled!"
+			echo "SLOT#`${slot}` is not handled!"
 		;;
 
 	esac

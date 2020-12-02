@@ -281,8 +281,9 @@ swarm_service_create() {
 			--replicas-max-per-node=$max_per_node \
 			--restart-condition=$restart_condition \
 			--stop-signal=$stop_signal \
-			$constraints \
+			--env="TASK_SLOT={{.Task.Slot}}" \
 			$environments \
+			$constraints \
 			$configs \
 			$mounts \
 			$extra_args \

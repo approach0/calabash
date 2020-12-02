@@ -515,8 +515,8 @@ print_arguments = [
 
   [service.crawler_sync]
   network = calabash_net
-  mesh_replicas = 4
-  mesh_sharding = 4
+  max_per_node = 1
+  mesh_replicas = 8
   mounts = [
     'type=volume,src=crawler_vol,dst=/data',
   ]
@@ -551,8 +551,8 @@ print_arguments = [
   docker_exec = bash /tmp/entrypoint.sh
 
   [service.crawler]
-  mesh_replicas = 4
-  mesh_sharding = 4
+  max_per_node = 2
+  mesh_replicas = 16
   mounts = [
     'type=volume,src=crawler_vol,dst=/data',
   ]
@@ -566,7 +566,7 @@ print_arguments = [
   config_source = [
     '$configs/entrypoint-crawler.sh'
   ]
-  docker_exec = bash /tmp/entrypoint.sh $shard
+  docker_exec = bash /tmp/entrypoint.sh
 
   [service.feeder]
   network = calabash_net
