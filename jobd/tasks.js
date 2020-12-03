@@ -99,9 +99,9 @@ exports.log_notify = function(task_id, idx, lines) {
     const meta = task[idx]
     meta['log'] += lines
 
-    /* trim the first half if log is getting lengthy */
+    /* trim the first half if (unpinned) log is getting lengthy */
     const length = meta['log'].length || 0
-    if (length > LOG_LIMIT) {
+    if (length > LOG_LIMIT && g_pins[task_id] === undefined) {
       const keep_len = Math.min(Math.floor(length / 2), LOG_LIMIT)
       meta['log'] = meta['log'].slice(keep_len)
     }
