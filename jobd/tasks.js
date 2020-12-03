@@ -1,3 +1,5 @@
+const LOG_LIMIT = 20 * 1024
+
 const g_tasks = {}
 const g_pins = {}
 var g_task_id = 0
@@ -96,6 +98,14 @@ exports.log_notify = function(task_id, idx, lines) {
   if (task) {
     const meta = task[idx]
     meta['log'] += lines
+
+    /* trim the first half if log is getting lengthy */
+    const length = meta['log'].length || 0
+    if (length > LOG_LIMIT) {
+      const keep_len = Math.min(Math.floor(length / 2), LOG_LIMIT)
+      meta['log'] = meta['log'].slice(keep_len)
+    }
+
     return 0
   }
 
