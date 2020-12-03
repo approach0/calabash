@@ -6,7 +6,7 @@ node_prefix = calabash
 admin_name = admin
 admin_pass = ___
 rsync_pass = ___
-domain_name = xitizu.com
+domain_name = approach0.me
 
 [iaas]
 providers = [linode]
@@ -179,12 +179,13 @@ print_arguments = [
     'node.labels.host_persistent==true'
   ]
   mounts = [
+    'type=volume,src=gateway_vol,dst=/root/keys',
     'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock'
   ]
   docker_image = approach0/gateway
   publish = [
-    'published=80,target=80,mode=host'
     'published=443,target=443,mode=host',
+    'published=80,target=80,mode=host'
   ]
   docker_exec = ./entrypoint.sh $domain_name
 
