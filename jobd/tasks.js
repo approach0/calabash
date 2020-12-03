@@ -1,4 +1,4 @@
-const LOG_LIMIT = 20 * 1024
+const LOG_LIMIT = 200 * 1024
 
 const g_tasks = {}
 const g_pins = {}
