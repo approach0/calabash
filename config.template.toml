@@ -652,6 +652,7 @@ print_arguments = [
       echo "index-shard#${shard} /data"
       date
       ls -l --block-size=M /data
+      df -h
       sleep 5
     done
     '''
@@ -676,6 +677,8 @@ print_arguments = [
     '''
     shard=$1
     vdisk=/mnt/vdisk
+
+    rm -f $vdisk/vdisk.lock
 
     echo '[ Inspect vdisk folder ]'
     ls -l $vdisk/ $vdisk/mnt
