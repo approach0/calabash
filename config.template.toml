@@ -759,6 +759,7 @@ print_arguments = [
     set +x
     '''
   ]
+  stop_signal = SIGUSR1
   restart_condition = any
   # suggested full index parameters: word_cache=100, math_cache=500
   docker_exec = 'bash /tmp/entrypoint.sh $(swarm_network_space calabash_net) $target_serv $word_cache $math_cache'
