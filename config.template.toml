@@ -239,7 +239,7 @@ print_arguments = [
     'node.labels.host_persistent==true'
   ]
   config_bind = [
-    'text:corpus_syncd_pass:/tmp/rsyncd.secret,mode=0600'
+    'text:userdb_syncd_pass:/tmp/rsyncd.secret,mode=0600'
   ]
   config_source = [
     'rsyncclient:INJECT:rsync_pass',
