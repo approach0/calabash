@@ -179,7 +179,8 @@ print_arguments = [
     'node.labels.host_persistent==true'
   ]
   mounts = [
-    'type=volume,src=gateway_vol,dst=/root/keys',
+    'type=volume,src=gateway_acme_vol,dst=/root/.acme.sh',
+    'type=volume,src=gateway_keys_vol,dst=/root/keys',
     'type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock'
   ]
   docker_image = approach0/gateway
