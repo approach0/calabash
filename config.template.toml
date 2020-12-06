@@ -393,6 +393,22 @@ print_arguments = [
   ]
   docker_exec = sh /tmp/entrypoint.sh $shard
 
+  [service.ui_search]
+  network = calabash_net
+  limit_memory = 300MB
+  mesh_replicas = 1 # let's scale up later
+  docker_image = approach0/ui-approach0
+  constraints = [
+    'node.labels.host_persistent==true'
+  ]
+  labels = [
+    'gateway.route=search',
+    'gateway.port=19985'
+  ]
+  env = [
+    'A0_RELAY_URL=/search-relay/'
+  ]
+
   [service.ui_404]
   network = calabash_net
   constraints = [
@@ -467,21 +483,6 @@ print_arguments = [
     '''
   ]
   docker_exec = sh /tmp/entrypoint.sh
-
-  [service.ui_search]
-  network = calabash_net
-  mesh_replicas = 1 # let's scale up later
-  docker_image = approach0/ui-approach0
-  constraints = [
-    'node.labels.host_searchd==true'
-  ]
-  labels = [
-    'gateway.route=search',
-    'gateway.port=19985'
-  ]
-  env = [
-    'A0_RELAY_URL=/search-relay/'
-  ]
 
   [service.corpus_syncd]
   network = calabash_net
