@@ -696,7 +696,7 @@ print_arguments = [
     delta_time=$(($curr_timestamp - $last_timestamp))
     echo "[ Detal time: $delta_time seconds ]"
 
-    if [[ $delta_time -lt 1200 && -e $vdisk/mnt/mstats.bin ]]; then
+    if [[ $delta_time -lt 1800 && -e $vdisk/mnt/mstats.bin ]]; then
 
       echo '[ Index is up to date and mounted, setup SSH daemon ]'
       /usr/sbin/sshd -e -D
