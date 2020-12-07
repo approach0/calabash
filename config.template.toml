@@ -283,20 +283,7 @@ print_arguments = [
   constraints = [
     'node.labels.host_persistent==true'
   ]
-  env = [
-    'CALABASH_URL=/calabash'
-  ]
   docker_image = approach0/ui-calabash
-  config_bind = [
-    'text:ui_calabash_entrypoint:/tmp/entrypoint.sh'
-  ]
-  config_source = [
-    '''
-    npm run build
-    npm run serve
-    '''
-  ]
-  docker_exec = bash /tmp/entrypoint.sh
 
   [service.ui_login]
   network = calabash_net
@@ -404,9 +391,6 @@ print_arguments = [
   labels = [
     'gateway.route=search',
     'gateway.port=19985'
-  ]
-  env = [
-    'A0_RELAY_URL=/search-relay/'
   ]
 
   [service.ui_404]
