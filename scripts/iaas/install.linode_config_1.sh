@@ -13,6 +13,12 @@ cat > '/etc/docker/daemon.json' << EOF
 {
 	"registry-mirrors": ["$DOCKER_MIRROR"],
 
+	"log-driver": "json-file",
+	"log-opts": {
+		"max-size": "10m",
+		"max-file": "3"
+	},
+
 	"metrics-addr" : "0.0.0.0:9323",
 	"experimental" : true
 }
