@@ -647,6 +647,7 @@ print_arguments = [
   docker_exec = bash /tmp/entrypoint.sh $shard
 
   [service.searchd]
+  limit_memory = 1000MB
   network = calabash_net
   mesh_sharding = 4
   max_per_node = 1
@@ -709,6 +710,7 @@ print_arguments = [
   docker_exec = bash /tmp/entrypoint.sh $shard
 
   [service.searchd_mpirun]
+  limit_memory = 1000MB
   network = calabash_net
   max_per_node = 1 # for multiple searchd replicas
   constraints = [
