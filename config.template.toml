@@ -669,7 +669,7 @@ print_arguments = [
     rm -f $vdisk/vdisk.lock
 
     echo '[ Inspect vdisk folder ]'
-    ls -l $vdisk/ $vdisk/mnt
+    ls -la $vdisk/ $vdisk/mnt
     du -h $vdisk/vdisk.img
     if [ -e $vdisk/mnt/mstats.bin ]; then
       doc-lookup.out -p $vdisk/mnt
@@ -690,10 +690,11 @@ print_arguments = [
     else
       echo '[ Index missing or out of date, sync index image... ]'
       export RSYNC_PASSWORD=INJECT:rsync_pass
+      rm -f $vdisk/.vdisk.*
       if [ $shard -eq 1 ]; then
-        rsync -zuv rsync://rsyncclient@index_syncd/data/vdisk.*.img $vdisk/
+        rsync -zuv --checksum rsync://rsyncclient@index_syncd/data/vdisk.*.img $vdisk/
       else
-        rsync -zuv rsync://rsyncclient@index_syncd-shard${shard}/data/vdisk.*.img $vdisk/
+        rsync -zuv --checksum rsync://rsyncclient@index_syncd-shard${shard}/data/vdisk.*.img $vdisk/
       fi
       (date; ls $vdisk/vdisk.*.img) >> $vdisk/history_images.log
 
