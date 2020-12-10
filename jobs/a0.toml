@@ -1,0 +1,13 @@
+[instance-ps]
+source = [
+  . $scripts/swarm/swarm.sh
+  . $scripts/swarm/detect-shards.sh
+]
+if = is_swarm_manager
+exec = [
+  require_args instance, # search instance e.g., blue
+  services=$(detect_shards $instance),
+  set -x,
+  '$DOCKER service ps $services ${instance}_mpirun',
+  set +x
+]
