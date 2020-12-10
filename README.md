@@ -1,3 +1,5 @@
+Calabash -- A Docker Swarm based automation tool, designed with simplicity in mind. It provides built-in gateway, IaaS bootstrap and managing layer, HTTPs bootstrap, service discover, authentication paradigm and automation scripting based on Shell. It also has a dashboard UI.
+
 ## About
 Calabash is an automation tool for small Dev team, with the following emphasises:
 
