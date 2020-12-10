@@ -692,9 +692,9 @@ print_arguments = [
       export RSYNC_PASSWORD=INJECT:rsync_pass
       rm -f $vdisk/.vdisk.*
       if [ $shard -eq 1 ]; then
-        rsync -zuv --checksum rsync://rsyncclient@index_syncd/data/vdisk.*.img $vdisk/
+        rsync -zuv rsync://rsyncclient@index_syncd/data/vdisk.*.img $vdisk/
       else
-        rsync -zuv --checksum rsync://rsyncclient@index_syncd-shard${shard}/data/vdisk.*.img $vdisk/
+        rsync -zuv rsync://rsyncclient@index_syncd-shard${shard}/data/vdisk.*.img $vdisk/
       fi
       (date; ls $vdisk/vdisk.*.img) >> $vdisk/history_images.log
 
