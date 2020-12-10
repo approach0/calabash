@@ -105,6 +105,7 @@ vdisk_consume_daemon() {
 
 	mkdir -p /var/tmp/vdisk
 	swapoff -a # maybe swap is not suitable for search nodes?
+	#cat /proc/swaps
 
 	declare -fx umount_vdisk create_vdisk mount_vdisk vdisk_consume_loop
 	nohup bash -c "vdisk_consume_loop" &> /var/tmp/vdisk/nohup.out < /dev/null &

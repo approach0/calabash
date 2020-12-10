@@ -5,6 +5,7 @@ job_dir = ./jobs
 node_prefix = calabash
 admin_name = admin
 admin_pass = ___
+ss_pass    = ___
 rsync_pass = ___
 domain_name = approach0.xyz
 
@@ -795,7 +796,7 @@ print_arguments = [
   ]
   config_source = [
     '''
-    SS_PASS=INJECT:admin_pass
+    SS_PASS=INJECT:ss_pass
     sed -i -e "s/iamforgetful/$SS_PASS/g" /root/ss.json
     /usr/local/bin/ss-server -c /root/ss.json
     '''
