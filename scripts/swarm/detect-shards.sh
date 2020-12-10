@@ -7,6 +7,7 @@ detect_shards() {
 	list=""
 	cnt=0
 	for name in $servName $servName-shard{2..99}; do
+		echo "detect-shards.sh: PING $name ..." >&2
 		ping -c 1 -W 3 $name &> /dev/null
 		[ ! $? -eq 0 ] && break
 		list="$list $name"
