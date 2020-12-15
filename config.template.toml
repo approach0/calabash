@@ -318,7 +318,7 @@ print_arguments = [
   #docker_image = prom/prometheus@sha256:60190123eb28250f9e013df55b7d58e04e476011911219f5cedac3c73a8b74e6
   docker_image = prom/prometheus
   config_bind = [
-    'path:prometheus_conf:/etc/prometheus/prometheus.yml'
+    'path:prometheus_conf:/tmp/prometheus.yml'
     'text:prometheus_log_rotate:/etc/logrotate.d/prometheus',
     'text:prometheus_entrypoint:/tmp/entrypoint.sh'
   ]
@@ -335,7 +335,12 @@ print_arguments = [
       endscript
     }
     ''',
-    '/bin/prometheus --storage.tsdb.retention.time=3y --storage.tsdb.path=/prometheus'
+    '''
+    /bin/prometheus \
+        --storage.tsdb.retention.time=3y \
+        --storage.tsdb.path=/prometheus \
+        --config.file=/tmp/prometheus.yml
+    '''
   ]
   docker_exec = sh /tmp/entrypoint.sh
 
