@@ -80,6 +80,9 @@ linode_node_create() {
 			sleep 10
 		fi
 	done
+
+	echo 'wait a few seconds for new host to establish SSH port ...'
+	sleep 16
 }
 
 linode_node_delete() {
