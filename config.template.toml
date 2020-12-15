@@ -161,6 +161,7 @@ print_arguments = [
   ###
 
   [service.gateway_bootstrap]
+  max_per_node = 1
   network = calabash_net
   publish = ['published=8080,target=443,mode=host']
   constraints = [
@@ -173,6 +174,7 @@ print_arguments = [
   docker_image = approach0/gateway
 
   [service.gateway]
+  max_per_node = 1
   network = calabash_net
   constraints = [
     'node.role==manager',
@@ -402,7 +404,7 @@ print_arguments = [
   [service.ui_search]
   network = calabash_net
   limit_memory = 300MB
-  mesh_replicas = 1 # let's scale up later
+  mesh_replicas = 2 # let's scale up later
   docker_image = approach0/ui-approach0
   constraints = [
     'node.labels.host_persistent==true'
@@ -522,7 +524,7 @@ print_arguments = [
   [service.crawler_sync]
   network = calabash_net
   max_per_node = 1
-  mesh_replicas = 8
+  mesh_replicas = 10
   mounts = [
     'type=volume,src=crawler_vol,dst=/data',
   ]
@@ -558,7 +560,7 @@ print_arguments = [
 
   [service.crawler]
   max_per_node = 2
-  mesh_replicas = 16
+  mesh_replicas = 20
   mounts = [
     'type=volume,src=crawler_vol,dst=/data',
   ]
@@ -607,7 +609,7 @@ print_arguments = [
 
   [service.indexer]
   network = calabash_net
-  mesh_sharding = 4
+  mesh_sharding = 5
   max_per_node = 1
   mounts = [
     'type=bind,src=/var/tmp/vdisk,dst=/mnt/vdisk'
@@ -634,7 +636,7 @@ print_arguments = [
 
   [service.index_syncd]
   network = calabash_net
-  mesh_sharding = 4
+  mesh_sharding = 5
   max_per_node = 1
   mounts = [
     'type=bind,src=/var/tmp/vdisk,dst=/data'
@@ -668,7 +670,7 @@ print_arguments = [
   [service.searchd]
   limit_memory = 800MB
   network = calabash_net
-  mesh_sharding = 4
+  mesh_sharding = 5
   max_per_node = 1
   mounts = [
     'type=bind,src=/var/tmp/vdisk,dst=/mnt/vdisk'
@@ -799,7 +801,7 @@ print_arguments = [
   docker_exec = bash /tmp/entrypoint2.sh $relay_target
 
   [service.ss]
-  mesh_replicas = 4
+  mesh_replicas = 5
   max_per_node = 1
   publish = ['published=80,target=80,mode=host']
   mounts = [
