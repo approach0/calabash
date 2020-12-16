@@ -116,6 +116,14 @@ exec = [
   $DOCKER node demote $swarmNode
 ]
 
+[node-update-availability]
+source = . $scripts/swarm/swarm.sh
+if = is_swarm_manager
+exec = [
+  require_args swarmNode availability, # active/drain
+  $DOCKER node update --availability $availability $swarmNode
+]
+
 [service-label-set]
 source = . $scripts/swarm/swarm.sh
 if = is_swarm_manager
