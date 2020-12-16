@@ -806,7 +806,7 @@ print_arguments = [
   docker_exec = bash /tmp/entrypoint2.sh $relay_target
 
   [service.ss]
-  mesh_replicas = 5
+  mesh_replicas = 2
   max_per_node = 1
   publish = ['published=80,target=80,mode=host']
   mounts = [
