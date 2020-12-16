@@ -632,10 +632,12 @@ print_arguments = [
     # fall through here to restart service so that mounting point will be refreshed
     '''
   ]
+  stop_signal = SIGINT
   restart_condition = any # restart service even if exec program exits with code 0.
   docker_exec = bash /tmp/entrypoint.sh
 
   [service.index_syncd]
+  publish = ['published=8873,target=873,mode=host']
   network = calabash_net
   mesh_sharding = 5
   max_per_node = 1
