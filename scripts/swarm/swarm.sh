@@ -261,7 +261,9 @@ swarm_service_create() {
 		fi
 
 		# map port for the first shard to avoid port conflicts (since default is ingress mode)
-		if [[ $shard -eq 1 && ! -z "$publish_ports" ]]; then
+		if [[ "$publish_ports" == *"host"* ]]; then
+			extra_args="${extra_args} ${publish_ports}"
+		elif [[ $shard -eq 1 && ! -z "$publish_ports" ]]; then
 			extra_args="${extra_args} ${publish_ports}"
 		fi
 
