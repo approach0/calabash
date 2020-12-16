@@ -258,11 +258,19 @@ exec = [
 ]
 dep = swarm:install
 
+[bootstrap-refresh-id]
+source = . $scripts/swarm/swarm.sh
+exec = [
+  require_args nodeIP port pass,
+  ssh-keygen -R $nodeIP,
+  # allow ssh login from IaaS docker CLI to new remote peer
+  '$scripts/ssh/ssh-copy-id.expect root@$nodeIP $port $pass',
+]
+
 [bootstrap-update]
 source = . $scripts/swarm/swarm.sh
 exec = [
   require_args nodeIP port services,
-  ssh-keygen -R $nodeIP,
   $SCP -P $port $_config_file_ root@$nodeIP:$service_bootstrap_config_path,
   '''
   for srv in $(echo $services | tr ',' ' '); do
