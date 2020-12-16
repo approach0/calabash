@@ -131,7 +131,7 @@ swarm_network_ensure_has() {
 inject_env_vars_into_file() {
 	file_path="$1"
 	if [ "$file_path" == $service_bootstrap_config_path ]; then
-		echo "For security reason, never INJECT $file_path" >&2
+		echo "For security, never INJECT $file_path" >&2
 		return
 	fi
 	python -c "if True:
@@ -282,7 +282,7 @@ swarm_service_create() {
 			--replicas-max-per-node=$max_per_node \
 			--restart-condition=$restart_condition \
 			--stop-signal=$stop_signal \
-			--stop-grace-period=$stop_grace_period
+			--stop-grace-period=$stop_grace_period \
 			--env="TASK_SLOT={{.Task.Slot}}" \
 			$environments \
 			$constraints \
