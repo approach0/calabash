@@ -211,6 +211,7 @@ swarm_service_create() {
 	local max_per_node=${max_per_node-0}
 	local restart_condition=${restart_condition-on-failure}
 	local stop_signal=${stop_signal-SIGINT}
+	local stop_grace_period=${stop_grace_period-10s}
 	local limit_memory=${limit_memory-200MB}
 
 	# get complex variables (join array together, each item string may contain variables)
@@ -281,6 +282,7 @@ swarm_service_create() {
 			--replicas-max-per-node=$max_per_node \
 			--restart-condition=$restart_condition \
 			--stop-signal=$stop_signal \
+			--stop-grace-period=$stop_grace_period
 			--env="TASK_SLOT={{.Task.Slot}}" \
 			$environments \
 			$constraints \

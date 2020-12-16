@@ -143,6 +143,7 @@ print_arguments = [
   max_per_node,
   restart_condition,
   stop_signal,
+  stop_grace_period,
   limit_memory,
   service_labels,
   constraints,
@@ -633,6 +634,7 @@ print_arguments = [
     '''
   ]
   stop_signal = SIGINT
+  stop_grace_period = 45s
   restart_condition = any # restart service even if exec program exits with code 0.
   docker_exec = bash /tmp/entrypoint.sh
 
