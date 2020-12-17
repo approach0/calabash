@@ -609,6 +609,30 @@ print_arguments = [
   ]
   docker_exec = bash /tmp/entrypoint.sh
 
+  [service.indexer_stopper]
+  network = calabash_net
+  docker_image = approach0/a0
+  config_bind = [
+    'path:detect_shards:/tmp/detect-shards.sh',
+    'text:indexer_stopper_entrypoint:/tmp/entrypoint.sh'
+  ]
+  config_source = [
+    '$scripts/swarm/detect-shards.sh',
+    '''
+    source /tmp/detect-shards.sh
+
+    urls=$(for i in $(detect_shards indexer); do echo "--indexd-url http://${i}:8934/index"; done)
+    set -x
+    json-feeder.py $urls --bye
+    set +x
+
+    echo 'Waiting in case you want to see my output?'
+    sleep 240
+    '''
+  ]
+  restart_condition = none # one-time runner
+  docker_exec = bash /tmp/entrypoint.sh
+
   [service.indexer]
   network = calabash_net
   mesh_sharding = 5
