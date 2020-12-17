@@ -587,7 +587,7 @@ print_arguments = [
     'node.labels.host_corpus==true'
   ]
   docker_image = approach0/a0
-
+  restart_condition = any
   config_bind = [
     'path:detect_shards:/tmp/detect-shards.sh',
     'text:feeder_entrypoint:/tmp/entrypoint.sh'
@@ -597,14 +597,12 @@ print_arguments = [
     '''
     source /tmp/detect-shards.sh
 
-    while true; do
-      urls=$(for i in $(detect_shards indexer); do echo "--indexd-url http://${i}:8934/index"; done)
-      set -x
-      json-feeder.py --corpus-path /data $urls --bye
-      set +x
-      echo 'Waiting (long enough to get better chance that indexers are ready)'
-      sleep 240
-    done
+    urls=$(for i in $(detect_shards indexer); do echo "--indexd-url http://${i}:8934/index"; done)
+    set -x
+    json-feeder.py --corpus-path /data $urls --bye
+    set +x
+    echo 'Waiting long enough to get better chance that indexers are ready...'
+    sleep 600
     '''
   ]
   docker_exec = bash /tmp/entrypoint.sh
@@ -626,7 +624,7 @@ print_arguments = [
     json-feeder.py $urls --bye
     set +x
 
-    echo 'Waiting in case you want to see my output?'
+    echo 'Waiting for a while in case you want to see my output?'
     sleep 240
     '''
   ]
@@ -658,7 +656,7 @@ print_arguments = [
     '''
   ]
   stop_signal = SIGINT
-  stop_grace_period = 45s
+  stop_grace_period = 45s # ensure indexer dumps indices gracefully upon user stops me.
   restart_condition = any # restart service even if exec program exits with code 0.
   docker_exec = bash /tmp/entrypoint.sh
 
