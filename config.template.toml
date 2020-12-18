@@ -125,7 +125,7 @@ providers = [linode]
 
   [loop_task.4]
   goal = 'swarm:list-tasks'
-  reborn = 5400
+  reborn = 10100
 
 [service]
 bootstrap_services = [

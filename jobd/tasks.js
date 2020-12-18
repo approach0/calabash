@@ -171,6 +171,7 @@ exports.get = function(task_id, pruneLog) {
 exports.get_list = function(filter) {
   const all_tasks = Object.keys(g_tasks).map(task_id => {
     task_id = parseInt(task_id)
+    /* unpinned job logs are not necessary unless user requested it */
     return exports.get(task_id, g_pins[task_id] === undefined)
   })
 
