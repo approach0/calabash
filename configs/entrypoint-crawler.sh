@@ -70,7 +70,7 @@ while true; do
 		;;
 
 		*)
-			echo "SLOT#`${slot}` is not handled!"
+			echo "SLOT#${slot} is not handled!"
 		;;
 
 	esac
