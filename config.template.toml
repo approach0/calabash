@@ -512,7 +512,7 @@ print_arguments = [
 
     while true; do
       echo '=== Corpus Directory ==='
-      du -sh /data/*
+      df -h
       set -x
       find /data/ -name '*.json' | wc -l
       set +x
