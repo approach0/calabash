@@ -6,39 +6,39 @@ while true; do
 	case $slot in
 
 		1)
-			crawler-math.stackexchange.com.py --begin-page 1 --end-page 3000
+			crawler-stackexchange.py --site mse --begin-page 1 --end-page 3000
 		;;
 
 		2)
-			crawler-math.stackexchange.com.py --begin-page 3001 --end-page 6000
+			crawler-stackexchange.py --site mse --begin-page 3001 --end-page 6000
 		;;
 
 		3)
-			crawler-math.stackexchange.com.py --begin-page 6001 --end-page 9000
+			crawler-stackexchange.py --site mse --begin-page 6001 --end-page 9000
 		;;
 
 		4)
-			crawler-math.stackexchange.com.py --begin-page 9001 --end-page 12000
+			crawler-stackexchange.py --site mse --begin-page 9001 --end-page 12000
 		;;
 
 		5)
-			crawler-math.stackexchange.com.py --begin-page 12001 --end-page 15000
+			crawler-stackexchange.py --site mse --begin-page 12001 --end-page 15000
 		;;
 
 		6)
-			crawler-math.stackexchange.com.py --begin-page 15001 --end-page 18000
+			crawler-stackexchange.py --site mse --begin-page 15001 --end-page 18000
 		;;
 
 		7)
-			crawler-math.stackexchange.com.py --begin-page 18001 --end-page 21000
+			crawler-stackexchange.py --site mse --begin-page 18001 --end-page 21000
 		;;
 
 		8)
-			crawler-math.stackexchange.com.py --begin-page 21001 --end-page 24000
+			crawler-stackexchange.py --site mse --begin-page 21001 --end-page 24000
 		;;
 
 		9)
-			crawler-math.stackexchange.com.py --begin-page 24001 --end-page 27000
+			crawler-stackexchange.py --site mse --begin-page 24001 --end-page 27000
 		;;
 
 		10)
