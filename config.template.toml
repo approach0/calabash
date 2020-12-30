@@ -117,11 +117,11 @@ providers = [linode]
 
   [loop_task.2]
   goal = 'swarm:list-nodes?format=json'
-  reborn = 5200
+  reborn = 9200
 
   [loop_task.3]
   goal = 'swarm:list-services?format=json'
-  reborn = 5300
+  reborn = 9300
 
   [loop_task.4]
   goal = 'swarm:list-tasks'
