@@ -338,7 +338,7 @@ print_arguments = [
     ''',
     '''
     /bin/prometheus \
-        --storage.tsdb.retention.time=3y \
+        --storage.tsdb.retention.time=3d \
         --storage.tsdb.path=/prometheus \
         --config.file=/tmp/prometheus.yml
     '''
