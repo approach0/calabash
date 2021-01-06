@@ -602,7 +602,7 @@ print_arguments = [
     json-feeder.py --corpus-path /data $urls --bye
     set +x
     echo 'Waiting long enough to get better chance that indexers are ready...'
-    sleep 600
+    sleep 3600
     '''
   ]
   docker_exec = bash /tmp/entrypoint.sh
@@ -632,6 +632,7 @@ print_arguments = [
   docker_exec = bash /tmp/entrypoint.sh
 
   [service.indexer]
+  limit_memory = 300MB
   network = calabash_net
   mesh_sharding = 5
   max_per_node = 1
@@ -650,13 +651,13 @@ print_arguments = [
     # if there is no such directory (/mnt/vdisk/mnt), indexer will give up and quit
     (flock 100; indexer.out -z -o /mnt/vdisk/mnt/; sync ) 100>/mnt/vdisk/vdisk.lock
 
-    sleep 16 # Give vdisk-producer daemon enough time to create image
+    sleep 600 # Give vdisk-producer daemon enough time to create image
 
     # fall through here to restart service so that mounting point will be refreshed
     '''
   ]
   stop_signal = SIGINT
-  stop_grace_period = 45s # ensure indexer dumps indices gracefully upon user stops me.
+  stop_grace_period = 60s # ensure indexer dumps indices gracefully upon user stops me.
   restart_condition = any # restart service even if exec program exits with code 0.
   docker_exec = bash /tmp/entrypoint.sh
 
