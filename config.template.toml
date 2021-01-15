@@ -405,8 +405,8 @@ print_arguments = [
 
   [service.ui_search]
   network = calabash_net
-  limit_memory = 300MB
-  mesh_replicas = 2 # let's scale up later
+  limit_memory = 600MB
+  mesh_replicas = 2 # let's scale up it later
   docker_image = approach0/ui-approach0
   constraints = [
     'node.labels.host_persistent==true'
@@ -587,7 +587,7 @@ print_arguments = [
     'node.labels.host_corpus==true'
   ]
   docker_image = approach0/a0
-  restart_condition = any
+  restart_condition = none
   config_bind = [
     'path:detect_shards:/tmp/detect-shards.sh',
     'text:feeder_entrypoint:/tmp/entrypoint.sh'
