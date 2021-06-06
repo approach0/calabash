@@ -12,6 +12,12 @@ Calabash is an automation tool for small Dev team, with the following emphasises
 
 Calabash is designed for (and going to be used for) automating the hosting of Approach Zero search engine, it will be responsible to handle daily search engine tasks including regularly crawling, indexing and searching. Although still in early development, I hope later I will come back and say my time is very well spent on making such a tool.
 
+### Installation
+```
+$ (cd jobd && npm install)
+$ (cd cli && npm install)
+```
+
 ### Quick start
 First, run `jobd` server
 ```
