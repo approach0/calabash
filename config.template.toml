@@ -7,7 +7,6 @@ admin_name = admin
 admin_pass = ___
 ss_pass    = ___
 rsync_pass = ___
-domain_name = approach0.xyz
 
 [iaas]
 providers = [linode]
@@ -65,7 +64,7 @@ providers = [linode]
   driver = overlay
 
 [github]
-  open_PAT = 16cb9ca406810952527aae0dc2c90b797a03136f # used by calabash UI
+  open_PAT = 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 # used by calabash UI
   webhook_key = ___
   workflows = [
     approach0/gateway,
