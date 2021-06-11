@@ -2,43 +2,44 @@ slot=$TASK_SLOT
 export PATH="$PATH:/code"
 cd /data
 
+TOTAL_MSE_CRAWLERS=9
 while true; do
 	case $slot in
 
 		1)
-			crawler-stackexchange.py --site mse --begin-page 1 --end-page 3000
+			crawler-stackexchange.py --site mse --crawler 1/$TOTAL_MSE_CRAWLERS
 		;;
 
 		2)
-			crawler-stackexchange.py --site mse --begin-page 3001 --end-page 6000
+			crawler-stackexchange.py --site mse --crawler 2/$TOTAL_MSE_CRAWLERS
 		;;
 
 		3)
-			crawler-stackexchange.py --site mse --begin-page 6001 --end-page 9000
+			crawler-stackexchange.py --site mse --crawler 3/$TOTAL_MSE_CRAWLERS
 		;;
 
 		4)
-			crawler-stackexchange.py --site mse --begin-page 9001 --end-page 12000
+			crawler-stackexchange.py --site mse --crawler 4/$TOTAL_MSE_CRAWLERS
 		;;
 
 		5)
-			crawler-stackexchange.py --site mse --begin-page 12001 --end-page 15000
+			crawler-stackexchange.py --site mse --crawler 5/$TOTAL_MSE_CRAWLERS
 		;;
 
 		6)
-			crawler-stackexchange.py --site mse --begin-page 15001 --end-page 18000
+			crawler-stackexchange.py --site mse --crawler 6/$TOTAL_MSE_CRAWLERS
 		;;
 
 		7)
-			crawler-stackexchange.py --site mse --begin-page 18001 --end-page 21000
+			crawler-stackexchange.py --site mse --crawler 7/$TOTAL_MSE_CRAWLERS
 		;;
 
 		8)
-			crawler-stackexchange.py --site mse --begin-page 21001 --end-page 24000
+			crawler-stackexchange.py --site mse --crawler 8/$TOTAL_MSE_CRAWLERS
 		;;
 
 		9)
-			crawler-stackexchange.py --site mse --begin-page 24001 --end-page 27000
+			crawler-stackexchange.py --site mse --crawler 9/$TOTAL_MSE_CRAWLERS
 		;;
 
 		10)
