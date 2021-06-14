@@ -64,7 +64,11 @@ providers = [linode]
   driver = overlay
 
 [github]
-  open_PAT = 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 # used by calabash UI
+  # open_PAT will be used by webpage (UI) to request Github
+  # workflow changes, so it is public token. However, we still
+  # need to prepend a SECRET prefix here otherwise Github will
+  # detect our pushed token and revoke it.
+  open_PAT = ___
   webhook_key = ___
   workflows = [
     approach0/gateway,
@@ -648,9 +652,9 @@ print_arguments = [
   config_source = [
     '''
     (flock 100;
-      # we need to check if the mnt directory inode is changed during
-      # docker image boots up, this is going to mislead our container
-      # to the unmounted directory.
+      # we need to check if the mnt directory inode is changed during docker
+      # image boots up, because that is going to mislead our container to
+      # the original (unmounted) directory.
       if mount | grep -q vdisk.img; then
         indexer.out -z -o /mnt/vdisk/mnt/;
         sync
