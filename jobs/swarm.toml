@@ -71,11 +71,11 @@ source = [
 if = is_swarm_manager
 exec = [
   require_args service,
-  'services=$(detect_shards $service)',
+  'services="$(detect_shards $service)"',
   '''
-  for s in $service; do
-    echo "\n --- service: $s --- \n"
-    swarm_print_service_logs $s 5
+  for srv in $services; do
+    echo "=== service '$srv' tail logs ===";
+    swarm_print_service_logs $srv 5
   done
   '''
 ]
