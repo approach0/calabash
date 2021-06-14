@@ -33,21 +33,19 @@ create_vdisk() {
 vdisk_producer_loop() {
 	DISKSIZE=$1
 	while true; do
-		echo 'Obtaining lock ...'
+		#echo 'Obtaining lock ...'
 		(
 			flock --wait 5 100 || exit 1
-			echo 'Lock obtained!'
+			echo 'Lock obtained! Creating a new vdisk.img'
 
-			if [ -z "$(ls -A /var/tmp/vdisk/mnt)" ]; then
-				echo 'No indites found, continue to wait ...'
-				exit 0
-			fi
-
+			mnt_contents="$(ls -A /var/tmp/vdisk/mnt)"
 			umount_vdisk
 
-			if [ -e vdisk.img ]; then
+			if [[ -e vdisk.img && -n "$mnt_contents" ]]; then
+				prod_img=vdisk.$(date +'%Y%m%d-%H%M%S').img
+				echo "Producing a new production image: $prod_img"
 				rm -f vdisk.*.img
-				mv vdisk.img vdisk.$(date +'%Y%m%d-%H%M%S').img
+				mv vdisk.img $prod_img
 			fi
 
 			create_vdisk $DISKSIZE
@@ -65,13 +63,6 @@ vdisk_producer_daemon() {
 	# (flock 100; indexer.out -o /mnt/vdisk/mnt/; sync ) 100>/mnt/vdisk/vdisk.lock
 
 	mkdir -p /var/tmp/vdisk
-	( # clean up, and ensure whenever ./mnt presents, it is mounted.
-		flock 100
-		umount_vdisk
-		create_vdisk $DISKSIZE
-		mount_vdisk
-	) 100>/var/tmp/vdisk/vdisk.lock
-
 	declare -fx umount_vdisk create_vdisk mount_vdisk vdisk_producer_loop
 	nohup bash -c "vdisk_producer_loop $DISKSIZE" &> /var/tmp/vdisk/nohup.out < /dev/null &
 }
@@ -80,15 +71,16 @@ vdisk_consume_loop() {
 	cd /var/tmp/vdisk
 
 	while true; do
-		echo 'Obtaining lock ...'
+		#echo 'Obtaining lock ...'
 		(
 			flock --wait 5 100 || exit 1
 			echo 'Lock obtained!'
 
 			if ls vdisk.*.img; then
+				prod_img=$(ls vdisk.*.img | head -1)
+				echo "Mount a new production image: $prod_img"
 				umount_vdisk
-				fname=$(ls vdisk.*.img | head -1)
-				mv $fname vdisk.img
+				mv $prod_img vdisk.img
 				rm -f vdisk.*.img
 				mount_vdisk
 			fi
