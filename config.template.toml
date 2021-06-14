@@ -665,8 +665,8 @@ print_arguments = [
     '''
   ]
   stop_signal = SIGINT
-  stop_grace_period = 60s # ensure indexer dumps indices gracefully upon user stops me.
-  restart_condition = any # restart service even if exec program exits with code 0.
+  stop_grace_period = 60s # ensure indexer complete index dumping gracefully after we stops it.
+  restart_condition = none # otherwise will obtain the lock again, so producer will not able to compete
   docker_exec = bash /tmp/entrypoint.sh
 
   [service.index_syncd]
