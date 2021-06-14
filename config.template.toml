@@ -4,36 +4,36 @@ configs = ./configs
 job_dir = ./jobs
 node_prefix = calabash
 admin_name = admin
-admin_pass = ___
-ss_pass    = ___
-rsync_pass = ___
+admin_pass = SECRET:___
+ss_pass    = SECRET:___
+rsync_pass = SECRET:___
 
 [iaas]
 providers = [linode]
 #providers = [linode, ucloud]
 
   [iaas.linode]
-  token = ___
+  token = SECRET:___
   docker_image = approach0/linode-cli
   # docker mirror alternatives: https://hub-mirror.c.163.com
   docker_mirror = https://docker.io # for docker daemon system-wise config
   docker_registry_url = https://index.docker.io/v1/ # For login
-  docker_registry_user = ___
-  docker_registry_pass = ___
+  docker_registry_user = SECRET:___
+  docker_registry_pass = SECRET:___
 
     [iaas.linode.config_1]
     region = eu-central # ap-northeast
     specs = 'g6-nanode-1'
     distro = linode/debian10
-    ssh_port = ___
-    password = ___
+    ssh_port = SECRET:___
+    password = SECRET:___
 
     [iaas.linode.config_2]
     region = eu-central # us-west
     specs = 'g6-standard-2'
     distro = linode/debian10
-    ssh_port = ___
-    password = ___
+    ssh_port = SECRET:___
+    password = SECRET:___
 
   [iaas.ucloud]
   pubkey = ___
@@ -68,8 +68,8 @@ providers = [linode]
   # workflow changes, so it is public token. However, we still
   # need to prepend a SECRET prefix here otherwise Github will
   # detect our pushed token and revoke it.
-  open_PAT = ___
-  webhook_key = ___
+  open_PAT = NOPUSH:___
+  webhook_key = SECRET:___
   workflows = [
     approach0/gateway,
     approach0/ui-calabash,

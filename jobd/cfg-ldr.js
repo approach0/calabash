@@ -12,9 +12,11 @@ function delayering(obj, outobj, stack) {
       } else {
         const key = next_stack.replace(/^environment_/, "")
         let val = obj[property]
-        if (typeof val === 'string' && val.startsWith('SECRET:')) {
+        if (typeof val === 'string' &&
+          (val.startsWith('SECRET:') || val.startsWith('NOPUSH:'))) {
           val = val.split(':').slice(1).join(':')
-          delete obj[property]
+          if (val.startsWith('SECRET:'))
+            delete obj[property]
         }
         outobj[key] = val
       }
