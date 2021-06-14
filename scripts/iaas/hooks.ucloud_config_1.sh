@@ -53,7 +53,7 @@ vdisk_producer_loop() {
 
 		) 100>/var/tmp/vdisk/vdisk.lock
 
-		sleep 5
+		sleep 60 # IMPORTANT: Give indexer larger chance to see updated mnt inode
 	done
 }
 
