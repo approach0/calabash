@@ -64,7 +64,7 @@ providers = [linode]
   driver = overlay
 
 [github]
-  open_PAT = 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 # used by calabash UI
+  open_PAT = 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 # used by calabash UI
   webhook_key = ___
   workflows = [
     approach0/gateway,
@@ -650,7 +650,7 @@ print_arguments = [
     # if there is no such directory (/mnt/vdisk/mnt), indexer will give up and quit
     (flock 100; indexer.out -z -o /mnt/vdisk/mnt/; sync ) 100>/mnt/vdisk/vdisk.lock
 
-    sleep 600 # Give vdisk-producer daemon enough time to create image
+    sleep 16 # wait vdisk-producer to create production image
 
     # fall through here to restart service so that mounting point will be refreshed
     '''
