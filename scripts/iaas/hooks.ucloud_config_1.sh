@@ -15,7 +15,7 @@ mount_vdisk() {
 umount_vdisk() {
 	cd /var/tmp/vdisk
 
-	if mount | grep -q vdisk; then
+	if mount | grep -q vdisk.img; then
 		umount ./mnt
 	fi
 	[ -e ./mnt ] && rmdir ./mnt

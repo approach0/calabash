@@ -647,10 +647,15 @@ print_arguments = [
   ]
   config_source = [
     '''
-    # if there is no such directory (/mnt/vdisk/mnt), indexer will give up and quit
-    (flock 100; indexer.out -z -o /mnt/vdisk/mnt/; sync ) 100>/mnt/vdisk/vdisk.lock
-
-    sleep 16 # wait vdisk-producer to create production image
+    (flock 100;
+      # we need to check if the mnt directory inode is changed during
+      # docker image boots up, this is going to mislead our container
+      # to the unmounted directory.
+      if mount | grep -q vdisk.img; then
+        indexer.out -z -o /mnt/vdisk/mnt/;
+        sync
+      fi
+    ) 100>/mnt/vdisk/vdisk.lock
 
     # fall through here to restart service so that mounting point will be refreshed
     '''
