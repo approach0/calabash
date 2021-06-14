@@ -50,7 +50,8 @@ swarm_print_service_overview() {
 
 swarm_print_service_logs() {
 	service_name=$1
-	$DOCKER service logs --raw --tail 100 --follow ${service_name}
+	lines=${2-100}
+	$DOCKER service logs --raw --tail $lines --follow ${service_name}
 }
 
 swarm_print_service_image() {

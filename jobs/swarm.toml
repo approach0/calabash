@@ -63,6 +63,23 @@ exec = [
   swarm_print_service_logs $service
 ]
 
+[service-multishards-logs]
+source = [
+  . $scripts/swarm/swarm.sh
+  . $scripts/swarm/detect-shards.sh
+]
+if = is_swarm_manager
+exec = [
+  require_args service,
+  'services=$(detect_shards $service)',
+  '''
+  for s in $service; do
+    echo "\n --- service: $s --- \n"
+    swarm_print_service_logs $s 5
+  done
+  '''
+]
+
 [rm-services]
 source = . $scripts/swarm/swarm.sh
 if = is_swarm_manager
