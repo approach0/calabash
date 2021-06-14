@@ -60,7 +60,7 @@ source = . $scripts/swarm/swarm.sh
 if = is_swarm_manager
 exec = [
   require_args service,
-  swarm_print_service_logs $service
+  swarm_follow_service_logs $service
 ]
 
 [service-multishards-logs]

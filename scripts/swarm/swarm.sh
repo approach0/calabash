@@ -48,10 +48,16 @@ swarm_print_service_overview() {
 	$DOCKER service ls --filter="name=${service_name}"
 }
 
-swarm_print_service_logs() {
+swarm_follow_service_logs() {
 	service_name=$1
 	lines=${2-100}
 	$DOCKER service logs --raw --tail $lines --follow ${service_name}
+}
+
+swarm_print_service_logs() {
+	service_name=$1
+	lines=${2-100}
+	$DOCKER service logs --raw --tail $lines ${service_name}
 }
 
 swarm_print_service_image() {
