@@ -662,11 +662,12 @@ print_arguments = [
     ) 100>/mnt/vdisk/vdisk.lock
 
     # fall through here to restart service so that mounting point will be refreshed
+    sleep 10
     '''
   ]
   stop_signal = SIGINT
   stop_grace_period = 25s # ensure indexer complete index dumping gracefully after we stops it.
-  restart_condition = none # otherwise will obtain the lock again, so producer will not able to compete
+  restart_condition = any # restart to refresh inode if it is chagned during docker goes up.
   docker_exec = bash /tmp/entrypoint.sh
 
   [service.index_syncd]
