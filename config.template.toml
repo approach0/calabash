@@ -658,16 +658,18 @@ print_arguments = [
       if mount | grep -q vdisk.img; then
         indexer.out -z -o /mnt/vdisk/mnt/;
         sync
+        exit 0
       fi
     ) 100>/mnt/vdisk/vdisk.lock
 
     # fall through here to restart service so that mounting point will be refreshed
     sleep 10
+    exit 1
     '''
   ]
   stop_signal = SIGINT
   stop_grace_period = 25s # ensure indexer complete index dumping gracefully after we stops it.
-  restart_condition = any # restart to refresh inode if it is chagned during docker goes up.
+  restart_condition = on-failure # restart to refresh inode only if exit code is non-zero.
   docker_exec = bash /tmp/entrypoint.sh
 
   [service.index_syncd]
