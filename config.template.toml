@@ -662,12 +662,13 @@ print_arguments = [
         indexer.out -z -o /mnt/vdisk/mnt/;
         sync
         exit 0
+      else
+        exit 1
       fi
     ) 100>/mnt/vdisk/vdisk.lock
 
-    # fall through here to restart service so that mounting point will be refreshed
-    sleep 10
-    exit 1
+    # fall through
+    exit $?
     '''
   ]
   stop_signal = SIGINT
