@@ -617,6 +617,9 @@ print_arguments = [
     'path:detect_shards:/tmp/detect-shards.sh',
     'text:indexer_stopper_entrypoint:/tmp/entrypoint.sh'
   ]
+  constraints = [
+    'node.labels.host_corpus==true'
+  ]
   config_source = [
     '$scripts/swarm/detect-shards.sh',
     '''
