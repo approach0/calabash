@@ -42,10 +42,10 @@ vdisk_producer_loop() {
 			date +'%Y%m%d-%H%M%S'
 			ls -a
 
-			umount_vdisk
-
 			mnt_contents="$(ls -A ./mnt)"
+			umount_vdisk
 			echo $mnt_contents
+
 			if [[ -e vdisk.img && -n "$mnt_contents" ]]; then
 				prod_img=vdisk.$(date +'%Y%m%d-%H%M%S').img
 				echo "Producing a new production image: $prod_img"
