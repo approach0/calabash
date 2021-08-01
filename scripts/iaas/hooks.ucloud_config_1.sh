@@ -32,15 +32,20 @@ create_vdisk() {
 
 vdisk_producer_loop() {
 	DISKSIZE=$1
+	cd /var/tmp/vdisk
+
 	while true; do
 		#echo 'Obtaining lock ...'
 		(
 			flock --wait 5 100 || exit 1
 			echo 'Lock obtained! Creating a new vdisk.img'
+			date +'%Y%m%d-%H%M%S'
+			ls -a
 
-			mnt_contents="$(ls -A /var/tmp/vdisk/mnt)"
 			umount_vdisk
 
+			mnt_contents="$(ls -A ./mnt)"
+			echo $mnt_contents
 			if [[ -e vdisk.img && -n "$mnt_contents" ]]; then
 				prod_img=vdisk.$(date +'%Y%m%d-%H%M%S').img
 				echo "Producing a new production image: $prod_img"
@@ -51,7 +56,7 @@ vdisk_producer_loop() {
 			create_vdisk $DISKSIZE
 			mount_vdisk
 
-		) 100>/var/tmp/vdisk/vdisk.lock
+		) 100>vdisk.lock
 
 		sleep 60 # IMPORTANT: Give indexer larger chance to see updated mnt inode
 	done
@@ -75,6 +80,8 @@ vdisk_consume_loop() {
 		(
 			flock --wait 5 100 || exit 1
 			echo 'Lock obtained!'
+			date +'%Y%m%d-%H%M%S'
+			ls -a
 
 			if ls vdisk.*.img; then
 				prod_img=$(ls vdisk.*.img | head -1)
