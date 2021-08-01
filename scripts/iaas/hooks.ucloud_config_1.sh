@@ -69,6 +69,7 @@ vdisk_producer_daemon() {
 
 	mkdir -p /var/tmp/vdisk
 	declare -fx umount_vdisk create_vdisk mount_vdisk vdisk_producer_loop
+	declare -fx > /var/tmp/vdisk/env.sh # save environment
 	nohup bash -c "vdisk_producer_loop $DISKSIZE" &> /var/tmp/vdisk/nohup.out < /dev/null &
 }
 
@@ -107,6 +108,7 @@ vdisk_consume_daemon() {
 	#cat /proc/swaps
 
 	declare -fx umount_vdisk create_vdisk mount_vdisk vdisk_consume_loop
+	declare -fx > /var/tmp/vdisk/env.sh # save environment
 	nohup bash -c "vdisk_consume_loop" &> /var/tmp/vdisk/nohup.out < /dev/null &
 }
 
