@@ -589,7 +589,7 @@ print_arguments = [
   constraints = [
     'node.labels.host_corpus==true'
   ]
-  docker_image = approach0/a0
+  docker_image = approach0/a0-crawlers
   restart_condition = none
   config_bind = [
     'path:detect_shards:/tmp/detect-shards.sh',
@@ -602,39 +602,12 @@ print_arguments = [
 
     urls=$(for i in $(detect_shards indexer); do echo "--indexd-url http://${i}:8934/index"; done)
     set -x
-    json-feeder.py --corpus-path /data $urls --bye
+    feeder.py --corpus-path /data $urls --bye
     set +x
     echo 'Waiting long enough to get better chance that indexers are ready...'
     sleep 3600
     '''
   ]
-  docker_exec = bash /tmp/entrypoint.sh
-
-  [service.indexer_stopper]
-  network = calabash_net
-  docker_image = approach0/a0
-  config_bind = [
-    'path:detect_shards:/tmp/detect-shards.sh',
-    'text:indexer_stopper_entrypoint:/tmp/entrypoint.sh'
-  ]
-  constraints = [
-    'node.labels.host_corpus==true'
-  ]
-  config_source = [
-    '$scripts/swarm/detect-shards.sh',
-    '''
-    source /tmp/detect-shards.sh
-
-    urls=$(for i in $(detect_shards indexer); do echo "--indexd-url http://${i}:8934/index"; done)
-    set -x
-    json-feeder.py $urls --bye
-    set +x
-
-    echo 'Waiting for a while in case you want to see my output?'
-    sleep 240
-    '''
-  ]
-  restart_condition = none # one-time runner
   docker_exec = bash /tmp/entrypoint.sh
 
   [service.indexer]
