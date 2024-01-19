@@ -150,7 +150,9 @@ exports.runcmd = function (cmd, opt, onLog, onSpawn)
     onSpawn(cmd, opt.user, runner.pid)
 
     /* pipe stdin into this process */
-    process.stdin.pipe(stdin(runner))
+    if (opt.spawn == 'direct') {
+      process.stdin.pipe(stdin(runner))
+    }
 
     /* output std & stderr */
     stdout(runner).on('data', stdlog)
@@ -163,9 +165,11 @@ exports.runcmd = function (cmd, opt, onLog, onSpawn)
 
     /* on exit ... */
     runner.on('exit', async function (exitcode) {
-      process.stdin.unpipe(stdin(runner))
-      process.stdin.resume()
-      process.stdin.pause()
+      if (opt.spawn == 'direct') {
+        process.stdin.unpipe(stdin(runner))
+        process.stdin.resume()
+        process.stdin.pause()
+      }
 
       resolve([runner.pid, exitcode])
     })
