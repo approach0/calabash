@@ -12,6 +12,6 @@
     "express": "^4.17.1",
     "fast-toml": "^0.5.4",
     "graceful-fs": "^4.2.4",
-    "node-pty-prebuilt-multiarch": "^0.9.0"
+    "@homebridge/node-pty-prebuilt-multiarch": "^0.11.12"
   }
 }

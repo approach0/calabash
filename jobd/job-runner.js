@@ -4,7 +4,7 @@ const cfg_ldr = require('./cfg-ldr.js')
 const logger = require('./logger.js')
 const tasks = require('./tasks.js')
 const process_ = require('process')
-const pty = require('node-pty-prebuilt-multiarch')
+const pty = require('@homebridge/node-pty-prebuilt-multiarch')
 const childProcess = require('child_process')
 const querystring = require('querystring')
 
