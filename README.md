@@ -25,6 +25,7 @@ First, run `jobd` server
 ```
 (the job daemon uses docker so you have to run it as root)
 
+#### Case 1: Building IaaS nodes from scratch
 Then bootstrap the calabash to remote node using CLI
 ```
 $ node cli.js -j 'swarm:bootstrap?node_usage=persistent&iaascfg=ucloud_config_1'
@@ -32,6 +33,11 @@ $ node cli.js -j 'swarm:bootstrap?node_usage=persistent&iaascfg=ucloud_config_1'
 and at the end it will output the bootstrap node IP address, you can now manipulate this remote calabash service, for example, expand (create and join) a new node:
 ```
 $ node cli.js http://<IP>:<PORT> -j 'swarm:expand?iaascfg=ucloud_config_1&typeIP=private'
+```
+
+#### Case 2: Start from existing IaaS nodes
+```
+$ node cli.js --single -j 'swarm:bootstrap?node_usage=persistent&iaascfg=linode_config_1&nodeIP=<existing_manager_node_IP>'
 ```
 
 If you want to test locally at your computer, issue
